@@ -271,20 +271,11 @@ This is currently broken.
 
 sub set_content {
     my ($self,$content) = @_;
-    my $docElement = $self->document->{documentElement};
-    my $rn = $self->repl->repl;
-    my $c = quotemeta $content;
-    my $d = $self->document; # keep a reference to it!
-    my $id = $d->__id;
-    my $html = MozRepl::RemoteObject->expr(<<JS);
-(function(repl,docid,html){
-    var d = repl.getLink(docid);
-    var e = document.implementation.createDocument("","",null);
-    e.innerHTML = html;
-    document.documentElement=e;
-})($rn,$id,"$c")
-JS
-    #$docElement->{innerHTML} = $c;
+    use MIME::Base64;
+    my $data = encode_base64($content,'');
+    my $url = qq{data:text/html;base64,$data};
+    $self->tab->{linkedBrowser}->loadURI(qq{"$url"});
+    return;
 };
 
 =head2 C<< $mech->uri >>

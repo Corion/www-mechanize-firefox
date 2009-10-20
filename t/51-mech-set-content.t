@@ -12,7 +12,8 @@ my $content = <<HTML;
 <title>Hello FireFox!</title>
 </head>
 <body>
-<p>Hello WWW::Mechanize::FireFox</p>
+<h1>Hello World!</h1>
+<p>Hello <b>WWW::Mechanize::FireFox</b></p>
 </body>
 </html>
 HTML
