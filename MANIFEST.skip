@@ -1,4 +1,5 @@
 .cvsignore$
+^.git/
 ^.lwpcookies
 ^.releaserc
 ^blib/
