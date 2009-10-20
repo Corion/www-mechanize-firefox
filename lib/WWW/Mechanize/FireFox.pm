@@ -102,9 +102,7 @@ sub addTab {
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->repl;
     my $tab = MozRepl::RemoteObject->expr(<<JS);
-    (function(repl) {
-        return window.getBrowser().addTab();
-    })($rn)
+        window.getBrowser().addTab()
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
         $tab->__release_action('window.getBrowser().removeTab(self)');
