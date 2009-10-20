@@ -364,6 +364,7 @@ with
 
   background: red;
   border: solid black 1px;
+  display: block; /* if the element was display: none before */
 
 This is convenient if you need visual verification that you've
 got the right nodes.
@@ -377,6 +378,8 @@ sub highlight_node {
     my ($self,@nodes) = @_;
     for (@nodes) {
         my $style = $_->{style};
+        $style->{display}    = 'block'
+            if $style->{display} eq 'none';
         $style->{background} = 'red';
         $style->{border}     = 'solid black 1px;';
     };
