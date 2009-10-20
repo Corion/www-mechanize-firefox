@@ -230,8 +230,6 @@ This is WWW::Mechanize::FireFox specific.
 =cut
 
 sub document {
-    # This would make a good place for caching
-    # to reduce latency/IP traffic
     my ($self) = @_;
     $self->tab->__dive(qw[linkedBrowser contentWindow document]);
 }
@@ -241,6 +239,8 @@ sub document {
 Returns the current content of the tab as a scalar.
 
 This is likely not binary-safe.
+
+It also currently only works for HTML pages.
 
 =cut
 
@@ -260,25 +260,12 @@ sub content {
 JS
 };
 
-=head2 C<< $mech->uri >>
-
-Returns the current document URI.
-
-=cut
-
-sub uri {
-    my ($self) = @_;
-    my $loc = $self->tab->__dive(qw[
-        linkedBrowser
-        currentURI
-        asciiSpec ]);
-    return URI->new( $loc );
-};
-
 =head2 C<< $mech->set_content $html >>
 
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
+
+This is currently broken.
 
 =cut
 
@@ -298,6 +285,21 @@ sub set_content {
 })($rn,$id,"$c")
 JS
     #$docElement->{innerHTML} = $c;
+};
+
+=head2 C<< $mech->uri >>
+
+Returns the current document URI.
+
+=cut
+
+sub uri {
+    my ($self) = @_;
+    my $loc = $self->tab->__dive(qw[
+        linkedBrowser
+        currentURI
+        asciiSpec ]);
+    return URI->new( $loc );
 };
 
 =head2 C<< $mech->content_type >>
