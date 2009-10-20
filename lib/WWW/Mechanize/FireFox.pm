@@ -395,10 +395,6 @@ __END__
 
 =item *
 
-Implement "highlight item"
-
-=item *
-
 Implement C<autodie>
 
 =item *
