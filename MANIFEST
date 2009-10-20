@@ -1,0 +1,18 @@
+.gitignore
+lib/WWW/Mechanize/FireFox.pm
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.skip
+t/01-dive.t
+t/01-expr.t
+t/01-release-action.t
+t/02-synopsis.t
+t/50-mech-ct.t
+t/50-mech-get.t
+t/50-mech-new.t
+t/51-mech-set-content.t
+t/99-manifest.t
+t/99-pod.t
+t/99-todo.t
+t/99-unix-text.t
+t/99-versions.t
