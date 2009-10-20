@@ -265,8 +265,6 @@ JS
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
 
-This is currently broken.
-
 =cut
 
 sub set_content {
@@ -274,8 +272,9 @@ sub set_content {
     use MIME::Base64;
     my $data = encode_base64($content,'');
     my $url = qq{data:text/html;base64,$data};
-    $self->tab->{linkedBrowser}->loadURI(qq{"$url"});
-    return;
+    $self->synchronize('load', sub {
+        $self->tab->{linkedBrowser}->loadURI(qq{"$url"});
+    });
 };
 
 =head2 C<< $mech->uri >>
