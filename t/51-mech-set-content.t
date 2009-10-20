@@ -3,7 +3,10 @@ use strict;
 use Test::More tests => 2;
 use WWW::Mechanize::FireFox;
 
-my $mech = WWW::Mechanize::FireFox->new( autodie => 0, log => [qw[debug]] );
+my $mech = WWW::Mechanize::FireFox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+);
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 my $content = <<HTML;
@@ -21,5 +24,12 @@ HTML
 $mech->set_content($content);
 #$mech->tab->__release_action('');
 
-is $mech->content, $content, "Setting the content works";
+my $c = $mech->content;
+for ($c,$content) {
+    s/\s+/ /msg; # normalize whitespace
+    s/> </></g;
+    s/\s*$//;
+};
+
+is $c, $content, "Setting the content works";
 
