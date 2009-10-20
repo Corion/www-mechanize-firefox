@@ -11,7 +11,7 @@ use strict;
 
 my @files;
 my $blib = File::Spec->catfile(qw(blib lib));
-find(\&wanted, $blib, 'bin');
+find(\&wanted, grep { -d } ($blib, 'bin'));
 plan tests => scalar @files;
 foreach my $file (@files) {
   source_file_ok($file);
