@@ -393,7 +393,8 @@ Implement "reuse tab if exists, otherwise create new"
 
 =item *
 
-Implement proper C<< ->content >> method
+Spin off HTML::Display::MozRepl as soon as I find out how I can
+load an arbitrary document via MozRepl into a C<document>.
 
 =back
 
