@@ -167,15 +167,15 @@ sub _addEventListener {
     
     my $rn = $self->repl->repl;
     my $res = $self->repl->execute(<<JS);
-(function(repl,browserid){
+(function(repl,browserid,event){
     var lock = {};
     lock.busy = 0;
     var b = repl.getLink(browserid);
     var l = function() {
         lock.busy++;
-        b.removeEventListener('load',l,true);
+        b.removeEventListener(event,l,true);
     };
-    b.addEventListener('load',l,true);
+    b.addEventListener(event,l,true);
     return repl.link(lock)
 })($rn,$id,"$event")
 JS
