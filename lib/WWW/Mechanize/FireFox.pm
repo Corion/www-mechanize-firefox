@@ -402,6 +402,16 @@ Rip out parts of Test::HTML::Content and graft them
 onto the C<links()> and C<find_link()> methods here.
 FireFox is a conveniently unified XPath engine.
 
+=item *
+
+Use one of the CSS selectors-to-xpath translators
+to also allow CSS selectors instead of just XPath queries
+for locating elements.
+
+This should possibly be a generic Mechanize feature
+or Mechanize plugin instead of being specific to ::FireFox,
+but that can come later.
+
 =back
 
 =head1 REPOSITORY
