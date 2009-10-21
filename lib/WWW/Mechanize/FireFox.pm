@@ -144,10 +144,10 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    my $lock = $self->_addEventListener($b,'load');
-    $b->loadURI(qq{"$url"});
-    
-    $self->_wait_while_busy($lock);
+    # this won't return if we get a page error...
+    $self->synchronize(['load','error'], sub {
+        $b->loadURI(qq{"$url"});
+    });
     
     if ($self->uri =~ /^about:/) {
         # this is an error
@@ -157,28 +157,37 @@ sub get {
 };
 
 sub _addEventListener {
-    my ($self,$browser,$event) = @_;
+    my ($self,$browser,@events) = @_;
     # Ah, how nice it would be to have this callback based...
-    #print "$_\n" for $browser->__keys();
+    # we need to be able to listen to multiple events
     # Should this go into MozRepl::RemoteObject?
     
-    $event ||= "load";
+    if (!@events) { @events = ("load","error")};
+    my $events = join ",", map {qq{"$_"}} @events;
 
+    #my $id = $browser->__id;
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
     my $res = $self->repl->execute(<<JS);
-(function(repl,browserid,event){
+(function(repl,browserid,events){
     var lock = {};
     lock.busy = 0;
     var b = repl.getLink(browserid);
-    var l = function() {
-        lock.busy++;
-        b.removeEventListener(event,l,true);
+    for (ev in events) {
+        var myev = ev;
+        lock.event = '';
+        var l = function() {
+            lock.busy++;
+            lock.event = ev;
+            for (e in events) {
+                b.removeEventListener(e,l,true);
+            };
+        };
+        b.addEventListener(ev,l,true);
     };
-    b.addEventListener(event,l,true);
     return repl.link(lock)
-})($rn,$id,"$event")
+})($rn,$id,[$events])
 JS
     die $res if $res =~ s/^!!!//;
 
@@ -216,8 +225,12 @@ fires an event on the browser object.
 sub synchronize {
     my ($self,$event,$callback) = @_;
     
-    my $b = $self->tab->{linkedBrowser};
-    my $lock = $self->_addEventListener($b,$event);
+    if (! ref $event) {
+        $event = [$event];
+    };
+    
+    my $b = $self->tab->{linkedBrowser}->{contentWindow};
+    my $lock = $self->_addEventListener($b,@$event);
     $callback->();
     $self->_wait_while_busy($lock);
 };
