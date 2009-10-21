@@ -396,6 +396,12 @@ Implement "reuse tab if exists, otherwise create new"
 Spin off HTML::Display::MozRepl as soon as I find out how I can
 load an arbitrary document via MozRepl into a C<document>.
 
+=item *
+
+Rip out parts of Test::HTML::Content and graft them
+onto the C<links()> and C<find_link()> methods here.
+FireFox is a conveniently unified XPath engine.
+
 =back
 
 =head1 REPOSITORY
