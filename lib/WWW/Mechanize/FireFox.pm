@@ -203,13 +203,16 @@ and waits until the event C<$event> fires on the browser.
 Usually, you want to use it like this:
 
   my $l = $mech->document->__xpath('//a[@onclick]');
-  $mech->synchronize('load', sub {
+  $mech->synchronize('DOMContentLoaded', sub {
       $l->__click()
   });
 
 It is necessary to synchronize with the browser whenever
 a click performs an action that takes longer and
 fires an event on the browser object.
+
+The C<DOMContentLoaded> event is fired by FireFox when
+the whole DOM and all C<iframe>s have been loaded.
 
 =cut
 
