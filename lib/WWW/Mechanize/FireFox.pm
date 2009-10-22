@@ -177,12 +177,19 @@ sub _addEventListener {
     var lock = {};
     lock.busy = 0;
     var b = repl.getLink(browserid);
-    var l = function() {
-        lock.busy++;
-        lock.event = events[0];
-        b.removeEventListener(events[0],l,true);
+    var listeners = [];
+    for( var i = 0; i < events.length; i++) {
+        var evname = events[i];
+        var l = function() {
+            lock.busy++;
+            lock.event = evname;
+            for( var j = 0; j < listeners.length; j++) {
+                b.removeEventListener(listeners[j][0],listeners[j][1],true);
+            };
+        };
+        listeners.push([evname,l]);
+        b.addEventListener(evname,l,true);
     };
-    b.addEventListener(events[0],l,true);
     return repl.link(lock)
 })($rn,$id,[$event_js])
 JS
