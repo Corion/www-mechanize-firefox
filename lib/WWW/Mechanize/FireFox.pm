@@ -157,15 +157,14 @@ sub get {
 };
 
 sub _addEventListener {
-    my ($self,$browser,@events) = @_;
-    # Ah, how nice it would be to have this callback based...
-    # we need to be able to listen to multiple events
-    # Should this go into MozRepl::RemoteObject?
-    
-    if (!@events) { @events = ("load","error")};
-    my $events = join ",", map {qq{"$_"}} @events;
+    my ($self,$browser,$events) = @_;
+    $events ||= "load";
+    $events = [$events]
+        unless ref $events;
+    my $event_js = join ",", 
+                   map {qq{"$_"}}
+                   map { quotemeta } @$events;
 
-    #my $id = $browser->__id;
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
@@ -174,20 +173,21 @@ sub _addEventListener {
     var lock = {};
     lock.busy = 0;
     var b = repl.getLink(browserid);
-    for (ev in events) {
-        var myev = ev;
-        lock.event = '';
+    var listeners = [];
+    for( var i = 0; i < events.length; i++) {
+        var evname = events[i];
         var l = function() {
             lock.busy++;
-            lock.event = ev;
-            for (e in events) {
-                b.removeEventListener(e,l,true);
+            lock.event = evname;
+            for( var j = 0; j < listeners.length; j++) {
+                b.removeEventListener(listeners[j][0],listeners[j][1],true);
             };
         };
-        b.addEventListener(ev,l,true);
+        listeners.push([evname,l]);
+        b.addEventListener(evname,l,true);
     };
     return repl.link(lock)
-})($rn,$id,[$events])
+})($rn,$id,[$event_js])
 JS
     die $res if $res =~ s/^!!!//;
 
@@ -212,7 +212,7 @@ and waits until the event C<$event> fires on the browser.
 Usually, you want to use it like this:
 
   my $l = $mech->document->__xpath('//a[@onclick]');
-  $mech->synchronize('load', sub {
+  $mech->synchronize('DOMContentLoaded', sub {
       $l->__click()
   });
 
@@ -220,17 +220,19 @@ It is necessary to synchronize with the browser whenever
 a click performs an action that takes longer and
 fires an event on the browser object.
 
+The C<DOMContentLoaded> event is fired by FireFox when
+the whole DOM and all C<iframe>s have been loaded.
+
 =cut
 
 sub synchronize {
-    my ($self,$event,$callback) = @_;
+    my ($self,$events,$callback) = @_;
     
-    if (! ref $event) {
-        $event = [$event];
-    };
+    $events = [ $events ]
+        unless ref $events;
     
-    my $b = $self->tab->{linkedBrowser}->{contentWindow};
-    my $lock = $self->_addEventListener($b,@$event);
+    my $b = $self->tab->{linkedBrowser};
+    my $lock = $self->_addEventListener($b,$events);
     $callback->();
     $self->_wait_while_busy($lock);
 };
