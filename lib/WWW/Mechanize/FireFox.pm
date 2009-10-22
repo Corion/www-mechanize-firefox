@@ -145,15 +145,21 @@ sub get {
     my $b = $self->tab->{linkedBrowser};
 
     # this won't return if we get a page error...
-    $self->synchronize(['DOMContentLoaded','error'], sub {
+    my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
+        #'readystatechange'
         $b->loadURI(qq{"$url"});
     });
     
-    if ($self->uri =~ /^about:/) {
+    if ($event->{event} eq 'DOMContentLoaded') {
+        # cool!
+        return 200; # ???
+    } else {
+        warn "\nEvent    : ", $event->{event};
+        warn "JS target: ", $event->{js_event}->{target};
+        warn "JS type  : ", $event->{js_event}->{type};
         # this is an error
-    };
-    
-    return 200; # ???
+        return 500
+    };   
 };
 
 sub _addEventListener {
@@ -176,15 +182,21 @@ sub _addEventListener {
     var listeners = [];
     for( var i = 0; i < events.length; i++) {
         var evname = events[i];
-        var l = function() {
-            lock.busy++;
-            lock.event = evname;
-            for( var j = 0; j < listeners.length; j++) {
-                b.removeEventListener(listeners[j][0],listeners[j][1],true);
+        var callback = (function(listeners,evname){
+            return function(e) {
+                lock.busy++;
+                lock.event = evname;
+                lock.js_event = {};
+                // Copy the original JS event
+                lock.js_event.target = e.target;
+                lock.js_event.type = e.type;
+                for( var j = 0; j < listeners.length; j++) {
+                    b.removeEventListener(listeners[j][0],listeners[j][1],true);
+                };
             };
-        };
-        listeners.push([evname,l]);
-        b.addEventListener(evname,l,true);
+        })(listeners,evname);
+        listeners.push([evname,callback]);
+        b.addEventListener(evname,callback,true);
     };
     return repl.link(lock)
 })($rn,$id,[$event_js])
@@ -201,7 +213,7 @@ sub _wait_while_busy {
     while ((my $s = $element->{busy} || 0) < 1) {
         sleep 0.1;
     };
-    return $s;
+    return $element;
 }
 
 =head2 C<< $mech->synchronize( $event, $callback ) >>

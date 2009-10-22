@@ -25,8 +25,10 @@ is $listener->{event}, $name, '... and it was our event';
 
 MozRepl::RemoteObject->expr(<<JS, $mech->repl);
     var b = $rn.getLink($browser_id);
-    var ev = content.document.createEvent('Events');
-    ev.initEvent("click", true, true);
+    var ev = content.document.createEvent('MouseEvents');
+    ev.initMouseEvent('click', true, true, window,
+                             0, 0, 0, 0, 0, false, false, false,
+                             false, 0, null);
     b.dispatchEvent(ev);
 JS
 is $listener->{busy}, 1, 'Only one event was received';
