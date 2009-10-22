@@ -145,7 +145,7 @@ sub get {
     my $b = $self->tab->{linkedBrowser};
 
     # this won't return if we get a page error...
-    $self->synchronize(['load','error'], sub {
+    $self->synchronize(['DOMContentLoaded','error'], sub {
         $b->loadURI(qq{"$url"});
     });
     
@@ -158,7 +158,7 @@ sub get {
 
 sub _addEventListener {
     my ($self,$browser,$events) = @_;
-    $events ||= "load";
+    $events ||= "DOMContentLoaded";
     $events = [$events]
         unless ref $events;
     my $event_js = join ",", 
