@@ -157,28 +157,34 @@ sub get {
 };
 
 sub _addEventListener {
-    my ($self,$browser,$event) = @_;
+    my ($self,$browser,$events) = @_;
     # Ah, how nice it would be to have this callback based...
     #print "$_\n" for $browser->__keys();
     # Should this go into MozRepl::RemoteObject?
     
-    $event ||= "load";
+    $events ||= "load";
+    $events = [$events]
+        unless ref $events;
+    my $event_js = join ",", 
+                   map {qq{"$_"}}
+                   map { quotemeta } @$events;
 
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
     my $res = $self->repl->execute(<<JS);
-(function(repl,browserid,event){
+(function(repl,browserid,events){
     var lock = {};
     lock.busy = 0;
     var b = repl.getLink(browserid);
     var l = function() {
         lock.busy++;
-        b.removeEventListener(event,l,true);
+        lock.event = events[0];
+        b.removeEventListener(events[0],l,true);
     };
-    b.addEventListener(event,l,true);
+    b.addEventListener(events[0],l,true);
     return repl.link(lock)
-})($rn,$id,"$event")
+})($rn,$id,[$event_js])
 JS
     die $res if $res =~ s/^!!!//;
 
@@ -217,10 +223,13 @@ the whole DOM and all C<iframe>s have been loaded.
 =cut
 
 sub synchronize {
-    my ($self,$event,$callback) = @_;
+    my ($self,$events,$callback) = @_;
+    
+    $events = [ $events ]
+        unless ref $events;
     
     my $b = $self->tab->{linkedBrowser};
-    my $lock = $self->_addEventListener($b,$event);
+    my $lock = $self->_addEventListener($b,$events);
     $callback->();
     $self->_wait_while_busy($lock);
 };
