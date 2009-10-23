@@ -280,7 +280,7 @@ sub content {
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     my $id = $d->__id;
-    my $html = MozRepl::RemoteObject->expr(<<JS);
+    my $html = $self->tab->expr(<<JS);
 (function(repl,docid){
     var d = repl.getLink(docid);
     var e = d.createElement("div");
@@ -288,6 +288,11 @@ sub content {
     return e.innerHTML;
 })($rn,$id)
 JS
+    #$html->($self->repl, $self->document);
+    # this could be turned into
+    # $html->($self->repl,$d);
+    # once MozRepl::RemoteObject understands about MozRepl objects
+    # and how to wrap them.
 };
 
 =head2 C<< $mech->set_content $html >>
