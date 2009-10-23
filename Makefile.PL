@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'    => 'WWW::Mechanize::FireFox',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/FireFox.pm', # finds $VERSION
-    'PREREQ_PM'    => { 'MozRepl-RemoteObject' => 0.06,
+    'PREREQ_PM'    => { 'MozRepl::RemoteObject' => 0.01,
                         'URI' => 0,
                       }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
