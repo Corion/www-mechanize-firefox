@@ -4,8 +4,11 @@ Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
 t/50-mech-ct.t
+t/50-mech-event.t
 t/50-mech-get.t
+t/50-mech-multi-event.t
 t/50-mech-new.t
+t/50-mech-status.t
 t/51-mech-set-content.t
 t/99-manifest.t
 t/99-pod.t
