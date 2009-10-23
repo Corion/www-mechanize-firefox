@@ -15,6 +15,7 @@ sub openTabs {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
     my $rn = $repl->repl;
+    # Shouldn't this become a call to ->expr()?
     my $tabs = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
 (function(repl) {
     var idx = 0;
@@ -205,7 +206,7 @@ sub _addEventListener {
 JS
     die $res if $res =~ s/^!!!//;
 
-    (MozRepl::RemoteObject->link_ids($res))[0]
+    ($browser->link_ids($res))[0]
 };
 
 sub _wait_while_busy {
@@ -279,20 +280,14 @@ sub content {
     
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
-    my $id = $d->__id;
     my $html = $self->tab->expr(<<JS);
-(function(repl,docid){
-    var d = repl.getLink(docid);
+function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
     return e.innerHTML;
-})($rn,$id)
+}
 JS
-    #$html->($self->repl, $self->document);
-    # this could be turned into
-    # $html->($self->repl,$d);
-    # once MozRepl::RemoteObject understands about MozRepl objects
-    # and how to wrap them.
+    $html->($d);
 };
 
 =head2 C<< $mech->set_content $html >>
