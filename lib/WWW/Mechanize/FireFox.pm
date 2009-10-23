@@ -177,11 +177,11 @@ sub _addEventListener {
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
-    my $res = $self->repl->execute(<<JS);
-(function(repl,browserid,events){
+    my $make_semaphore = $self->tab->expr(<<JS);
+function(browser,events) {
     var lock = {};
     lock.busy = 0;
-    var b = repl.getLink(browserid);
+    var b = browser;
     var listeners = [];
     for( var i = 0; i < events.length; i++) {
         var evname = events[i];
@@ -201,12 +201,10 @@ sub _addEventListener {
         listeners.push([evname,callback]);
         b.addEventListener(evname,callback,true);
     };
-    return repl.link(lock)
-})($rn,$id,[$event_js])
+    return lock
+}
 JS
-    die $res if $res =~ s/^!!!//;
-
-    ($browser->link_ids($res))[0]
+    return $make_semaphore->($browser,$events);
 };
 
 sub _wait_while_busy {
@@ -280,6 +278,8 @@ sub content {
     
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
+    
+    # this one could be conveniently cached
     my $html = $self->tab->expr(<<JS);
 function(d){
     var e = d.createElement("div");
