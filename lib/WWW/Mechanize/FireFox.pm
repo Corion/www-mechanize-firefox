@@ -147,7 +147,7 @@ sub get {
     # this won't return if we get a page error...
     my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
         #'readystatechange'
-        $b->loadURI(qq{"$url"});
+        $b->loadURI($url);
     });
     
     if ($event->{event} eq 'DOMContentLoaded') {
@@ -162,6 +162,8 @@ sub get {
     };   
 };
 
+# Should I port this to Perl?
+# Should this become part of MozRepl::RemoteObject?
 sub _addEventListener {
     my ($self,$browser,$events) = @_;
     $events ||= "DOMContentLoaded";
@@ -301,7 +303,7 @@ sub set_content {
     my $data = encode_base64($content,'');
     my $url = qq{data:text/html;base64,$data};
     $self->synchronize('load', sub {
-        $self->tab->{linkedBrowser}->loadURI(qq{"$url"});
+        $self->tab->{linkedBrowser}->loadURI($url);
     });
 };
 
@@ -424,11 +426,15 @@ Implement "reuse tab if exists, otherwise create new"
 Spin off HTML::Display::MozRepl as soon as I find out how I can
 load an arbitrary document via MozRepl into a C<document>.
 
+This is mostly done, but not yet spun off.
+
 =item *
 
 Rip out parts of Test::HTML::Content and graft them
 onto the C<links()> and C<find_link()> methods here.
 FireFox is a conveniently unified XPath engine.
+
+Preferrably, there should be a common API between the two.
 
 =item *
 
@@ -439,6 +445,8 @@ for locating elements.
 This should possibly be a generic Mechanize feature
 or Mechanize plugin instead of being specific to ::FireFox,
 but that can come later.
+
+Look at L<HTML::Selector::XPath>
 
 =back
 
