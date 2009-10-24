@@ -450,6 +450,16 @@ Look at L<HTML::Selector::XPath>
 
 =back
 
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
+
+=back
+
 =head1 REPOSITORY
 
 The public repository of this module is 
