@@ -291,14 +291,14 @@ JS
     $html->($d);
 };
 
-=head2 C<< $mech->set_content $html >>
+=head2 C<< $mech->update_html $html >>
 
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
 
 =cut
 
-sub set_content {
+sub update_html {
     my ($self,$content) = @_;
     use MIME::Base64;
     my $data = encode_base64($content,'');
@@ -507,6 +507,67 @@ C<< ->form_number >>
 =item *
 
 C<< ->form_name >>
+
+=item *
+
+C<< ->form_id >>
+
+This one certainly would be easier done
+by C<< $mech->document->getElementById() >>
+
+=item *
+
+C<< ->form_with_fields >>
+
+=item *
+
+C<< ->field >>
+
+=item *
+
+C<< ->select >>
+
+=item *
+
+C<< ->set_fields >>
+
+=item *
+
+C<< ->set_visible >>
+
+=item *
+
+C<< ->tick >>
+
+=item *
+
+C<< ->untick >>
+
+=item *
+
+C<< ->click >>
+
+=item *
+
+C<< ->submit >>
+
+=item *
+
+C<< ->add_header >>
+
+Likely will never be implemented
+
+=item *
+
+C<< ->delete_header >>
+
+Likely will never be implemented
+
+=item *
+
+C<< ->clone >>
+
+Likely will never be implemented
 
 =back
 

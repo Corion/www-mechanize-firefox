@@ -21,7 +21,7 @@ my $content = <<HTML;
 </html>
 HTML
 
-$mech->set_content($content);
+$mech->update_html($content);
 
 my $c = $mech->content;
 for ($c,$content) {
