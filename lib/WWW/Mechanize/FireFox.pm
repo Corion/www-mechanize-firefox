@@ -146,12 +146,12 @@ sub get {
     my $b = $self->tab->{linkedBrowser};
 
     # this won't return if we get a page error...
-    my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
+    my $event = $self->synchronize(['DOMFrameContentLoaded','error'], sub { # ,'abort'
         #'readystatechange'
         $b->loadURI($url);
     });
     
-    if ($event->{event} eq 'DOMContentLoaded') {
+    if ($event->{event} eq 'DOMFrameContentLoaded') {
         # cool!
         return 200; # ???
     } else {
@@ -167,7 +167,7 @@ sub get {
 # Should this become part of MozRepl::RemoteObject?
 sub _addEventListener {
     my ($self,$browser,$events) = @_;
-    $events ||= "DOMContentLoaded";
+    $events ||= "DOMFrameContentLoaded";
     $events = [$events]
         unless ref $events;
     my $event_js = join ",", 
@@ -225,7 +225,7 @@ and waits until the event C<$event> fires on the browser.
 Usually, you want to use it like this:
 
   my $l = $mech->document->__xpath('//a[@onclick]');
-  $mech->synchronize('DOMContentLoaded', sub {
+  $mech->synchronize('DOMFrameContentLoaded', sub {
       $l->__click()
   });
 
@@ -233,7 +233,7 @@ It is necessary to synchronize with the browser whenever
 a click performs an action that takes longer and
 fires an event on the browser object.
 
-The C<DOMContentLoaded> event is fired by FireFox when
+The C<DOMFrameContentLoaded> event is fired by FireFox when
 the whole DOM and all C<iframe>s have been loaded.
 
 =cut
@@ -456,7 +456,17 @@ Look at L<HTML::Selector::XPath>
 
 =item *
 
+Add configuration option through environment variable
+so the ip+port can be configured from the outside for the tests
+
+=item *
+
 L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
+
+=item *
+
+L<https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs>
+for more tab info
 
 =back
 
