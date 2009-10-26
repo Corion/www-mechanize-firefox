@@ -146,12 +146,12 @@ sub get {
     my $b = $self->tab->{linkedBrowser};
 
     # this won't return if we get a page error...
-    my $event = $self->synchronize(['DOMFrameContentLoaded','error'], sub { # ,'abort'
+    my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
         #'readystatechange'
         $b->loadURI($url);
     });
     
-    if ($event->{event} eq 'DOMFrameContentLoaded') {
+    if ($event->{event} eq 'DOMContentLoaded') {
         # cool!
         return 200; # ???
     } else {
