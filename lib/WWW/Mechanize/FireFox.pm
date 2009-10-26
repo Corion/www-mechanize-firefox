@@ -340,6 +340,18 @@ sub success {
     $_[0]->response->is_success
 }
 
+=head2 C<< $mech->status >>
+
+Returns the HTTP status code of the response. This is a 3-digit number like 200 for OK, 404 for not found, and so on.
+
+Currently can only return 200 (for OK) and 500 (for error)
+
+=cut
+
+sub status {
+    $_[0]->response->code
+};
+
 =head2 C<< $mech->uri >>
 
 Returns the current document URI.
@@ -451,6 +463,50 @@ __END__
 =item *
 
 C<< ->put >>
+
+=item *
+
+C<< ->follow_link >>
+
+This is inconvenient and has high priority, for API compatibility.
+Normally, you will want to C<< ->__click() >> on elements you find
+instead.
+
+=item *
+
+C<< ->find_all_links >>
+
+=item *
+
+C<< ->find_all_inputs >>
+
+=item *
+
+C<< ->find_all_submits >>
+
+=item *
+
+C<< ->images >>
+
+=item *
+
+C<< ->find_image >>
+
+=item *
+
+C<< ->find_all_images >>
+
+=item *
+
+C<< ->forms >>
+
+=item *
+
+C<< ->form_number >>
+
+=item *
+
+C<< ->form_name >>
 
 =back
 
