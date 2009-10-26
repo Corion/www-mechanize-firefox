@@ -24,6 +24,8 @@ This will let you automate FireFox through the
 Mozrepl plugin, which you need to have installed
 in your FireFox.
 
+=head1 METHODS
+
 =cut
 
 # This should maybe become MozRepl::FireFox::Util?
@@ -673,15 +675,8 @@ Preferrably, there should be a common API between the two.
 
 =item *
 
-Use one of the CSS selectors-to-xpath translators
-to also allow CSS selectors instead of just XPath queries
-for locating elements.
-
-This should possibly be a generic Mechanize feature
-or Mechanize plugin instead of being specific to ::FireFox,
-but that can come later.
-
-Look at L<HTML::Selector::XPath>
+Spin off XPath queries and CSS selectors into
+their own Mechanize plugin.
 
 =back
 
