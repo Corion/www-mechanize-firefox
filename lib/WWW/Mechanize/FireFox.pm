@@ -690,11 +690,6 @@ The MozRepl FireFox plugin at L<http://wiki.github.com/bard/mozrepl>
 
 =item *
 
-Add configuration option through environment variable
-so the ip+port can be configured from the outside for the tests
-
-=item *
-
 L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
 
 =item *
