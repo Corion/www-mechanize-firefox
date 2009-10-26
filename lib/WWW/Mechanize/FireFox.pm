@@ -5,7 +5,7 @@ use Time::HiRes;
 use MozRepl::RemoteObject;
 use URI;
 use HTTP::Response;
-#use HTML::Selector::XPath; # this should possibly go into a Mechanize plugin
+use HTML::Selector::XPath 'selector_to_xpath';
 
 use vars '$VERSION';
 $VERSION = '0.01';
@@ -225,7 +225,7 @@ and waits until the event C<$event> fires on the browser.
 
 Usually, you want to use it like this:
 
-  my $l = $mech->document->__xpath('//a[@onclick]');
+  my $l = $mech->xpath('//a[@onclick]');
   $mech->synchronize('DOMFrameContentLoaded', sub {
       $l->__click()
   });
@@ -236,6 +236,8 @@ fires an event on the browser object.
 
 The C<DOMFrameContentLoaded> event is fired by FireFox when
 the whole DOM and all C<iframe>s have been loaded.
+If your document doesn't have frames, use the C<DOMContentLoaded>
+event instead.
 
 =cut
 
@@ -394,17 +396,18 @@ sub title {
 
 =head2 C<< $mech->links >>
 
-Returns all links, that is, all C<< <A >> elements
+Returns all link document nodes, that is, all C<< <A >> elements
 with an <c>href</c> attribute.
+
+Currently accepts no parameters.
+
+The objects are not yet as nice as L<WWW::Mechanize::Link>
 
 =cut
 
 sub links {
     my ($self) = @_;
-    my @links = $self->document->__xpath('//a[@href]');
-    return map {
-        die
-    } @links;
+    my @links = $self->xpath('//a[@href]');
 };
 
 =head2 C<< $mech->clickables >>
@@ -416,10 +419,52 @@ with an <c>onclick</c> attribute.
 
 sub clickables {
     my ($self) = @_;
-    my @links = $self->document->__xpath('//*[@onclick]');
-    return map {
-        die
-    } @links;
+    $self->xpath('//*[@onclick]');
+};
+
+=head2 C<< $mech->xpath QUERY, %options >>
+
+Runs an XPath query in FireFox against the current document.
+
+The options allow the following keys:
+
+=over 4
+
+=item *
+
+C<< node >> - node relative to which the code is to be executed
+
+=back
+
+Returns the matched nodes.
+
+This is a method that is not implemented in WWW::Mechanize.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub xpath {
+    my ($self,$query,%options) = @_;
+    $options{ node } ||= $self->document;
+    
+    $_[0]->document->__xpath('//a[@href]', $options{ node });
+};
+
+=head2 C<< $mech->selector css_selector, %options >>
+
+Returns all nodes matching the given CSS selector.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub selector {
+    my ($self,$query,%options) = @_;
+    my $q = selector_to_xpath($query);
+    $self->xpath($q);
 };
 
 =head2 C<< $mech->highlight_node NODES >>
@@ -455,6 +500,11 @@ sub highlight_node {
 __END__
 
 =head1 INCOMPATIBILITIES WITH WWW::Mechanize
+
+As this module is in a very early stage of development,
+there are many incompatibilities. The main thing is
+that only the most needed WWW::Mechanize methods
+have been implemented by me so far.
 
 =head2 Unsupported Methods
 
@@ -568,6 +618,24 @@ Likely will never be implemented
 C<< ->clone >>
 
 Likely will never be implemented
+
+=item *
+
+C<< ->credentials( $username, $password ) >>
+
+Unlikely to be implemented
+
+=item *
+
+C<< ->get_basic_credentials( $realm, $uri, $isproxy ) >>
+
+Unlikely to be implemented
+
+=item *
+
+C<< ->clear_credentials() >>
+
+Unlikely to be implemented
 
 =back
 
