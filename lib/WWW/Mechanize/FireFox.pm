@@ -20,6 +20,10 @@ WWW::Mechanize::FireFox - use FireFox as if it were WWW::Mechanize
   my $mech = WWW::Mechanize::FireFox->new();
   $mech->get('http://google.com');
 
+This will let you automate FireFox through the
+Mozrepl plugin, which you need to have installed
+in your FireFox.
+
 =cut
 
 # This should maybe become MozRepl::FireFox::Util?
@@ -684,6 +688,10 @@ Look at L<HTML::Selector::XPath>
 =head1 SEE ALSO
 
 =over 4
+
+=item *
+
+The MozRepl FireFox plugin at L<http://wiki.github.com/bard/mozrepl>
 
 =item *
 
