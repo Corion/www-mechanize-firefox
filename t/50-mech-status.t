@@ -7,7 +7,7 @@ my $mech = WWW::Mechanize::FireFox->new( autodie => 0 );
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 my ($site,$estatus) = ('http://www.doesnotexit.example/',500);
-my $status = $mech->get($site);
+my $res = $mech->get($site);
 
 is $mech->uri, $site, "Navigating to $site";
 
@@ -15,5 +15,5 @@ is $mech->uri, $site, "Navigating to $site";
 #diag $mech->content;
 #diag $mech->document->{documentURI};
 
-is $status, $estatus, "GETting $site"
+is $res->code, $estatus, "GETting $site"
     or diag $mech->content;
