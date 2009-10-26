@@ -10,6 +10,18 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use vars '$VERSION';
 $VERSION = '0.01';
 
+=head1 NAME
+
+WWW::Mechanize::FireFox - use FireFox as if it were WWW::Mechanize
+
+=head1 SYNOPSIS
+
+  use WWW::Mechanize::FireFox;
+  my $mech = WWW::Mechanize::FireFox->new();
+  $mech->get('http://google.com');
+
+=cut
+
 # This should maybe become MozRepl::FireFox::Util?
 # or MozRepl::FireFox::UI ?
 sub openTabs {
