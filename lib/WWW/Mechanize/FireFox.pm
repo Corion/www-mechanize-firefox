@@ -137,7 +137,12 @@ sub repl { $_[0]->{repl} };
 
 Retrieves the URL C<URL> into the tab.
 
-Should return the status code.
+It returns a faked L<HTTP::Response> object for interface compatibility
+with L<WWW::Mechanize>. IT does not yet support the additional parameters
+that L<WWW::Mechanize> supports for saving a file etc.
+
+Currently, the response will only have the status
+codes of 200 for a successful fetch and 500 for everything else.
 
 =cut
 
@@ -145,22 +150,22 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    # this won't return if we get a page error...
     my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
         #'readystatechange'
         $b->loadURI($url);
     });
     
-    if ($event->{event} eq 'DOMContentLoaded') {
-        # cool!
-        return 200; # ???
-    } else {
-        warn "\nEvent    : ", $event->{event};
-        warn "JS target: ", $event->{js_event}->{target};
-        warn "JS type  : ", $event->{js_event}->{type};
+    # The event we get back is not necessarily indicative :-(
+    # if ($event->{event} eq 'DOMContentLoaded') {
+    
+    my $eff_url = $self->document->{documentURI};
+    if ($eff_url =~ /^about:neterror/) {
         # this is an error
-        return 500
+        return HTTP::Response->new(500)
     };   
+
+    # We're cool!
+    return HTTP::Response->new(200,'',[],$self->content)
 };
 
 # Should I port this to Perl?

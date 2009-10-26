@@ -11,5 +11,9 @@ my $status = $mech->get($site);
 
 is $mech->uri, $site, "Navigating to $site";
 
+#diag $mech->uri;
+#diag $mech->content;
+#diag $mech->document->{documentURI};
+
 is $status, $estatus, "GETting $site"
     or diag $mech->content;
