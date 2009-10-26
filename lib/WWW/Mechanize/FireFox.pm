@@ -88,6 +88,8 @@ sub new {
     die "No tab found"
         unless $args{tab};
         
+    $args{ response } ||= undef;
+        
     bless \%args, $class;
 };
 
@@ -159,14 +161,7 @@ sub get {
     # The event we get back is not necessarily indicative :-(
     # if ($event->{event} eq 'DOMContentLoaded') {
     
-    my $eff_url = $self->document->{documentURI};
-    if ($eff_url =~ /^about:neterror/) {
-        # this is an error
-        return HTTP::Response->new(500)
-    };   
-
-    # We're cool!
-    return HTTP::Response->new(200,'',[],$self->content)
+    return $self->response
 };
 
 # Should I port this to Perl?
@@ -313,6 +308,38 @@ sub set_content {
     });
 };
 
+=head2 C<< $mech->res >> / C<< $mech->response >>
+
+Returns the current response as a L<HTTP::Response> object.
+
+=cut
+
+sub response {
+    my ($self) = @_;
+    my $eff_url = $self->document->{documentURI};
+    if ($eff_url =~ /^about:neterror/) {
+        # this is an error
+        return HTTP::Response->new(500)
+    };   
+
+    # We're cool!
+    return HTTP::Response->new(200,'',[],$self->content)
+}
+*res = \&response;
+
+=head2 C<< $mech->success >>
+
+Returns a boolean telling whether the last request was successful.
+If there hasn't been an operation yet, returns false.
+
+This is a convenience function that wraps C<< $mech->res->is_success >>.
+
+=cut
+
+sub success {
+    $_[0]->response->is_success
+}
+
 =head2 C<< $mech->uri >>
 
 Returns the current document URI.
@@ -414,6 +441,18 @@ sub highlight_node {
 1;
 
 __END__
+
+=head1 INCOMPATIBILITIES WITH WWW::Mechanize
+
+=head2 Unsupported Methods
+
+=over 4
+
+=item *
+
+C<< ->put >>
+
+=back
 
 =head1 TODO
 
