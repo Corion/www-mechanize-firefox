@@ -67,18 +67,7 @@ sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     if (! $args{ repl }) {
-        my $repl_args = delete $args{ repl_args } || {
-            client => {
-                extra_client_args => {
-                    binmode => 1,
-                }
-            },
-            log => $loglevel,
-            plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
-        };
-        $args{ repl } = MozRepl->new();
-        $args{ repl }->setup( $repl_args );
-        MozRepl::RemoteObject->install_bridge($args{ repl });
+        $args{ repl } = MozRepl::RemoteObject->install_bridge();
     };
     
     if (my $tabname = delete $args{ tab }) {
