@@ -4,6 +4,7 @@ use Time::HiRes;
 
 use MozRepl::RemoteObject;
 use URI;
+use HTTP::Response;
 #use HTML::Selector::XPath; # this should possibly go into a Mechanize plugin
 
 use vars '$VERSION';
