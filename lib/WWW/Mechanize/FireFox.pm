@@ -7,8 +7,9 @@ use URI;
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
+use WWW::Mechanize::Link;
 
-use vars '$VERSION';
+use vars qw'$VERSION %link_tags';
 $VERSION = '0.03';
 
 =head1 NAME
@@ -34,7 +35,7 @@ in your FireFox.
 sub openTabs {
     my ($self) = @_;
     
-    my $open_tabs = <<'JS';
+    my $open_tabs = MozRepl::RemoteObject->expr(<<'JS');
 function() {
     var idx = 0;
     var tabs = [];
@@ -410,9 +411,41 @@ The objects are not yet as nice as L<WWW::Mechanize::Link>
 
 =cut
 
+%link_tags = (
+    a      => 'href',
+    area   => 'href',
+    frame  => 'src',
+    iframe => 'src',
+    link   => 'href',
+    meta   => 'content',
+);
+
 sub links {
     my ($self) = @_;
-    my @links = $self->css('a,area,frame,iframe,meta');
+    my @links = $self->selector('a,area,frame,iframe,link,meta');
+    (my $base) = $self->selector('base');
+    $base = $base->{href}
+        if $base;
+    $base ||= $self->uri;
+    return map {
+        my $tag = lc $_->{tagName};
+        
+        my $loc = $_->{ $link_tags{ $tag }};
+        if (defined $loc) {
+            my $url = URI->new_abs($loc,$base);
+            WWW::Mechanize::Link->new({
+                node  => $_,
+                tag   =>  $tag,
+                name  => $_->{name},
+                base  => $base,
+                url   => $url,
+                text  => $_->{innerHTML},
+                attrs => undef, # XXX
+            })
+        } else {
+            ()
+        };
+    } @links;
 };
 
 =head2 C<< $mech->clickables >>
@@ -453,8 +486,7 @@ L<WWW::Mechanize>.
 sub xpath {
     my ($self,$query,%options) = @_;
     $options{ node } ||= $self->document;
-    
-    $_[0]->document->__xpath('//a[@href]', $options{ node });
+    $self->document->__xpath($query, $options{ node });
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
@@ -469,7 +501,7 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     my $q = selector_to_xpath($query);
-    $self->xpath($q);
+    return $self->xpath($q);
 };
 
 =head2 C<< $mech->highlight_node NODES >>
