@@ -113,7 +113,7 @@ sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->name;
-    my $tab = $repl->expr(<<JS);
+    my $tab = $repl->expr(<<'JS');
         window.getBrowser().addTab()
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -182,7 +182,7 @@ sub _addEventListener {
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
-    my $make_semaphore = $self->repl->declare(<<JS);
+    my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
     var lock = {};
     lock.busy = 0;
@@ -286,7 +286,7 @@ sub content {
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     
-    my $html = $self->repl->declare(<<JS);
+    my $html = $self->repl->declare(<<'JS');
 function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
