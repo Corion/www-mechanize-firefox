@@ -412,7 +412,7 @@ The objects are not yet as nice as L<WWW::Mechanize::Link>
 
 sub links {
     my ($self) = @_;
-    my @links = $self->xpath('//a[@href]');
+    my @links = $self->css('a,area,frame,iframe,meta');
 };
 
 =head2 C<< $mech->clickables >>
