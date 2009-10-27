@@ -6,6 +6,7 @@ use MozRepl::RemoteObject;
 use URI;
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
+use MIME::Base64;
 
 use vars '$VERSION';
 $VERSION = '0.03';
@@ -307,7 +308,6 @@ implemented as a convenience method for L<HTML::Display::MozRepl>.
 
 sub update_html {
     my ($self,$content) = @_;
-    use MIME::Base64;
     my $data = encode_base64($content,'');
     my $url = qq{data:text/html;base64,$data};
     $self->synchronize('load', sub {
