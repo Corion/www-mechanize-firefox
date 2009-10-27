@@ -1,2 +1,6 @@
+0.02 20091027
+    . rearranged documentation
+    . made tests skip if we can't connect to MozRepl
+
 0.01 20091026
     . Released unto a propably suspecting audience
