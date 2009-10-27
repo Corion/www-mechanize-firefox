@@ -1,9 +1,21 @@
 #!perl -w
 use strict;
-use Test::More tests => 2;
+use Test::More;
 use WWW::Mechanize::FireFox;
 
-my $mech = WWW::Mechanize::FireFox->new( autodie => 0 );
+my $mech = eval { WWW::Mechanize::FireFox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 2;
+};
+
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 #my ($site,$estatus) = ('http://doesnotexit.example',500);
