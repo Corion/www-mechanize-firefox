@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'    => 'WWW::Mechanize::FireFox',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/FireFox.pm', # finds $VERSION
-    'PREREQ_PM'    => { 'MozRepl::RemoteObject' => 0.01,
+    'PREREQ_PM'    => { 'MozRepl::RemoteObject' => 0.02,
                         'URI' => 0,
                         'HTTP::Response' => 0, # for interface compatibility with WWW::Mechanize
                         'HTML::Selector::XPath' => 0,

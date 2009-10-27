@@ -135,7 +135,7 @@ sub tab { $_[0]->{tab} };
 
 =head2 C<< $mech->repl >>
 
-Gets the L<MozRepl> instance that is used.
+Gets the L<MozRepl::RemoteObject> instance that is used.
 
 This method is special to WWW::Mechanize::FireFox.
 
@@ -148,7 +148,7 @@ sub repl { $_[0]->{repl} };
 Retrieves the URL C<URL> into the tab.
 
 It returns a faked L<HTTP::Response> object for interface compatibility
-with L<WWW::Mechanize>. IT does not yet support the additional parameters
+with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
 Currently, the response will only have the status
@@ -226,6 +226,8 @@ sub _wait_while_busy {
 
 Wraps a synchronization semaphore around the callback
 and waits until the event C<$event> fires on the browser.
+If you want to wait for one of multiple events to occur,
+pass an array reference as the first parameter.
 
 Usually, you want to use it like this:
 
@@ -447,7 +449,7 @@ sub links {
 =head2 C<< $mech->clickables >>
 
 Returns all clickable elements, that is, all elements
-with an <c>onclick</c> attribute.
+with an C<onclick> attribute.
 
 =cut
 
