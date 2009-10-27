@@ -4,10 +4,29 @@ use Time::HiRes;
 
 use MozRepl::RemoteObject;
 use URI;
-#use HTML::Selector::XPath; # this should possibly go into a Mechanize plugin
+use HTTP::Response;
+use HTML::Selector::XPath 'selector_to_xpath';
 
 use vars '$VERSION';
 $VERSION = '0.01';
+
+=head1 NAME
+
+WWW::Mechanize::FireFox - use FireFox as if it were WWW::Mechanize
+
+=head1 SYNOPSIS
+
+  use WWW::Mechanize::FireFox;
+  my $mech = WWW::Mechanize::FireFox->new();
+  $mech->get('http://google.com');
+
+This will let you automate FireFox through the
+Mozrepl plugin, which you need to have installed
+in your FireFox.
+
+=head1 METHODS
+
+=cut
 
 # This should maybe become MozRepl::FireFox::Util?
 # or MozRepl::FireFox::UI ?
@@ -54,18 +73,7 @@ sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     if (! $args{ repl }) {
-        my $repl_args = delete $args{ repl_args } || {
-            client => {
-                extra_client_args => {
-                    binmode => 1,
-                }
-            },
-            log => $loglevel,
-            plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
-        };
-        $args{ repl } = MozRepl->new();
-        $args{ repl }->setup( $repl_args );
-        MozRepl::RemoteObject->install_bridge($args{ repl });
+        $args{ repl } = MozRepl::RemoteObject->install_bridge();
     };
     
     if (my $tabname = delete $args{ tab }) {
@@ -86,6 +94,8 @@ sub new {
     
     die "No tab found"
         unless $args{tab};
+        
+    $args{ response } ||= undef;
         
     bless \%args, $class;
 };
@@ -137,7 +147,12 @@ sub repl { $_[0]->{repl} };
 
 Retrieves the URL C<URL> into the tab.
 
-Should return the status code.
+It returns a faked L<HTTP::Response> object for interface compatibility
+with L<WWW::Mechanize>. IT does not yet support the additional parameters
+that L<WWW::Mechanize> supports for saving a file etc.
+
+Currently, the response will only have the status
+codes of 200 for a successful fetch and 500 for everything else.
 
 =cut
 
@@ -151,16 +166,10 @@ sub get {
         $b->loadURI($url);
     });
     
-    if ($event->{event} eq 'DOMContentLoaded') {
-        # cool!
-        return 200; # ???
-    } else {
-        warn "\nEvent    : ", $event->{event};
-        warn "JS target: ", $event->{js_event}->{target};
-        warn "JS type  : ", $event->{js_event}->{type};
-        # this is an error
-        return 500
-    };   
+    # The event we get back is not necessarily indicative :-(
+    # if ($event->{event} eq 'DOMContentLoaded') {
+    
+    return $self->response
 };
 
 # Should I port this to Perl?
@@ -224,7 +233,7 @@ and waits until the event C<$event> fires on the browser.
 
 Usually, you want to use it like this:
 
-  my $l = $mech->document->__xpath('//a[@onclick]');
+  my $l = $mech->xpath('//a[@onclick]');
   $mech->synchronize('DOMFrameContentLoaded', sub {
       $l->__click()
   });
@@ -235,6 +244,8 @@ fires an event on the browser object.
 
 The C<DOMFrameContentLoaded> event is fired by FireFox when
 the whole DOM and all C<iframe>s have been loaded.
+If your document doesn't have frames, use the C<DOMContentLoaded>
+event instead.
 
 =cut
 
@@ -290,14 +301,14 @@ JS
     $html->($d);
 };
 
-=head2 C<< $mech->set_content $html >>
+=head2 C<< $mech->update_html $html >>
 
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
 
 =cut
 
-sub set_content {
+sub update_html {
     my ($self,$content) = @_;
     use MIME::Base64;
     my $data = encode_base64($content,'');
@@ -305,6 +316,50 @@ sub set_content {
     $self->synchronize('load', sub {
         $self->tab->{linkedBrowser}->loadURI($url);
     });
+};
+
+=head2 C<< $mech->res >> / C<< $mech->response >>
+
+Returns the current response as a L<HTTP::Response> object.
+
+=cut
+
+sub response {
+    my ($self) = @_;
+    my $eff_url = $self->document->{documentURI};
+    if ($eff_url =~ /^about:neterror/) {
+        # this is an error
+        return HTTP::Response->new(500)
+    };   
+
+    # We're cool!
+    return HTTP::Response->new(200,'',[],$self->content)
+}
+*res = \&response;
+
+=head2 C<< $mech->success >>
+
+Returns a boolean telling whether the last request was successful.
+If there hasn't been an operation yet, returns false.
+
+This is a convenience function that wraps C<< $mech->res->is_success >>.
+
+=cut
+
+sub success {
+    $_[0]->response->is_success
+}
+
+=head2 C<< $mech->status >>
+
+Returns the HTTP status code of the response. This is a 3-digit number like 200 for OK, 404 for not found, and so on.
+
+Currently can only return 200 (for OK) and 500 (for error)
+
+=cut
+
+sub status {
+    $_[0]->response->code
 };
 
 =head2 C<< $mech->uri >>
@@ -349,17 +404,18 @@ sub title {
 
 =head2 C<< $mech->links >>
 
-Returns all links, that is, all C<< <A >> elements
+Returns all link document nodes, that is, all C<< <A >> elements
 with an <c>href</c> attribute.
+
+Currently accepts no parameters.
+
+The objects are not yet as nice as L<WWW::Mechanize::Link>
 
 =cut
 
 sub links {
     my ($self) = @_;
-    my @links = $self->document->__xpath('//a[@href]');
-    return map {
-        die
-    } @links;
+    my @links = $self->xpath('//a[@href]');
 };
 
 =head2 C<< $mech->clickables >>
@@ -371,10 +427,52 @@ with an <c>onclick</c> attribute.
 
 sub clickables {
     my ($self) = @_;
-    my @links = $self->document->__xpath('//*[@onclick]');
-    return map {
-        die
-    } @links;
+    $self->xpath('//*[@onclick]');
+};
+
+=head2 C<< $mech->xpath QUERY, %options >>
+
+Runs an XPath query in FireFox against the current document.
+
+The options allow the following keys:
+
+=over 4
+
+=item *
+
+C<< node >> - node relative to which the code is to be executed
+
+=back
+
+Returns the matched nodes.
+
+This is a method that is not implemented in WWW::Mechanize.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub xpath {
+    my ($self,$query,%options) = @_;
+    $options{ node } ||= $self->document;
+    
+    $_[0]->document->__xpath('//a[@href]', $options{ node });
+};
+
+=head2 C<< $mech->selector css_selector, %options >>
+
+Returns all nodes matching the given CSS selector.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub selector {
+    my ($self,$query,%options) = @_;
+    my $q = selector_to_xpath($query);
+    $self->xpath($q);
 };
 
 =head2 C<< $mech->highlight_node NODES >>
@@ -409,6 +507,146 @@ sub highlight_node {
 
 __END__
 
+=head1 INCOMPATIBILITIES WITH WWW::Mechanize
+
+As this module is in a very early stage of development,
+there are many incompatibilities. The main thing is
+that only the most needed WWW::Mechanize methods
+have been implemented by me so far.
+
+=head2 Unsupported Methods
+
+=over 4
+
+=item *
+
+C<< ->put >>
+
+=item *
+
+C<< ->follow_link >>
+
+This is inconvenient and has high priority, for API compatibility.
+Normally, you will want to C<< ->__click() >> on elements you find
+instead.
+
+=item *
+
+C<< ->find_all_links >>
+
+=item *
+
+C<< ->find_all_inputs >>
+
+=item *
+
+C<< ->find_all_submits >>
+
+=item *
+
+C<< ->images >>
+
+=item *
+
+C<< ->find_image >>
+
+=item *
+
+C<< ->find_all_images >>
+
+=item *
+
+C<< ->forms >>
+
+=item *
+
+C<< ->form_number >>
+
+=item *
+
+C<< ->form_name >>
+
+=item *
+
+C<< ->form_id >>
+
+This one certainly would be easier done
+by C<< $mech->document->getElementById() >>
+
+=item *
+
+C<< ->form_with_fields >>
+
+=item *
+
+C<< ->field >>
+
+=item *
+
+C<< ->select >>
+
+=item *
+
+C<< ->set_fields >>
+
+=item *
+
+C<< ->set_visible >>
+
+=item *
+
+C<< ->tick >>
+
+=item *
+
+C<< ->untick >>
+
+=item *
+
+C<< ->click >>
+
+=item *
+
+C<< ->submit >>
+
+=item *
+
+C<< ->add_header >>
+
+Likely will never be implemented
+
+=item *
+
+C<< ->delete_header >>
+
+Likely will never be implemented
+
+=item *
+
+C<< ->clone >>
+
+Likely will never be implemented
+
+=item *
+
+C<< ->credentials( $username, $password ) >>
+
+Unlikely to be implemented
+
+=item *
+
+C<< ->get_basic_credentials( $realm, $uri, $isproxy ) >>
+
+Unlikely to be implemented
+
+=item *
+
+C<< ->clear_credentials() >>
+
+Unlikely to be implemented
+
+=back
+
 =head1 TODO
 
 =over 4
@@ -438,15 +676,27 @@ Preferrably, there should be a common API between the two.
 
 =item *
 
-Use one of the CSS selectors-to-xpath translators
-to also allow CSS selectors instead of just XPath queries
-for locating elements.
+Spin off XPath queries and CSS selectors into
+their own Mechanize plugin.
 
-This should possibly be a generic Mechanize feature
-or Mechanize plugin instead of being specific to ::FireFox,
-but that can come later.
+=back
 
-Look at L<HTML::Selector::XPath>
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+The MozRepl FireFox plugin at L<http://wiki.github.com/bard/mozrepl>
+
+=item *
+
+L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
+
+=item *
+
+L<https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs>
+for more tab info
 
 =back
 

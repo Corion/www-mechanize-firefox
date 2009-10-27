@@ -21,8 +21,7 @@ my $content = <<HTML;
 </html>
 HTML
 
-$mech->set_content($content);
-#$mech->tab->__release_action('');
+$mech->update_html($content);
 
 my $c = $mech->content;
 for ($c,$content) {
