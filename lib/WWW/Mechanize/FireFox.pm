@@ -33,9 +33,9 @@ in your FireFox.
 # This should maybe become MozRepl::FireFox::Util?
 # or MozRepl::FireFox::UI ?
 sub openTabs {
-    my ($self) = @_;
-    
-    my $open_tabs = MozRepl::RemoteObject->expr(<<'JS');
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    my $open_tabs = $repl->declare(<<'JS');
 function() {
     var idx = 0;
     var tabs = [];
@@ -112,8 +112,8 @@ option.
 sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
-    my $rn = $repl->repl;
-    my $tab = MozRepl::RemoteObject->expr(<<JS);
+    my $rn = $repl->name;
+    my $tab = $repl->expr(<<JS);
         window.getBrowser().addTab()
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -178,14 +178,11 @@ sub _addEventListener {
     $events ||= "DOMFrameContentLoaded";
     $events = [$events]
         unless ref $events;
-    my $event_js = join ",", 
-                   map {qq{"$_"}}
-                   map { quotemeta } @$events;
 
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
-    my $make_semaphore = $self->tab->expr(<<JS);
+    my $make_semaphore = $self->repl->declare(<<JS);
 function(browser,events) {
     var lock = {};
     lock.busy = 0;
@@ -289,8 +286,7 @@ sub content {
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     
-    # this one could be conveniently cached
-    my $html = $self->tab->expr(<<JS);
+    my $html = $self->repl->declare(<<JS);
 function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
@@ -402,12 +398,12 @@ sub title {
 
 =head2 C<< $mech->links >>
 
-Returns all link document nodes, that is, all C<< <A >> elements
-with an <c>href</c> attribute.
+Returns all links in the document.
 
 Currently accepts no parameters.
 
-The objects are not yet as nice as L<WWW::Mechanize::Link>
+The objects are not yet as nice as L<WWW::Mechanize::Link>,
+but they try to come close.
 
 =cut
 
@@ -440,7 +436,7 @@ sub links {
                 base  => $base,
                 url   => $url,
                 text  => $_->{innerHTML},
-                attrs => undef, # XXX
+                attrs => {},
             })
         } else {
             ()
