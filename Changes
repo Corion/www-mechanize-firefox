@@ -1,6 +1,8 @@
-0.03 200910xx
+0.03 20091028
     . Added missing MIME::Base64 prerequisite
     . Now has WWW::Mechanize as a prerequisite
+    . Also requires MozRepl::RemoteObject 0.2 due to the changed call
+      interface and introduction of ->declare for caching.
 
 0.02 20091027
     . rearranged documentation
