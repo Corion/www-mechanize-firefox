@@ -1,3 +1,7 @@
+0.03 200910xx
+    . Added missing MIME::Base64 prerequisite
+    . Now has WWW::Mechanize as a prerequisite
+
 0.02 20091027
     . rearranged documentation
     . made tests skip if we can't connect to MozRepl
