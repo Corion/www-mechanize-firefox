@@ -32,8 +32,9 @@ in your FireFox.
 # or MozRepl::FireFox::UI ?
 sub openTabs {
     my ($self) = @_;
-    my $tabs = MozRepl::RemoteObject->expr(<<JS);
-(function() {
+    
+    my $open_tabs = <<'JS';
+function() {
     var idx = 0;
     var tabs = [];
 
@@ -52,8 +53,9 @@ sub openTabs {
             });
         });
     return tabs;
-})()
+}
 JS
+    my $tabs = $open_tabs->();
     return @$tabs
 }
 
