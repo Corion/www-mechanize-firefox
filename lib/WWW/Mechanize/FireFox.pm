@@ -31,12 +31,9 @@ in your FireFox.
 # This should maybe become MozRepl::FireFox::Util?
 # or MozRepl::FireFox::UI ?
 sub openTabs {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    my $rn = $repl->repl;
-    # Shouldn't this become a call to ->expr()?
-    my $tabs = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
-(function(repl) {
+    my ($self) = @_;
+    my $tabs = MozRepl::RemoteObject->expr(<<JS);
+(function() {
     var idx = 0;
     var tabs = [];
 
@@ -44,7 +41,7 @@ sub openTabs {
         window.getBrowser().tabContainer.childNodes, 
         function(tab) {
             var d = tab.linkedBrowser.contentWindow.document;
-            tabs.push(repl.link({
+            tabs.push({
                 location: d.location.href,
                 document: d,
                 title:    d.title,
@@ -52,12 +49,12 @@ sub openTabs {
                 index:    idx++,
                 panel:    tab.linkedPanel,
                 tab:      tab,
-            }));
+            });
         });
     return tabs;
-})($rn)
+})()
 JS
-    MozRepl::RemoteObject->link_ids(@$tabs);
+    return @$tabs
 }
 
 sub execute {
