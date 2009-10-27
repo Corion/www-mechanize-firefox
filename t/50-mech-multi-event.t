@@ -22,11 +22,11 @@ my $browser = $mech->tab->{linkedBrowser};
 my $name = 'myOwn';
 my $listener = $mech->_addEventListener($browser,['click',$name]);
 
-my $rn = $mech->repl->repl;
+my $rn = $mech->repl->name;
 my $browser_id = $browser->__id;
 
 # Now fire the event
-MozRepl::RemoteObject->expr(<<JS, $mech->repl);
+$mech->repl->expr(<<JS);
     var b = $rn.getLink($browser_id);
     var ev = content.document.createEvent('Events');
     ev.initEvent("$name", true, true);
@@ -35,7 +35,7 @@ JS
 is $listener->{busy}, 1, 'Event was fired';
 is $listener->{event}, $name, '... and it was our event';
 
-MozRepl::RemoteObject->expr(<<JS, $mech->repl);
+$mech->repl->expr(<<JS, $mech->repl);
     var b = $rn.getLink($browser_id);
     var ev = content.document.createEvent('MouseEvents');
     ev.initMouseEvent('click', true, true, window,

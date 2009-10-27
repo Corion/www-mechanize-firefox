@@ -22,11 +22,11 @@ my $browser = $mech->tab->{linkedBrowser};
 my $name = 'click';
 my $listener = $mech->_addEventListener($browser,$name);
 
-my $rn = $mech->repl->repl;
+my $rn = $mech->repl->name;
 my $browser_id = $browser->__id;
 
 # Now fire the event
-my $event = MozRepl::RemoteObject->expr(<<JS, $mech->repl);
+my $event = $mech->repl->expr(<<JS);
     var b = $rn.getLink($browser_id);
     var ev = content.document.createEvent('MouseEvents');
     ev.initMouseEvent("$name", true, true, window,
