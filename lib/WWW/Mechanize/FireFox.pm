@@ -87,7 +87,6 @@ sub new {
         $args{ tab } = $args{ tab }->{tab};
     } else {
         $args{ tab } = $class->addTab( repl => $args{ repl });
-        #$args{ tab }->__release_action('');
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     }
