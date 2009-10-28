@@ -21,7 +21,7 @@ isa_ok $mech, 'WWW::Mechanize::FireFox';
 my ($site,$estatus) = ('http://www.doesnotexit.example/',500);
 my $res = $mech->get($site);
 
-is $mech->uri, $site, "Navigating to $site";
+is $mech->uri, $site, "Navigating to (nonexisting) $site";
 
 is $res->code, $estatus, "GETting $site"
     or diag $mech->content;
