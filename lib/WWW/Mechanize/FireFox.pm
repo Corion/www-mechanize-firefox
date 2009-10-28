@@ -461,7 +461,7 @@ Returns a L<HTTP::Response> object.
 
 sub click {
     my ($self,$name,$x,$y) = @_;
-    $name = quotemeta $name;
+    $name = quotemeta($name || '');
     my @buttons = (
                    $self->xpath(sprintf q{//button[@name="%s"]}, $name),
                    $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
@@ -504,6 +504,38 @@ sub set_visible {
         }
         $visible_fields[ $idx ]->{value} = $values[ $idx ];
     }
+}
+
+=head2 C<< $mech->value NAME [, VALUE] >>
+
+Sets the field with the name to the given value.
+Returns the value.
+
+Note that this uses the C<name> attribute of the HTML,
+not the C<id> attribute.
+
+=cut
+
+sub value {
+    my ($self,$name,$value) = @_;
+    my @fields = $self->xpath(sprintf q{//input[@name="%s"]}, $name);
+    croak "No field found for '$name'"
+        if (! @fields);
+    croak "Too many fields found for '$name'"
+        if (@fields > 1);
+    if (@_ == 3) {
+        $fields[0]->{value} = $value;
+        # Trigger the events
+        #for my $ev (qw(onFocus onBlur onChange)) {
+        for my $ev (qw(onFocus onfocus focus onBlur onblur blur onChange onchange change)) {
+            warn "Testing '$ev' on '$name'";
+            if (my $fn = $fields[0]->{$ev}) {
+                warn "Triggering '$ev' on '$name'";
+                $fn->($fields[0]);
+            };
+        };
+    }
+    $fields[0]->{value}
 }
 
 =head2 C<< $mech->clickables >>
