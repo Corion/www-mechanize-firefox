@@ -75,7 +75,7 @@ sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     if (! $args{ repl }) {
-        $args{ repl } = MozRepl::RemoteObject->install_bridge();
+        $args{ repl } = MozRepl::RemoteObject->install_bridge(log => $loglevel);
     };
     
     if (my $tabname = delete $args{ tab }) {
@@ -161,7 +161,7 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    my $event = $self->synchronize(['DOMContentLoaded','error'], sub { # ,'abort'
+    my $event = $self->synchronize(['load','error'], sub { # ,'abort'
         #'readystatechange'
         $b->loadURI($url);
     });
