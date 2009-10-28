@@ -8,6 +8,7 @@ use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
+use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
 $VERSION = '0.03';
@@ -445,6 +446,63 @@ sub links {
         };
     } @links;
 };
+
+=head2 C<< $mech->click >>
+
+Has the effect of clicking a button on the current form. The first argument is the name of the button to be clicked. The second and third arguments (optional) allow you to specify the (x,y) coordinates of the click.
+
+If there is only one button on the form, $mech->click() with no arguments simply clicks that one button.
+
+Returns a L<HTTP::Response> object.
+
+=cut
+
+sub click {
+    my ($self,$name,$x,$y) = @_;
+    $name = quotemeta $name;
+    my @buttons = (
+                   $self->xpath(sprintf q{//button[@name="%s"]}, $name),
+                   $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                   $self->xpath(q{//button}),
+                   $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
+                  );
+    if (! @buttons) {
+        croak "No button matching '$name' found";
+    };
+    my $event = $self->synchronize(['load','error'], sub { # ,'abort'
+        $buttons[0]->__click();
+    });
+    return $self->response
+}
+
+=head2 C<< $mech->set_visible @values >>
+
+This method sets fields of the current form without having to know their
+names. So if you have a login screen that wants a username and password,
+you do not have to fetch the form and inspect the source (or use the
+C<mech-dump> utility, installed with L<WWW::Mechanize>) to see what
+the field names are; you can just say
+
+  $mech->set_visible( $username, $password );
+
+and the first and second fields will be set accordingly. The method is
+called set_visible because it acts only on visible fields;
+hidden form inputs are not considered. 
+
+The specifiers that are possible in WWW::Mechanize are not yet supported.
+
+=cut
+
+sub set_visible {
+    my ($self,@values) = @_;
+    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]});
+    for my $idx (0..$#values) {
+        if ($idx > $#visible_fields) {
+            croak "Not enough fields on page";
+        }
+        $visible_fields[ $idx ]->{value} = $values[ $idx ];
+    }
+}
 
 =head2 C<< $mech->clickables >>
 
