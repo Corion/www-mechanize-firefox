@@ -6,9 +6,11 @@ use MozRepl::RemoteObject;
 use URI;
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
+use MIME::Base64;
+use WWW::Mechanize::Link;
 
-use vars '$VERSION';
-$VERSION = '0.01';
+use vars qw'$VERSION %link_tags';
+$VERSION = '0.03';
 
 =head1 NAME
 
@@ -33,10 +35,8 @@ in your FireFox.
 sub openTabs {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
-    my $rn = $repl->repl;
-    # Shouldn't this become a call to ->expr()?
-    my $tabs = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
-(function(repl) {
+    my $open_tabs = $repl->declare(<<'JS');
+function() {
     var idx = 0;
     var tabs = [];
 
@@ -44,7 +44,7 @@ sub openTabs {
         window.getBrowser().tabContainer.childNodes, 
         function(tab) {
             var d = tab.linkedBrowser.contentWindow.document;
-            tabs.push(repl.link({
+            tabs.push({
                 location: d.location.href,
                 document: d,
                 title:    d.title,
@@ -52,12 +52,13 @@ sub openTabs {
                 index:    idx++,
                 panel:    tab.linkedPanel,
                 tab:      tab,
-            }));
+            });
         });
     return tabs;
-})($rn)
+}
 JS
-    MozRepl::RemoteObject->link_ids(@$tabs);
+    my $tabs = $open_tabs->();
+    return @$tabs
 }
 
 sub execute {
@@ -87,7 +88,6 @@ sub new {
         $args{ tab } = $args{ tab }->{tab};
     } else {
         $args{ tab } = $class->addTab( repl => $args{ repl });
-        #$args{ tab }->__release_action('');
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     }
@@ -112,8 +112,8 @@ option.
 sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
-    my $rn = $repl->repl;
-    my $tab = MozRepl::RemoteObject->expr(<<JS);
+    my $rn = $repl->name;
+    my $tab = $repl->expr(<<'JS');
         window.getBrowser().addTab()
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -135,7 +135,7 @@ sub tab { $_[0]->{tab} };
 
 =head2 C<< $mech->repl >>
 
-Gets the L<MozRepl> instance that is used.
+Gets the L<MozRepl::RemoteObject> instance that is used.
 
 This method is special to WWW::Mechanize::FireFox.
 
@@ -148,7 +148,7 @@ sub repl { $_[0]->{repl} };
 Retrieves the URL C<URL> into the tab.
 
 It returns a faked L<HTTP::Response> object for interface compatibility
-with L<WWW::Mechanize>. IT does not yet support the additional parameters
+with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
 Currently, the response will only have the status
@@ -179,14 +179,11 @@ sub _addEventListener {
     $events ||= "DOMFrameContentLoaded";
     $events = [$events]
         unless ref $events;
-    my $event_js = join ",", 
-                   map {qq{"$_"}}
-                   map { quotemeta } @$events;
 
     my $id = $browser->__id;
     
     my $rn = $self->repl->repl;
-    my $make_semaphore = $self->tab->expr(<<JS);
+    my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
     var lock = {};
     lock.busy = 0;
@@ -230,6 +227,8 @@ sub _wait_while_busy {
 
 Wraps a synchronization semaphore around the callback
 and waits until the event C<$event> fires on the browser.
+If you want to wait for one of multiple events to occur,
+pass an array reference as the first parameter.
 
 Usually, you want to use it like this:
 
@@ -290,8 +289,7 @@ sub content {
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     
-    # this one could be conveniently cached
-    my $html = $self->tab->expr(<<JS);
+    my $html = $self->repl->declare(<<'JS');
 function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
@@ -310,7 +308,6 @@ implemented as a convenience method for L<HTML::Display::MozRepl>.
 
 sub update_html {
     my ($self,$content) = @_;
-    use MIME::Base64;
     my $data = encode_base64($content,'');
     my $url = qq{data:text/html;base64,$data};
     $self->synchronize('load', sub {
@@ -404,24 +401,56 @@ sub title {
 
 =head2 C<< $mech->links >>
 
-Returns all link document nodes, that is, all C<< <A >> elements
-with an <c>href</c> attribute.
+Returns all links in the document.
 
 Currently accepts no parameters.
 
-The objects are not yet as nice as L<WWW::Mechanize::Link>
+The objects are not yet as nice as L<WWW::Mechanize::Link>,
+but they try to come close.
 
 =cut
 
+%link_tags = (
+    a      => 'href',
+    area   => 'href',
+    frame  => 'src',
+    iframe => 'src',
+    link   => 'href',
+    meta   => 'content',
+);
+
 sub links {
     my ($self) = @_;
-    my @links = $self->xpath('//a[@href]');
+    my @links = $self->selector('a,area,frame,iframe,link,meta');
+    (my $base) = $self->selector('base');
+    $base = $base->{href}
+        if $base;
+    $base ||= $self->uri;
+    return map {
+        my $tag = lc $_->{tagName};
+        
+        my $loc = $_->{ $link_tags{ $tag }};
+        if (defined $loc) {
+            my $url = URI->new_abs($loc,$base);
+            WWW::Mechanize::Link->new({
+                node  => $_,
+                tag   =>  $tag,
+                name  => $_->{name},
+                base  => $base,
+                url   => $url,
+                text  => $_->{innerHTML},
+                attrs => {},
+            })
+        } else {
+            ()
+        };
+    } @links;
 };
 
 =head2 C<< $mech->clickables >>
 
 Returns all clickable elements, that is, all elements
-with an <c>onclick</c> attribute.
+with an C<onclick> attribute.
 
 =cut
 
@@ -456,8 +485,7 @@ L<WWW::Mechanize>.
 sub xpath {
     my ($self,$query,%options) = @_;
     $options{ node } ||= $self->document;
-    
-    $_[0]->document->__xpath('//a[@href]', $options{ node });
+    $self->document->__xpath($query, $options{ node });
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
@@ -472,7 +500,7 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     my $q = selector_to_xpath($query);
-    $self->xpath($q);
+    return $self->xpath($q);
 };
 
 =head2 C<< $mech->highlight_node NODES >>

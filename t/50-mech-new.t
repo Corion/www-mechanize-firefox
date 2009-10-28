@@ -1,10 +1,22 @@
 #!perl -w
 use strict;
-use Test::More tests => 2;
+use Test::More;
 
-use_ok 'WWW::Mechanize::FireFox';
+use WWW::Mechanize::FireFox;
 
-my $mech = WWW::Mechanize::FireFox->new();
+my $mech = eval { WWW::Mechanize::FireFox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 1;
+};
+
 my $repl = $mech->repl;
 
 my @tabs = WWW::Mechanize::FireFox->openTabs($repl);
