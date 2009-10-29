@@ -1,3 +1,8 @@
+0.04 20091029
+    . Added ->set_visible
+    . Added ->value (partly buggy with respect to event triggering)
+    . added log passthrough parameter
+
 0.03 20091028
     . Added missing MIME::Base64 prerequisite
     . Now has WWW::Mechanize as a prerequisite
