@@ -677,6 +677,33 @@ sub highlight_node {
 
 __END__
 
+=head1 COOKIE HANDLING
+
+WWW::Mechanize::FireFox uses the same cookies that are
+stored in your browser. You can manipulate the cookies through
+the C<nsICookieManager> and C<nsICookieManager2> interfaces:
+
+    # Get cookie manager
+    my $cookie_manager = $mech->repl->expr(<<'JS');
+        Components.classes["@mozilla.org/cookiemanager;1"]
+                 .getService(Components.interfaces.nsICookieManager2)
+    JS
+
+    my $nsICookie = $mech->repl->expr(<<'JS');
+        Components.interfaces.nsICookie
+    JS
+
+    my $nsICookieManager2 = $mech->repl->expr(<<'JS');
+        Components.interfaces.nsICookieManager2
+    JS
+    $cookie_manager = $cookie_manager->QueryInterface($nsICookieManager);
+
+    # Remove 'session_id' relating to our host
+    $cookie_manager->remove($base->host, 'session_id', '/', undef);
+
+I welcome the lazyweb writing the appropriate L<HTTP::Cookies> adapter
+so you can use and manipulate your live FireFox cookies.
+
 =head1 INCOMPATIBILITIES WITH WWW::Mechanize
 
 As this module is in a very early stage of development,
