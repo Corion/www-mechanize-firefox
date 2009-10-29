@@ -75,7 +75,7 @@ sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     if (! $args{ repl }) {
-        $args{ repl } = MozRepl::RemoteObject->install_bridge( log => $loglevel );
+        $args{ repl } = MozRepl::RemoteObject->install_bridge(log => $loglevel);
     };
     
     if (my $tabname = delete $args{ tab }) {
@@ -161,9 +161,7 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    # this won't return if we get a page error...
-    #my $event = $self->synchronize(['DOMFrameContentLoaded','error'], sub { # ,'abort'
-    my $event = $self->synchronize(['load','error'], sub { # ,'abort'
+    my $event = $self->synchronize(['error','load','DOMFrameContentLoaded','abort'], sub { # ,'abort'
         #'readystatechange'
         $b->loadURI($url);
     });
@@ -198,8 +196,8 @@ function(browser,events) {
                 lock.busy++;
                 lock.event = evname;
                 lock.js_event = {};
-                // Copy the original JS event
-                lock.js_event.target = e.target;
+                //alert(evname);
+                lock.js_event.target = e.originalTarget;
                 lock.js_event.type = e.type;
                 for( var j = 0; j < listeners.length; j++) {
                     b.removeEventListener(listeners[j][0],listeners[j][1],true);
@@ -218,7 +216,7 @@ JS
 sub _wait_while_busy {
     my ($self,$element) = @_;
     # Now do the busy-wait
-    my $s;
+    #my $s;
     while ((my $s = $element->{busy} || 0) < 1) {
         sleep 0.1;
     };
@@ -256,7 +254,8 @@ sub synchronize {
     $events = [ $events ]
         unless ref $events;
     
-    my $b = $self->tab->{linkedBrowser};
+    #my $b = $self->tab->{linkedBrowser};
+    my $b = $self->tab;
     my $lock = $self->_addEventListener($b,$events);
     $callback->();
     $self->_wait_while_busy($lock);

@@ -5,7 +5,7 @@ use WWW::Mechanize::FireFox;
 
 my $mech = eval { WWW::Mechanize::FireFox->new( 
     autodie => 0,
-    #log => [qw[debug]]
+    #log => [qw[debug]],
 )};
 
 if (! $mech) {
