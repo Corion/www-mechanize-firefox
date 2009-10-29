@@ -8,6 +8,7 @@ use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
+use HTTP::Cookies::MozRepl;
 use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
@@ -644,6 +645,22 @@ sub selector {
     my $q = selector_to_xpath($query);
     return $self->xpath($q);
 };
+
+=head2 C<< $mech->cookies >>
+
+Returns a L<HTTP::Cookies> object that was initialized
+from the live FireFox instance.
+
+B<Note:> C<< ->set_cookie >> is not yet implemented,
+as is saving the cookie jar.
+
+=cut
+
+sub cookies {
+    return HTTP::Cookies::MozRepl->new(
+        repl => $_[0]->repl
+    )
+}
 
 =head2 C<< $mech->highlight_node NODES >>
 
