@@ -1,3 +1,7 @@
+0.05 20091030
+    . Added HTTP::Cookies::MozRepl to allow for live cookie querying
+    . Added ->cookies method for cookie access
+
 0.04 20091029
     . Added ->set_visible
     . Added ->value (partly buggy with respect to event triggering)

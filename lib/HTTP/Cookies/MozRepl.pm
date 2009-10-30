@@ -59,14 +59,14 @@ JS
     $cookie_manager = $cookie_manager->QueryInterface($nsICookieManager);
     
     my $e = $cookie_manager->{enumerator};
-    while ($e->hasMoreElements) {
-        my $cookie = $e->getNext()->QueryInterface($nsICookie);
-        
-        my @values = map { $cookie->{$_} } (qw(name value path host                      isSecure expires));
-        $self->set_cookie( undef,       @values[0,   1,    2,   3, ], undef, undef, $values[ 4 ],    time-$values[5], 0 );
-        
-        $e->getNext;
-    };
+    $e->bridge->queued(sub{
+        while ($e->hasMoreElements) {
+            my $cookie = $e->getNext()->QueryInterface($nsICookie);
+            
+            my @values = map { $cookie->{$_} } (qw(name value path host                      isSecure expires));
+            $self->set_cookie( undef,       @values[0,   1,    2,   3, ], undef, undef, $values[ 4 ],    time-$values[5], 0 );
+        };
+    });
 }
 
 sub save {
