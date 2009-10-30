@@ -805,10 +805,6 @@ C<< ->set_fields >>
 
 =item *
 
-C<< ->set_visible >>
-
-=item *
-
 C<< ->tick >>
 
 =item *
