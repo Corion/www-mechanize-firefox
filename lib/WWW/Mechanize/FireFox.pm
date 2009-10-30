@@ -115,7 +115,7 @@ sub new {
         $body->{innerHTML} = __PACKAGE__;
     }
 
-    $args{ events } ||= [qw[load error abort]];
+    $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
 
     die "No tab found"
         unless $args{tab};
@@ -197,14 +197,12 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    my $event = $self->synchronize($self->events, sub { # ,'abort'
-        #'readystatechange'
+    my $event = $self->synchronize($self->events, sub {
         $b->loadURI($url);
     });
-    #warn $event->{js_event}->{type};
     
     # The event we get back is not necessarily indicative :-(
-    # if ($event->{event} eq 'DOMContentLoaded') {
+    # Let's just look at the kind of response we get back
     
     return $self->response
 };
@@ -217,9 +215,6 @@ sub _addEventListener {
     $events = [$events]
         unless ref $events;
 
-    my $id = $browser->__id;
-    
-    my $rn = $self->repl->repl;
 # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
@@ -252,12 +247,16 @@ JS
 };
 
 sub _wait_while_busy {
-    my ($self,$element) = @_;
+    my ($self,@elements) = @_;
     # Now do the busy-wait
-    while ((my $s = $element->{busy} || 0) < 1) {
+    while (1) {
+        for my $element (@elements) {
+            if ((my $s = $element->{busy} || 0) >= 1) {
+                return $element;
+            };
+        };
         sleep 0.1;
     };
-    return $element;
 }
 
 =head2 C<< $mech->synchronize( $event, $callback ) >>
@@ -298,11 +297,12 @@ sub synchronize {
     $events = [ $events ]
         unless ref $events;
     
-    #my $b = $self->tab->{linkedBrowser};
-    my $b = $self->tab;
-    my $lock = $self->_addEventListener($b,$events);
+    # 'load' on linkedBrowser is good for successfull load
+    # 'error' on tab is good for failed load :-(
+    my $b = $self->tab->{linkedBrowser};
+    my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
-    $self->_wait_while_busy($lock);
+    $self->_wait_while_busy($load_lock);
 };
 
 =head2 C<< $mech->document >>
