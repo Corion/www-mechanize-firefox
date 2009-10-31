@@ -663,6 +663,47 @@ sub cookies {
     )
 }
 
+=head2 C<< $mech->content_as_png [TAB]>>
+
+Returns the current page rendered as PNG.
+
+This is specific to WWW::Mechanize::FireFox.
+
+=cut
+
+sub content_as_png {
+    my ($self, $tab) = @_;
+    $tab ||= $self->tab;
+    
+    my $screenshot = $self->repl->declare(<<'JS');
+    function (tab) {
+        var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
+            .getService(Ci.nsIWindowMediator)
+            .getMostRecentWindow('navigator:browser');
+        var canvas = browserWindow.document.createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
+        var browser = tab.linkedBrowser;
+        var win = browser.contentWindow;
+        var width = win.document.width;
+        var height = win.document.height;
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(1.0, 1.0);
+        ctx.drawWindow(win, 0, 0, width, height, 'rgb(255,255,255)');
+        ctx.restore();
+
+        return atob(
+            canvas
+               .toDataURL('image/png', '')
+               .split(',')[1]);
+    }
+JS
+
+    return $screenshot->($tab)
+};
+
 =head2 C<< $mech->highlight_node NODES >>
 
 Convenience method that marks all nodes in the arguments
