@@ -1,5 +1,6 @@
 .gitignore
 Changes
+lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/FireFox.pm
 Makefile.PL

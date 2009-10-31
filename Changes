@@ -1,3 +1,8 @@
+0.06 20091031
+    . added 'autoclose' parameter to specify whether the
+      tab that mechanize creates gets automatically closed upon
+      object release
+
 0.05 20091030
     . Added HTTP::Cookies::MozRepl to allow for live cookie querying
     . Added ->cookies method for cookie access
