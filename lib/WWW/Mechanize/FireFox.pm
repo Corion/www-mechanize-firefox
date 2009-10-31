@@ -12,7 +12,7 @@ use HTTP::Cookies::MozRepl;
 use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 =head1 NAME
 
@@ -81,8 +81,8 @@ extension installed.
 
 The following options are recognized:
 
-C<tab> - title of the tab to reuse. If no matching tab is found, the
-constructor dies.
+C<tab> - regex for the title of the tab to reuse. If no matching tab is
+found, the constructor dies.
 
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
 
@@ -110,7 +110,8 @@ sub new {
         }
         $args{ tab } = $args{ tab }->{tab};
     } else {
-        $args{ tab } = $class->addTab( repl => $args{ repl });
+        my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
+        $args{ tab } = $class->addTab( repl => $args{ repl }, @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     }
