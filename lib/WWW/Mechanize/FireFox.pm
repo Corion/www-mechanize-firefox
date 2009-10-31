@@ -665,9 +665,13 @@ sub cookies {
 
 =head2 C<< $mech->content_as_png [TAB]>>
 
-Returns the current page rendered as PNG.
+Returns the current page rendered as PNG image.
 
 This is specific to WWW::Mechanize::FireFox.
+
+Currently, the data transfer between FireFox and Perl
+is done Base64-encoded. It would be beneficial to find what's
+necessary to make JSON handle binary data more gracefully.
 
 =cut
 
@@ -675,6 +679,8 @@ sub content_as_png {
     my ($self, $tab) = @_;
     $tab ||= $self->tab;
     
+    # Mostly taken from
+    # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     my $screenshot = $self->repl->declare(<<'JS');
     function (tab) {
         var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
@@ -694,14 +700,15 @@ sub content_as_png {
         ctx.drawWindow(win, 0, 0, width, height, 'rgb(255,255,255)');
         ctx.restore();
 
-        return atob(
-            canvas
+        //return atob(
+        return canvas
                .toDataURL('image/png', '')
-               .split(',')[1]);
+               .split(',')[1]
+        // );
     }
 JS
 
-    return $screenshot->($tab)
+    return decode_base64($screenshot->($tab))
 };
 
 =head2 C<< $mech->highlight_node NODES >>

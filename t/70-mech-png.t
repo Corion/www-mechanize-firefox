@@ -24,7 +24,4 @@ ok $mech->success, 'We got the page';
 
 my $pngData = $mech->content_as_png();
 
-open my $fh, '>', 'test.png'
-    or die "Couldn't create 'test.png': $!";
-binmode $fh;
-print {$fh} $pngData;
+like $pngData, '/^.PNG/', "The result looks like a PNG format file";
