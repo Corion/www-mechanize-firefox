@@ -18,13 +18,18 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
-$mech->get('http://corion.net');
+#$mech->get('http://corion.net');
+$mech->content(<<'HTML');
+<html>
+<head><title>Hello PNG!</title></head>
+<body>
+Hello <b>PNG</b>!
+</body>
+</html>
+HTML
 
 ok $mech->success, 'We got the page';
 
 my $pngData = $mech->content_as_png();
 
-open my $fh, '>', 'test.png'
-    or die "Couldn't create 'test.png': $!";
-binmode $fh;
-print {$fh} $pngData;
+like $pngData, '/^.PNG/', "The result looks like a PNG format file";

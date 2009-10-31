@@ -2,6 +2,8 @@
     . added 'autoclose' parameter to specify whether the
       tab that mechanize creates gets automatically closed upon
       object release
+    . added ->content_as_png() to save the current page
+      as PNG
 
 0.05 20091030
     . Added HTTP::Cookies::MozRepl to allow for live cookie querying

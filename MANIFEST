@@ -16,6 +16,7 @@ t/51-mech-links.t
 t/51-mech-set-content.t
 t/52-mech-xpath.t
 t/60-mech-cookies.t
+t/70-mech-png.t
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t
