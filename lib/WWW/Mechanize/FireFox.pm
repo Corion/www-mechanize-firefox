@@ -690,7 +690,7 @@ sub cookies {
     )
 }
 
-=head2 C<< $mech->content_as_png [TAB]>>
+=head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
 
 Returns the given tab or the current page rendered as PNG image.
 
@@ -700,65 +700,32 @@ Currently, the data transfer between FireFox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
 
+If the coordinates are given, that rectangle will be cut out.
+The coordinates should be a hash with the four usual entries,
+C<left>,C<top>,C<width>,C<height>.
+
+=head3 Save top left corner the current page as PNG
+
+  my $rect = {
+    left  =>    0,
+    top   =>    0,
+    width  => 200,
+    height => 200,
+  };
+  my $png = $mech->content_as_png(undef, $rect);
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
 =cut
 
 sub content_as_png {
-    my ($self, $tab) = @_;
+    my ($self, $tab, $rect) = @_;
     $tab ||= $self->tab;
-    
-    return $self->as_png({});
-    
-    my $screenshot = $self->repl->declare(<<'JS');
-    function (tab) {
-        var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
-            .getService(Ci.nsIWindowMediator)
-            .getMostRecentWindow('navigator:browser');
-        var canvas = browserWindow
-               .document
-               .createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
-        var browser = tab.linkedBrowser;
-        var win = browser.contentWindow;
-        var width = win.document.width;
-        var height = win.document.height;
-        canvas.width = width;
-        canvas.height = height;
-        var ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
-        ctx.scale(1.0, 1.0);
-        ctx.drawWindow(win, 0, 0, width, height, 'rgb(255,255,255)');
-        ctx.restore();
-
-        //return atob(
-        return canvas
-               .toDataURL('image/png', '')
-               .split(',')[1]
-        // );
-    }
-JS
-
-    return decode_base64($screenshot->($tab))
-};
-
-=head2 C<< $mech->element_as_png $element >>
-
-Returns PNG image data for a single element
-
-=cut
-
-sub element_as_png {
-    my ($self, $element) = @_;
-    my $tab = $self->tab;
-    
-    my $pos = $self->element_coordinates($element);
-    return $self->as_png($pos);
-};
-
-sub as_png {
-    my ($self,$rect) = @_;
     $rect ||= {};
-    #print sprintf "%s / %s (%d / %d)\n", $rect->{left}, $rect->{top}, $rect->{width}, $rect->{height};
-
+    
     # Mostly taken from
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     my $screenshot = $self->repl->declare(<<'JS');
@@ -773,13 +740,15 @@ sub as_png {
         var win = browser.contentWindow;
         var left = rect.left || 0;
         var top = rect.top || 0;
-        canvas.width = rect.width || win.document.width;
-        canvas.height = rect.height || win.document.height;
+        var width = rect.width || win.document.width;
+        var height = rect.height || win.document.height;
+        canvas.width = width;
+        canvas.height = height;
         var ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, width, height);
         ctx.save();
         ctx.scale(1.0, 1.0);
-        ctx.drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, 'rgb(255,255,255)');
+        ctx.drawWindow(win, left, top, width, height, 'rgb(255,255,255)');
         ctx.restore();
 
         //return atob(
@@ -789,13 +758,27 @@ sub as_png {
         // );
     }
 JS
+    return decode_base64($screenshot->($tab, $rect))
+};
 
-    return decode_base64($screenshot->($self->tab, $rect))
+=head2 C<< $mech->element_as_png $element >>
+
+Returns PNG image data for a single element
+
+=cut
+
+sub element_as_png {
+    my ($self, $element) = @_;
+    my $tab = $self->tab;
+
+    my $pos = $self->element_coordinates($element);
+    return $self->content_as_png($tab, $pos);
 };
 
 =head2 C<< $mech->element_coordinates $element >>
 
-Returns the page-coordinates of the C<$element>.
+Returns the page-coordinates of the C<$element>
+in pixels as a hash with four entries, C<left>, C<top>, C<width> and C<height>.
 
 This function might get moved into another module more geared
 towards rendering HTML.
