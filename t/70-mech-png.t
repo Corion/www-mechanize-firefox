@@ -34,10 +34,14 @@ my $pngData = $mech->content_as_png();
 
 like $pngData, '/^.PNG/', "The result looks like a PNG format file";
 
+open my $fh, '>', 'page.png' or die;
+binmode $fh;
+print {$fh} $pngData;
+
 my $pngName = $mech->selector("#my_name", single => 1);
 $pngData = $mech->element_as_png($pngName);
 like $pngData, '/^.PNG/', "The result looks like a PNG format file";
 
-open my $fh, '>', 'tmp.png' or die;
+open my $fh, '>', 'element.png' or die;
 binmode $fh;
 print {$fh} $pngData;
