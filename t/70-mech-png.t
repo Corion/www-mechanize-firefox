@@ -23,7 +23,7 @@ $mech->content(<<'HTML');
 <html>
 <head><title>Hello PNG!</title></head>
 <body>
-Hello <b>PNG</b>!
+Hello <b id="name">PNG</b>!
 </body>
 </html>
 HTML
@@ -33,3 +33,5 @@ ok $mech->success, 'We got the page';
 my $pngData = $mech->content_as_png();
 
 like $pngData, '/^.PNG/', "The result looks like a PNG format file";
+
+my $pngName = $mech->selector("#name");

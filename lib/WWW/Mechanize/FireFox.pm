@@ -12,7 +12,7 @@ use HTTP::Cookies::MozRepl;
 use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 =head1 NAME
 
@@ -629,7 +629,19 @@ L<WWW::Mechanize>.
 sub xpath {
     my ($self,$query,%options) = @_;
     $options{ node } ||= $self->document;
-    $self->document->__xpath($query, $options{ node });
+    my $res = $self->document->__xpath($query, $options{ node });
+    if ($options{single}) {
+        if (@$res != 1) {
+            if (@$res == 0) {
+                croak "No element found for '$query'";
+            } else {
+                $self->highlight_nodes(@$res);
+                croak scalar @$res . " elements found for '$query'";
+            }
+        };
+        $res = $res->[0];
+    };
+    $res
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
@@ -644,7 +656,20 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     my $q = selector_to_xpath($query);
-    return $self->xpath($q);
+    
+    my $res = $self->xpath($q);
+    if ($options{single}) {
+        if (@$res != 1) {
+            if (@$res == 0) {
+                croak "No element found for '$query'";
+            } else {
+                $self->highlight_nodes(@$res);
+                croak scalar @$res . " elements found for '$query'";
+            }
+        };
+        $res = $res->[0];
+    };
+    $res
 };
 
 =head2 C<< $mech->cookies >>
@@ -712,6 +737,53 @@ JS
 
     return decode_base64($screenshot->($tab))
 };
+
+=head2 C<< $mech->element_as_png $element >>
+
+Returns PNG image data for a single element
+
+=cut
+
+sub element_as_png {
+    my ($self, $element) = @_;
+    my $tab = $self->tab;
+    
+    # Mostly taken from
+    # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
+    my $screenshot = $self->repl->declare(<<'JS');
+    function (tab,elt) {
+        var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
+            .getService(Ci.nsIWindowMediator)
+            .getMostRecentWindow('navigator:browser');
+        var canvas = browserWindow
+               .document
+               .createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
+        var browser = tab.linkedBrowser;
+        var win = browser.contentWindow;
+        var width = elt.width;
+        var height = elt.height;
+        var left = elt.left;
+        var top = elt.top;
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(1.0, 1.0);
+        ctx.drawWindow(win, left, top, width, height, 'rgb(255,255,255)');
+        ctx.restore();
+
+        //return atob(
+        return canvas
+               .toDataURL('image/png', '')
+               .split(',')[1]
+        // );
+    }
+JS
+
+    return decode_base64($screenshot->($tab))
+};
+
 
 =head2 C<< $mech->highlight_node NODES >>
 
