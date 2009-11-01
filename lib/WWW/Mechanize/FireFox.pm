@@ -911,6 +911,11 @@ Preferrably, there should be a common API between the two.
 Spin off XPath queries and CSS selectors into
 their own Mechanize plugin.
 
+=item *
+
+Implement C<element_to_png> to render single elements
+as PNG graphics.
+
 =back
 
 =head1 SEE ALSO
