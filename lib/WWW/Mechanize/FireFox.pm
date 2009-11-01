@@ -692,7 +692,11 @@ sub cookies {
 
 =head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
 
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 Returns the given tab or the current page rendered as PNG image.
+=======
+Returns the current page rendered as PNG image.
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 
 This is specific to WWW::Mechanize::FireFox.
 
@@ -700,6 +704,7 @@ Currently, the data transfer between FireFox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
 
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 If the coordinates are given, that rectangle will be cut out.
 The coordinates should be a hash with the four usual entries,
 C<left>,C<top>,C<width>,C<height>.
@@ -719,6 +724,8 @@ C<left>,C<top>,C<width>,C<height>.
   print {$fh} $png;
   close $fh;
 
+=======
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 =cut
 
 sub content_as_png {
@@ -763,6 +770,7 @@ JS
 
 =head2 C<< $mech->element_as_png $element >>
 
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 Returns PNG image data for a single element
 
 =cut
@@ -808,6 +816,9 @@ sub element_coordinates {
     }
 JS
     $findPos->($element);
+=======
+    return decode_base64($screenshot->($tab))
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 };
 
 =head2 C<< $mech->highlight_node NODES >>
