@@ -629,19 +629,20 @@ L<WWW::Mechanize>.
 sub xpath {
     my ($self,$query,%options) = @_;
     $options{ node } ||= $self->document;
-    my $res = $self->document->__xpath($query, $options{ node });
+    my @res = $self->document->__xpath($query, $options{ node });
     if ($options{single}) {
-        if (@$res != 1) {
-            if (@$res == 0) {
+        if (@res != 1) {
+            if (@res == 0) {
                 croak "No element found for '$query'";
             } else {
-                $self->highlight_nodes(@$res);
-                croak scalar @$res . " elements found for '$query'";
+                $self->highlight_nodes(@res);
+                croak scalar @res . " elements found for '$query'";
             }
         };
-        $res = $res->[0];
+        return $res[0];
+    } else {
+        return @res
     };
-    $res
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
@@ -657,19 +658,20 @@ sub selector {
     my ($self,$query,%options) = @_;
     my $q = selector_to_xpath($query);
     
-    my $res = $self->xpath($q);
+    my @res = $self->xpath($q);
     if ($options{single}) {
-        if (@$res != 1) {
-            if (@$res == 0) {
+        if (@res != 1) {
+            if (@res == 0) {
                 croak "No element found for '$query'";
             } else {
-                $self->highlight_nodes(@$res);
-                croak scalar @$res . " elements found for '$query'";
+                $self->highlight_nodes(@res);
+                croak scalar(@res) . " elements found for '$query'";
             }
         };
-        $res = $res->[0];
-    };
-    $res
+        return $res[0];
+    } else {
+        return @res
+    }
 };
 
 =head2 C<< $mech->cookies >>
@@ -704,8 +706,8 @@ sub content_as_png {
     my ($self, $tab) = @_;
     $tab ||= $self->tab;
     
-    # Mostly taken from
-    # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
+    return $self->as_png({});
+    
     my $screenshot = $self->repl->declare(<<'JS');
     function (tab) {
         var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
@@ -748,10 +750,19 @@ sub element_as_png {
     my ($self, $element) = @_;
     my $tab = $self->tab;
     
+    my $pos = $self->element_coordinates($element);
+    return $self->as_png($pos);
+};
+
+sub as_png {
+    my ($self,$rect) = @_;
+    $rect ||= {};
+    #print sprintf "%s / %s (%d / %d)\n", $rect->{left}, $rect->{top}, $rect->{width}, $rect->{height};
+
     # Mostly taken from
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     my $screenshot = $self->repl->declare(<<'JS');
-    function (tab,elt) {
+    function (tab,rect) {
         var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
             .getService(Ci.nsIWindowMediator)
             .getMostRecentWindow('navigator:browser');
@@ -760,17 +771,15 @@ sub element_as_png {
                .createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
         var browser = tab.linkedBrowser;
         var win = browser.contentWindow;
-        var width = elt.width;
-        var height = elt.height;
-        var left = elt.left;
-        var top = elt.top;
-        canvas.width = width;
-        canvas.height = height;
+        var left = rect.left || 0;
+        var top = rect.top || 0;
+        canvas.width = rect.width || win.document.width;
+        canvas.height = rect.height || win.document.height;
         var ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.scale(1.0, 1.0);
-        ctx.drawWindow(win, left, top, width, height, 'rgb(255,255,255)');
+        ctx.drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, 'rgb(255,255,255)');
         ctx.restore();
 
         //return atob(
@@ -781,9 +790,42 @@ sub element_as_png {
     }
 JS
 
-    return decode_base64($screenshot->($tab))
+    return decode_base64($screenshot->($self->tab, $rect))
 };
 
+=head2 C<< $mech->element_coordinates $element >>
+
+Returns the page-coordinates of the C<$element>.
+
+This function might get moved into another module more geared
+towards rendering HTML.
+
+=cut
+
+sub element_coordinates {
+    my ($self, $element) = @_;
+    
+    # Mostly taken from
+    # http://www.quirksmode.org/js/findpos.html
+    my $findPos = $self->repl->declare(<<'JS');
+    function (obj) {
+        var res = { 
+            left: 0,
+            top: 0,
+            width: obj.scrollWidth,
+            height: obj.scrollHeight
+        };
+        if (obj.offsetParent) {
+            do {
+                res.left += obj.offsetLeft;
+                res.top += obj.offsetTop;
+            } while (obj = obj.offsetParent);
+        }
+        return res;
+    }
+JS
+    $findPos->($element);
+};
 
 =head2 C<< $mech->highlight_node NODES >>
 
