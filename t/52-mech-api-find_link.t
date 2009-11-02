@@ -94,10 +94,13 @@ my @wanted_links= (
 );
 my @links = $mech->find_all_links( text_regex => qr/CPAN/ );
 @{$_} = @{$_}[0..3] for @links;
-is_deeply( \@links, \@wanted_links, 'Correct links came back' );
+is_deeply( \@links, \@wanted_links, 'Correct links came back' )
+    or diag \@links;
 
 my $linkref = $mech->find_all_links( text_regex => qr/CPAN/ );
-is_deeply( $linkref, \@wanted_links, 'Correct links came back' );
+@{$_} = @{$_}[0..3] for @$linkref;
+is_deeply( $linkref, \@wanted_links, 'Correct links came back (scalar)' )
+    or diag $linkref;
 
 # Check combinations of links
 $x = $mech->find_link( text => 'News' );
@@ -125,7 +128,7 @@ AREA_CHECKS: {
         [ 'http://www.cnn.com/', 'News', 'Fred', 'a' ],
         # Can someone confirm that I just fixed a bug here, and
         # area tags /should/ have names? -mls
-        [ 'http://www.cnn.com/area', undef, 'Marty', 'area' ],
+        [ 'http://www.cnn.com/area', '', undef, 'area' ], # on FF, area tags don't have names
     );
     my @links = $mech->find_all_links( url_regex => qr/cnn\.com/ );
     @{$_} = @{$_}[0..3] for @links;
@@ -142,11 +145,11 @@ is_deeply( $x, [ 'http://www.cnn.com/', 'News', 'Fred', 'a' ], 'Got 2nd link tha
 
 $x = $mech->find_link( tag => 'a', n => 3 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-is_deeply( $x, [ 'http://b.cpan.org/', 'CPAN B', undef, 'a' ], 'Got 3rd <A> tag' );
+is_deeply( $x, [ 'http://b.cpan.org/', 'CPAN B', '', 'a' ], 'Got 3rd <A> tag' );
 
 $x = $mech->find_link( tag_regex => qr/^(a|frame)$/, n => 7 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', undef, 'a' ], 'Got 7th <A> or <FRAME> tag' );
+is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', '', 'a' ], 'Got 7th <A> or <FRAME> tag' );
 
 $x = $mech->find_link( text => 'Rebuild Index' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
