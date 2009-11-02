@@ -607,18 +607,26 @@ sub find_link_dom {
     };
     my $n = (delete $opts{ n } || 1)-1; # 1-based indexing
     my @spec;
-    if ($opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', $opts{ text };
+    if (my $p = delete $opts{ text }) {
+        push @spec, sprintf 'text() = "%s"', $p;
     }
-    if ($opts{ id }) {
-        push @spec, sprintf '@id = "%s"', $opts{ id };
+    if (my $p = delete $opts{ id }) {
+        push @spec, sprintf '@id = "%s"', $p;
     }
-    if ($opts{ name }) {
-        push @spec, sprintf '@name = "%s"', $opts{ name };
+    if (my $p = delete $opts{ name }) {
+        push @spec, sprintf '@name = "%s"', $p;
     }
-    if ($opts{ class }) {
-        push @spec, sprintf '@class = "%s"', $opts{ class };
+    if (my $p = delete $opts{ class }) {
+        push @spec, sprintf '@class = "%s"', $p;
     }
+    if (my $p = delete $opts{ url }) {
+        push @spec, sprintf '@href = "%s"', $p;
+    }
+    #if (my $p = delete $opts{ url_regex }) {
+    #    $p =~ s/^\(.*://; # strip regex modifiers
+    #    $p =~ s/\)$//;
+    #    push @spec, sprintf 'matches(@href,"%s")', $p;
+    #}
     
     for (keys %opts) {
         carp "Unknown option '$_' (ignored)";
@@ -648,6 +656,9 @@ sub find_link_dom {
         };
     };
     
+    if ($n eq 'all') {
+        return @res
+    };
     $res[$n]
 }
 
@@ -668,6 +679,24 @@ sub find_link {
     return
         $self->make_link($self->find_link_dom(%opts), $base);
 };
+
+=head2 C<< $mech->find_all_links OPTIONS >>
+
+Finds all links in the document.
+
+Returns them as list or an array reference, depending
+on context.
+
+=cut
+
+sub find_all_links {
+    my ($self,%opts) = @_;
+    $opts{ n } = 'all';
+    my @matches = $self->find_link( %opts );
+    return @matches if wantarray;
+    return \@matches;
+};
+
 
 =head2 C<< $mech->click >>
 

@@ -14,18 +14,12 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 61;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 $mech->allow('metaredirects', 0); # protect ourselves
-
-#(my $html = $0) =~ s/\.t$/.html/i;
-#$html = do {
-#    local $/; open my $fh, '<', $html or die "Couldn't read '$html'"; <$fh>
-#};
-#$mech->set_html($html);
 
 my $uri = URI::file->new_abs( 't/52-mech-api-find_link.html' )->as_string;
 
