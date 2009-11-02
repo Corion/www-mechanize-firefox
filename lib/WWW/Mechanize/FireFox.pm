@@ -550,7 +550,6 @@ Currently accepts no parameters.
 sub make_link {
     my ($self,$node,$base) = @_;
     my $tag = lc $node->{tagName};
-    return unless $tag;
     
     if (! exists $link_spec{ $tag }) {
         warn "Unknown tag '$tag'";
@@ -569,7 +568,6 @@ sub make_link {
     };
     
     if (defined $url) {
-        #$url = URI->new_abs($url,$base);
         $url = URI->new($url);
         WWW::Mechanize::Link->new({
             tag   => $tag,
@@ -586,7 +584,7 @@ sub make_link {
 
 sub links {
     my ($self) = @_;
-    my @links = $self->selector('a,area,frame,iframe,link,meta');
+    my @links = $self->selector( join ",", sort keys %link_spec);
     my $base = $self->base;
     return map {
         $self->make_link($_,$base)
@@ -645,27 +643,45 @@ sub find_link_dom {
     if (my $p = delete $opts{ url }) {
         push @spec, sprintf '@href = "%s"', $p;
     }
+    my @tags = (sort keys %link_spec);
+    if (my $p = delete $opts{ tag }) {
+        @tags = $p;
+    };
+    if (my $p = delete $opts{ tag_regex }) {
+        @tags = grep /$p/, @tags;
+    };
     
     my $q = join '|', 
-    map {
-        my @full = grep {defined} (@spec, $link_spec{$_}->{xpath});
-        if (@full) {
-            sprintf "//%s[%s]", $_, join " and ", @full;
-        } else {
-            sprintf "//%s", $_
-        };
-    }  (qw[a area link meta iframe frame]);
+            map {
+                my @full = grep {defined} (@spec, $link_spec{$_}->{xpath});
+                if (@full) {
+                    sprintf "//%s[%s]", $_, join " and ", @full;
+                } else {
+                    sprintf "//%s", $_
+                };
+            }  (@tags);
     
-    my @res = $document->__xpath($q);
+    warn $q;
+    my @res, $document->__xpath($q);
     
     if (keys %opts) {
-        # post-filter the links through WWW::Mechanize
+        # post-filter the remaining links through WWW::Mechanize
         # for all the options we don't support with XPath
+        
+        for (@res) {
+            warn "<" . $_->{tagName} . "> " . $_->{innerHTML};
+        };
+        use Data::Dumper;
+        warn Dumper \%opts;
+        
         my $base = $self->base;
         require WWW::Mechanize;
         @res = grep { 
             WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
         } @res;
+        for (@res) {
+            warn "<$_->{tagName}>";
+        };
     };
     
     if ($single) {
@@ -696,8 +712,11 @@ sub find_link {
     $base = $base->{href}
         if $base;
     $base ||= $self->uri;
-    return
-        $self->make_link($self->find_link_dom(%opts), $base);
+    if (my $link = $self->find_link_dom(%opts)) {
+        return $self->make_link($link, $base)
+    } else {
+        return
+    };
 };
 
 =head2 C<< $mech->find_all_links OPTIONS >>
@@ -1143,6 +1162,13 @@ there are many incompatibilities. The main thing is
 that only the most needed WWW::Mechanize methods
 have been implemented by me so far.
 
+=head2 Link attributes
+
+In FireFox, the C<name> attribute of links seems always
+to be present on links, even if it's empty. This is in
+difference to WWW::Mechanize, where the C<name> attribute
+can be C<undef>.
+
 =head2 Unsupported Methods
 
 =over 4
@@ -1150,18 +1176,6 @@ have been implemented by me so far.
 =item *
 
 C<< ->put >>
-
-=item *
-
-C<< ->follow_link >>
-
-This is inconvenient and has high priority, for API compatibility.
-Normally, you will want to C<< ->__click() >> on elements you find
-instead.
-
-=item *
-
-C<< ->find_all_links >>
 
 =item *
 

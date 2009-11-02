@@ -87,10 +87,10 @@ is( $x->[0], 'http://c.cpan.org/', 'Got c.cpan.org' );
 is( $x->url, 'http://c.cpan.org/', 'Got c.cpan.org' );
 
 my @wanted_links= (
-   [ 'http://a.cpan.org/', 'CPAN A', undef, 'a' ],
-   [ 'http://b.cpan.org/', 'CPAN B', undef, 'a' ],
+   [ 'http://a.cpan.org/', 'CPAN A', '', 'a' ],
+   [ 'http://b.cpan.org/', 'CPAN B', '', 'a' ],
    [ 'http://c.cpan.org/', 'CPAN C', 'bongo', 'a' ],
-   [ 'http://d.cpan.org/', 'CPAN D', undef, 'a' ],
+   [ 'http://d.cpan.org/', 'CPAN D', '', 'a' ],
 );
 my @links = $mech->find_all_links( text_regex => qr/CPAN/ );
 @{$_} = @{$_}[0..3] for @links;
@@ -121,7 +121,7 @@ is( $x->text, 'News', 'First CNN news text' );
 
 AREA_CHECKS: {
     my @wanted_links = (
-        [ 'http://www.cnn.com/', 'CNN', undef, 'a' ],
+        [ 'http://www.cnn.com/', 'CNN', '', 'a' ],
         [ 'http://www.cnn.com/', 'News', 'Fred', 'a' ],
         # Can someone confirm that I just fixed a bug here, and
         # area tags /should/ have names? -mls
@@ -159,5 +159,5 @@ isa_ok( $x, 'WWW::Mechanize::Link' );
 $x = $mech->find_link( url_abs => 'blongo.html' );
 ok( !defined $x, 'No match' );
 
-$x = $mech->find_link( url_abs_regex => qr[t/blongo\.html$] );
+$x = $mech->find_link( url_abs_regex => qr[/blongo\.html$] );
 isa_ok( $x, 'WWW::Mechanize::Link' );
