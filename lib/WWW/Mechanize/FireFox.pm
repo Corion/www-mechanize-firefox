@@ -506,9 +506,6 @@ Returns all links in the document.
 
 Currently accepts no parameters.
 
-The objects are not yet as nice as L<WWW::Mechanize::Link>,
-but they try to come close.
-
 =cut
 
 %link_tags = (
@@ -520,6 +517,26 @@ but they try to come close.
     meta   => 'content',
 );
 
+sub make_link {
+    my ($self,$node,$base) = @_;
+    my $tag = lc $node->{tagName};
+    
+    my $loc = $node->{ $link_tags{ $tag }};
+    if (defined $loc) {
+        my $url = URI->new_abs($loc,$base);
+        WWW::Mechanize::Link->new({
+            tag   => $tag,
+            name  => $node->{name},
+            base  => $base,
+            url   => $url,
+            text  => $node->{innerHTML},
+            attrs => {},
+        })
+    } else {
+        ()
+    };
+}
+
 sub links {
     my ($self) = @_;
     my @links = $self->selector('a,area,frame,iframe,link,meta');
@@ -528,24 +545,41 @@ sub links {
         if $base;
     $base ||= $self->uri;
     return map {
-        my $tag = lc $_->{tagName};
-        
-        my $loc = $_->{ $link_tags{ $tag }};
-        if (defined $loc) {
-            my $url = URI->new_abs($loc,$base);
-            WWW::Mechanize::Link->new({
-                node  => $_,
-                tag   =>  $tag,
-                name  => $_->{name},
-                base  => $base,
-                url   => $url,
-                text  => $_->{innerHTML},
-                attrs => {},
-            })
-        } else {
-            ()
-        };
+        $self->make_link($_,$base)
     } @links;
+};
+
+sub find_link_dom {
+    my ($self,%opts) = @_;
+    my $document = delete $opts{ document } || $self->document;
+    my $n = (delete $opts{ n } || 1)-1; # 1-based indexing
+    my @spec;
+    if ($opts{ text }) {
+        push @spec, sprintf 'text() = "%s"', $opts{ text };
+    }
+    if ($opts{ id }) {
+        push @spec, sprintf '@id = "%s"', $opts{ id };
+    }
+    if ($opts{ name }) {
+        push @spec, sprintf '@name = "%s"', $opts{ name };
+    }
+    if ($opts{ class }) {
+        push @spec, sprintf '@class = "%s"', $opts{ class };
+    }
+    my $q = sprintf "//a[%s]", join " and ", @spec;
+
+    my @res = $document->__xpath($q);
+    $res[$n]
+}
+
+sub find_link {
+    my ($self,%opts) = @_;
+    (my $base) = $self->selector('base');
+    $base = $base->{href}
+        if $base;
+    $base ||= $self->uri;
+    return
+        $self->make_link($self->find_link_dom(%opts), $base);
 };
 
 =head2 C<< $mech->click >>
@@ -577,6 +611,22 @@ sub click {
         $buttons[0]->__click();
     });
     return $self->response
+}
+
+=head2 C<< $mech->follow_link >>
+
+Follows the given link. Takes the same parameters that C<find_link>
+uses.
+
+=cut
+
+sub follow_link {
+    my ($self,%opts) = @_;
+    my $link = $self->find_link_dom(%opts);
+    $self->synchronize( sub {
+        $link->__click();
+    });
+    $self->response
 }
 
 =head2 C<< $mech->set_visible @values >>
