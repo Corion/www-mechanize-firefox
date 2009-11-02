@@ -14,6 +14,9 @@ t/50-mech-new.t
 t/50-mech-status.t
 t/51-mech-links.t
 t/51-mech-set-content.t
+t/52-mech-api-find_link-frames.t
+t/52-mech-api-find_link.html
+t/52-mech-api-find_link.t
 t/52-mech-xpath.t
 t/60-mech-cookies.t
 t/70-mech-png.t

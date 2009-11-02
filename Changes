@@ -6,6 +6,8 @@
       as PNG
     . Added 'single' option to ->selector() and ->xpath()
     . Added capture of arbitrary rectangles to ->content_as_png()
+    . added ->find_link APIs
+    . added ->find_link tests from WWW::Mechanize
 
 0.05 20091030
     . Added HTTP::Cookies::MozRepl to allow for live cookie querying
