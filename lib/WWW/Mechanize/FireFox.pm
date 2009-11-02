@@ -11,7 +11,7 @@ use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
 use Carp qw(carp croak);
 
-use vars qw'$VERSION %link_tags';
+use vars qw'$VERSION %link_spec';
 $VERSION = '0.06';
 
 =head1 NAME
@@ -486,6 +486,25 @@ sub uri {
     return URI->new( $loc );
 };
 
+=head2 C<< $mech->base >>
+
+Returns the URL base for the current page.
+
+The base is either specified through a C<base>
+tag or is the current URL.
+
+This method is specific to WWW::Mechanize::FireFox
+
+=cut
+
+sub base {
+    my ($self) = @_;
+    (my $base) = $self->selector('base');
+    $base = $base->{href}
+        if $base;
+    $base ||= $self->uri;
+};
+
 =head2 C<< $mech->content_type >>
 
 Returns the content type of the currently loaded document
@@ -519,20 +538,24 @@ Currently accepts no parameters.
 
 =cut
 
-%link_tags = (
-    a      => 'href',
-    area   => 'href',
-    frame  => 'src',
-    iframe => 'src',
-    link   => 'href',
-    meta   => 'content',
+%link_spec = (
+    a      => { url => 'href', },
+    area   => { url => 'href', },
+    frame  => { url => 'src', },
+    iframe => { url => 'src', },
+    link   => { url => 'href', },
+    meta   => { url => 'content', xpath => q{translate(@http-equiv,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')="refresh"}, },
 );
 
 sub make_link {
     my ($self,$node,$base) = @_;
     my $tag = lc $node->{tagName};
+    return unless $tag;
     
-    my $url = $node->{ $link_tags{ $tag }};
+    if (! exists $link_spec{ $tag }) {
+        warn "Unknown tag '$tag'";
+    };
+    my $url = $node->{ $link_spec{ $tag }->{url} };
     
     if ($tag eq 'meta') {
         my $content = $url;
@@ -546,7 +569,8 @@ sub make_link {
     };
     
     if (defined $url) {
-        $url = URI->new_abs($url,$base);
+        #$url = URI->new_abs($url,$base);
+        $url = URI->new($url);
         WWW::Mechanize::Link->new({
             tag   => $tag,
             name  => $node->{name},
@@ -563,10 +587,7 @@ sub make_link {
 sub links {
     my ($self) = @_;
     my @links = $self->selector('a,area,frame,iframe,link,meta');
-    (my $base) = $self->selector('base');
-    $base = $base->{href}
-        if $base;
-    $base ||= $self->uri;
+    my $base = $self->base;
     return map {
         $self->make_link($_,$base)
     } @links;
@@ -605,7 +626,9 @@ sub find_link_dom {
     if ($single and exists $opts{ n }) {
         croak "Cannot use 'single' and 'n' option together"
     };
-    my $n = (delete $opts{ n } || 1)-1; # 1-based indexing
+    my $n = (delete $opts{ n } || 1);
+    $n--
+        if ($n ne 'all'); # 1-based indexing
     my @spec;
     if (my $p = delete $opts{ text }) {
         push @spec, sprintf 'text() = "%s"', $p;
@@ -622,31 +645,28 @@ sub find_link_dom {
     if (my $p = delete $opts{ url }) {
         push @spec, sprintf '@href = "%s"', $p;
     }
-    #if (my $p = delete $opts{ url_regex }) {
-    #    $p =~ s/^\(.*://; # strip regex modifiers
-    #    $p =~ s/\)$//;
-    #    push @spec, sprintf 'matches(@href,"%s")', $p;
-    #}
     
-    for (keys %opts) {
-        carp "Unknown option '$_' (ignored)";
-    };
+    my $q = join '|', 
+    map {
+        my @full = grep {defined} (@spec, $link_spec{$_}->{xpath});
+        if (@full) {
+            sprintf "//%s[%s]", $_, join " and ", @full;
+        } else {
+            sprintf "//%s", $_
+        };
+    }  (qw[a area link meta iframe frame]);
     
-    my ($spec,$meta_spec) = ('') x2;
-    if (@spec) {
-        $spec = sprintf "[%s]", join " and ", @spec;
-    };
-    $meta_spec = sprintf "[%s]", join " and ", (
-                     q{@http-equiv='Refresh'}, 
-                     @spec,
-                 );
-    
-    my $q = sprintf q{//a%s     | //link%s | //meta%s},
-                         $spec,   $spec,     $meta_spec;
-
-    warn $q;
-
     my @res = $document->__xpath($q);
+    
+    if (keys %opts) {
+        # post-filter the links through WWW::Mechanize
+        # for all the options we don't support with XPath
+        my $base = $self->base;
+        require WWW::Mechanize;
+        @res = grep { 
+            WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
+        } @res;
+    };
     
     if ($single) {
         if (0 == @res) { croak "No link found matching '$q'" };
@@ -1073,7 +1093,7 @@ C<javascript> 	 - Whether to allow Javascript execution.
 
 C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
 
-C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
+C<frames>, C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
 
 C<images> 	 - Attribute stating whether or not images should be loaded.
 
@@ -1091,6 +1111,7 @@ use vars '%known_options';
     'plugins'       => 'allowPlugins',
     'metaredirects' => 'allowMetaRedirects',
     'subframes'     => 'allowSubframes',
+    'frames'        => 'allowSubframes',
     'images'        => 'allowImages',
 );
 

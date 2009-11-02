@@ -19,12 +19,15 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
-$mech->allow('metaredirects', 0); # protect ourselves
+$mech->allow('metaredirects', 0); # protect ourselves against redirects
+$mech->allow('frames', 0); # protect ourselves against redirects
 
-my $uri = URI::file->new_abs( 't/52-mech-api-find_link.html' )->as_string;
-
-$mech->get( $uri );
-ok( $mech->success, "Fetched $uri" ) or die q{Can't get test page};
+my $fn = 't/52-mech-api-find_link.html';
+open my $fh, '<', $fn
+    or die "Couldn't read '$fn': $!";
+my $content = do { local $/; <$fh> };
+$mech->update_html($content);
+ok( $mech->success, "Fetched $fn" ) or die q{Can't get test page};
 
 my $x;
 $x = $mech->find_link();
