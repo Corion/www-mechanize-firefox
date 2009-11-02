@@ -9,7 +9,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
-use Carp qw(croak);
+use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_tags';
 $VERSION = '0.06';
@@ -319,6 +319,17 @@ sub document {
     $self->tab->__dive(qw[linkedBrowser contentWindow document]);
 }
 
+=head2 C<< $mech->docshell >>
+
+Returns the C<docShell> Javascript object.
+
+=cut
+
+sub docshell {
+    my ($self) = @_;
+    $self->tab->__dive(qw[linkedBrowser docShell]);
+}
+
 =head2 C<< $mech->content >>
 
 Returns the current content of the tab as a scalar.
@@ -596,6 +607,11 @@ sub find_link_dom {
     if ($opts{ class }) {
         push @spec, sprintf '@class = "%s"', $opts{ class };
     }
+    
+    for (keys %opts) {
+        carp "Unknown option '$_' (ignored)";
+    };
+    
     my $q = sprintf "//a[%s]", join " and ", @spec;
 
     my @res = $document->__xpath($q);
@@ -990,6 +1006,50 @@ sub highlight_node {
             if $style->{display} eq 'none';
         $style->{background} = 'red';
         $style->{border}     = 'solid black 1px;';
+    };
+};
+
+=head2 C<< $mech->allow OPTIONS >>
+
+Enables or disables browser features for the current tab.
+The following options are recognized:
+
+C<plugins> 	 - Whether to allow plugin execution.
+
+C<javascript> 	 - Whether to allow Javascript execution.
+
+C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
+
+C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
+
+C<images> 	 - Attribute stating whether or not images should be loaded.
+
+Options not listed remain unchanged.
+
+=head3 Disable Javascript
+
+  $mech->allow( javascript => 0 );
+
+=cut
+
+use vars '%known_options';
+%known_options = (
+    'javascript'    => 'allowJavascript',
+    'plugins'       => 'allowPlugins',
+    'metaredirects' => 'allowMetaRedirects',
+    'subframes'     => 'allowSubframes',
+    'images'        => 'allowImages',
+);
+
+sub allow  {
+    my ($self,%options) = @_;
+    my $shell = $self->docshell;
+    for my $opt (sort keys %options) {
+        if (my $opt_js = $known_options{ $opt }) {
+            $shell->{$opt_js} = $options{ $opt };
+        } else {
+            carp "Unknown option '$opt_js' (ignored)";
+        };
     };
 };
 
