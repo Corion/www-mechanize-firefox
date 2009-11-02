@@ -569,7 +569,7 @@ By default, no Javascript events are triggered.
 
 sub value {
     my ($self,$name,$value,$events) = @_;
-    my @fields = $self->xpath(sprintf q{//input[@name="%s"]}, $name);
+    my @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, $name, $name, $name);
     $events ||= [];
     $events = [$events]
         if (! ref $events);
@@ -577,15 +577,18 @@ sub value {
         if (! @fields);
     croak "Too many fields found for '$name'"
         if (@fields > 1);
-    if (@_ == 3) {
+    if (@_ >= 3) {
         $fields[0]->{value} = $value;
         # Trigger the events
         for my $ev (@$events) {
+            my $meth = '__' . $ev; # XXX ugly hack!
+            #warn $meth;
+            $fields[0]->$meth();
             #warn "Testing '$ev' on '$name'";
-            if (my $fn = $fields[0]->{$ev}) {
-                #warn "Triggering '$ev' on '$name'";
-                $fn->($fields[0]);
-            };
+            #if (my $fn = $fields[0]->{$ev}) {
+            #    #warn "Triggering '$ev' on '$name'";
+            #    $fn->($fields[0]);
+            #};
         };
     }
     $fields[0]->{value}
@@ -816,9 +819,6 @@ sub element_coordinates {
     }
 JS
     $findPos->($element);
-=======
-    return decode_base64($screenshot->($tab))
->>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 };
 
 =head2 C<< $mech->highlight_node NODES >>
