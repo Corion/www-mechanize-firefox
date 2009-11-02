@@ -8,10 +8,11 @@ use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
+use HTTP::Cookies::MozRepl;
 use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
-$VERSION = '0.03';
+$VERSION = '0.07';
 
 =head1 NAME
 
@@ -71,6 +72,27 @@ sub execute {
     $repl->execute($js)
 }
 
+=head2 C<< $mech->new( ARGS ) >>
+
+Creates a new instance and connects it to Firefox.
+
+Note that Firefox already must be running and must have the C<mozrepl>
+extension installed.
+
+The following options are recognized:
+
+C<tab> - regex for the title of the tab to reuse. If no matching tab is
+found, the constructor dies.
+
+C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
+
+C<events> - the set of default Javascript events to listen for while
+waiting for a reply
+
+C<repl> - a premade L<MozRepl::RemoteObject> instance
+
+=cut
+
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
@@ -88,11 +110,14 @@ sub new {
         }
         $args{ tab } = $args{ tab }->{tab};
     } else {
-        $args{ tab } = $class->addTab( repl => $args{ repl });
+        my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
+        $args{ tab } = $class->addTab( repl => $args{ repl }, @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     }
-    
+
+    $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
+
     die "No tab found"
         unless $args{tab};
         
@@ -144,6 +169,18 @@ This method is special to WWW::Mechanize::FireFox.
 
 sub repl { $_[0]->{repl} };
 
+=head2 C<< $mech->events >>
+
+Sets or gets the set of Javascript events that WWW::Mechanize::FireFox
+will wait for after requesting a new page. Returns an array reference.
+
+This method is special to WWW::Mechanize::FireFox.
+
+=cut
+
+sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
+
+
 =head2 C<< $mech->get(URL) >>
 
 Retrieves the URL C<URL> into the tab.
@@ -161,13 +198,12 @@ sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    my $event = $self->synchronize(['error','load','DOMFrameContentLoaded','abort'], sub { # ,'abort'
-        #'readystatechange'
+    my $event = $self->synchronize($self->events, sub {
         $b->loadURI($url);
     });
     
     # The event we get back is not necessarily indicative :-(
-    # if ($event->{event} eq 'DOMContentLoaded') {
+    # Let's just look at the kind of response we get back
     
     return $self->response
 };
@@ -176,13 +212,11 @@ sub get {
 # Should this become part of MozRepl::RemoteObject?
 sub _addEventListener {
     my ($self,$browser,$events) = @_;
-    $events ||= "DOMFrameContentLoaded";
+    $events ||= $self->events;
     $events = [$events]
         unless ref $events;
 
-    my $id = $browser->__id;
-    
-    my $rn = $self->repl->repl;
+# This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
     var lock = {};
@@ -214,13 +248,16 @@ JS
 };
 
 sub _wait_while_busy {
-    my ($self,$element) = @_;
+    my ($self,@elements) = @_;
     # Now do the busy-wait
-    #my $s;
-    while ((my $s = $element->{busy} || 0) < 1) {
+    while (1) {
+        for my $element (@elements) {
+            if ((my $s = $element->{busy} || 0) >= 1) {
+                return $element;
+            };
+        };
         sleep 0.1;
     };
-    return $element;
 }
 
 =head2 C<< $mech->synchronize( $event, $callback ) >>
@@ -246,19 +283,27 @@ the whole DOM and all C<iframe>s have been loaded.
 If your document doesn't have frames, use the C<DOMContentLoaded>
 event instead.
 
+If you leave out C<$event>, the value of C<< ->events() >> will
+be used instead.
+
 =cut
 
 sub synchronize {
     my ($self,$events,$callback) = @_;
+    if (ref $events and ref $events eq 'CODE') {
+        $callback = $events;
+        $events = $self->events;
+    };
     
     $events = [ $events ]
         unless ref $events;
     
-    #my $b = $self->tab->{linkedBrowser};
-    my $b = $self->tab;
-    my $lock = $self->_addEventListener($b,$events);
+    # 'load' on linkedBrowser is good for successfull load
+    # 'error' on tab is good for failed load :-(
+    my $b = $self->tab->{linkedBrowser};
+    my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
-    $self->_wait_while_busy($lock);
+    $self->_wait_while_busy($load_lock);
 };
 
 =head2 C<< $mech->document >>
@@ -311,7 +356,7 @@ sub update_html {
     my ($self,$content) = @_;
     my $data = encode_base64($content,'');
     my $url = qq{data:text/html;base64,$data};
-    $self->synchronize('load', sub {
+    $self->synchronize($self->events, sub {
         $self->tab->{linkedBrowser}->loadURI($url);
     });
 };
@@ -450,9 +495,12 @@ sub links {
 
 =head2 C<< $mech->click >>
 
-Has the effect of clicking a button on the current form. The first argument is the name of the button to be clicked. The second and third arguments (optional) allow you to specify the (x,y) coordinates of the click.
+Has the effect of clicking a button on the current form. The first argument
+is the name of the button to be clicked. The second and third arguments
+(optional) allow you to specify the (x,y) coordinates of the click.
 
-If there is only one button on the form, $mech->click() with no arguments simply clicks that one button.
+If there is only one button on the form, $mech->click() with no arguments
+simply clicks that one button.
 
 Returns a L<HTTP::Response> object.
 
@@ -470,7 +518,7 @@ sub click {
     if (! @buttons) {
         croak "No button matching '$name' found";
     };
-    my $event = $self->synchronize(['load','error'], sub { # ,'abort'
+    my $event = $self->synchronize($self->events, sub { # ,'abort'
         $buttons[0]->__click();
     });
     return $self->response
@@ -505,7 +553,7 @@ sub set_visible {
     }
 }
 
-=head2 C<< $mech->value NAME [, VALUE] >>
+=head2 C<< $mech->value NAME [, VALUE] [EVENTS] >>
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -513,11 +561,18 @@ Returns the value.
 Note that this uses the C<name> attribute of the HTML,
 not the C<id> attribute.
 
+By passing the array reference C<EVENTS>, you can indicate which
+Javascript events you want to be triggered after setting the value.
+By default, no Javascript events are triggered.
+
 =cut
 
 sub value {
-    my ($self,$name,$value) = @_;
+    my ($self,$name,$value,$events) = @_;
     my @fields = $self->xpath(sprintf q{//input[@name="%s"]}, $name);
+    $events ||= [];
+    $events = [$events]
+        if (! ref $events);
     croak "No field found for '$name'"
         if (! @fields);
     croak "Too many fields found for '$name'"
@@ -525,11 +580,10 @@ sub value {
     if (@_ == 3) {
         $fields[0]->{value} = $value;
         # Trigger the events
-        #for my $ev (qw(onFocus onBlur onChange)) {
-        for my $ev (qw(onFocus onfocus focus onBlur onblur blur onChange onchange change)) {
-            warn "Testing '$ev' on '$name'";
+        for my $ev (@$events) {
+            #warn "Testing '$ev' on '$name'";
             if (my $fn = $fields[0]->{$ev}) {
-                warn "Triggering '$ev' on '$name'";
+                #warn "Triggering '$ev' on '$name'";
                 $fn->($fields[0]);
             };
         };
@@ -575,7 +629,20 @@ L<WWW::Mechanize>.
 sub xpath {
     my ($self,$query,%options) = @_;
     $options{ node } ||= $self->document;
-    $self->document->__xpath($query, $options{ node });
+    my @res = $self->document->__xpath($query, $options{ node });
+    if ($options{single}) {
+        if (@res != 1) {
+            if (@res == 0) {
+                croak "No element found for '$query'";
+            } else {
+                $self->highlight_nodes(@res);
+                croak scalar @res . " elements found for '$query'";
+            }
+        };
+        return $res[0];
+    } else {
+        return @res
+    };
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
@@ -590,7 +657,168 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     my $q = selector_to_xpath($query);
-    return $self->xpath($q);
+    
+    my @res = $self->xpath($q);
+    if ($options{single}) {
+        if (@res != 1) {
+            if (@res == 0) {
+                croak "No element found for '$query'";
+            } else {
+                $self->highlight_nodes(@res);
+                croak scalar(@res) . " elements found for '$query'";
+            }
+        };
+        return $res[0];
+    } else {
+        return @res
+    }
+};
+
+=head2 C<< $mech->cookies >>
+
+Returns a L<HTTP::Cookies> object that was initialized
+from the live FireFox instance.
+
+B<Note:> C<< ->set_cookie >> is not yet implemented,
+as is saving the cookie jar.
+
+=cut
+
+sub cookies {
+    return HTTP::Cookies::MozRepl->new(
+        repl => $_[0]->repl
+    )
+}
+
+=head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
+
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
+Returns the given tab or the current page rendered as PNG image.
+=======
+Returns the current page rendered as PNG image.
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
+
+This is specific to WWW::Mechanize::FireFox.
+
+Currently, the data transfer between FireFox and Perl
+is done Base64-encoded. It would be beneficial to find what's
+necessary to make JSON handle binary data more gracefully.
+
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
+If the coordinates are given, that rectangle will be cut out.
+The coordinates should be a hash with the four usual entries,
+C<left>,C<top>,C<width>,C<height>.
+
+=head3 Save top left corner the current page as PNG
+
+  my $rect = {
+    left  =>    0,
+    top   =>    0,
+    width  => 200,
+    height => 200,
+  };
+  my $png = $mech->content_as_png(undef, $rect);
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
+=======
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
+=cut
+
+sub content_as_png {
+    my ($self, $tab, $rect) = @_;
+    $tab ||= $self->tab;
+    $rect ||= {};
+    
+    # Mostly taken from
+    # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
+    my $screenshot = $self->repl->declare(<<'JS');
+    function (tab,rect) {
+        var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
+            .getService(Ci.nsIWindowMediator)
+            .getMostRecentWindow('navigator:browser');
+        var canvas = browserWindow
+               .document
+               .createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
+        var browser = tab.linkedBrowser;
+        var win = browser.contentWindow;
+        var left = rect.left || 0;
+        var top = rect.top || 0;
+        var width = rect.width || win.document.width;
+        var height = rect.height || win.document.height;
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.scale(1.0, 1.0);
+        ctx.drawWindow(win, left, top, width, height, 'rgb(255,255,255)');
+        ctx.restore();
+
+        //return atob(
+        return canvas
+               .toDataURL('image/png', '')
+               .split(',')[1]
+        // );
+    }
+JS
+    return decode_base64($screenshot->($tab, $rect))
+};
+
+=head2 C<< $mech->element_as_png $element >>
+
+<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
+Returns PNG image data for a single element
+
+=cut
+
+sub element_as_png {
+    my ($self, $element) = @_;
+    my $tab = $self->tab;
+
+    my $pos = $self->element_coordinates($element);
+    return $self->content_as_png($tab, $pos);
+};
+
+=head2 C<< $mech->element_coordinates $element >>
+
+Returns the page-coordinates of the C<$element>
+in pixels as a hash with four entries, C<left>, C<top>, C<width> and C<height>.
+
+This function might get moved into another module more geared
+towards rendering HTML.
+
+=cut
+
+sub element_coordinates {
+    my ($self, $element) = @_;
+    
+    # Mostly taken from
+    # http://www.quirksmode.org/js/findpos.html
+    my $findPos = $self->repl->declare(<<'JS');
+    function (obj) {
+        var res = { 
+            left: 0,
+            top: 0,
+            width: obj.scrollWidth,
+            height: obj.scrollHeight
+        };
+        if (obj.offsetParent) {
+            do {
+                res.left += obj.offsetLeft;
+                res.top += obj.offsetTop;
+            } while (obj = obj.offsetParent);
+        }
+        return res;
+    }
+JS
+    $findPos->($element);
+=======
+    return decode_base64($screenshot->($tab))
+>>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 };
 
 =head2 C<< $mech->highlight_node NODES >>
@@ -624,6 +852,11 @@ sub highlight_node {
 1;
 
 __END__
+
+=head1 COOKIE HANDLING
+
+FireFox cookies will be read through L<HTTP::Cookies::MozRepl>. This is
+relatively slow currently.
 
 =head1 INCOMPATIBILITIES WITH WWW::Mechanize
 
@@ -709,10 +942,6 @@ C<< ->set_fields >>
 
 =item *
 
-C<< ->set_visible >>
-
-=item *
-
 C<< ->tick >>
 
 =item *
@@ -779,13 +1008,6 @@ Implement "reuse tab if exists, otherwise create new"
 
 =item *
 
-Spin off HTML::Display::MozRepl as soon as I find out how I can
-load an arbitrary document via MozRepl into a C<document>.
-
-This is mostly done, but not yet spun off.
-
-=item *
-
 Rip out parts of Test::HTML::Content and graft them
 onto the C<links()> and C<find_link()> methods here.
 FireFox is a conveniently unified XPath engine.
@@ -796,6 +1018,11 @@ Preferrably, there should be a common API between the two.
 
 Spin off XPath queries and CSS selectors into
 their own Mechanize plugin.
+
+=item *
+
+Implement C<element_to_png> to render single elements
+as PNG graphics.
 
 =back
 

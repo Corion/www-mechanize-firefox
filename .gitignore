@@ -1,5 +1,6 @@
 Makefile
 *.tar.gz
+*.bak
 pm_to_blib
 blib/
 WWW-Mechanize-FireFox-*

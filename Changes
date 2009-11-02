@@ -1,3 +1,23 @@
+0.07 200911xx
+    . Added 'single' option to ->selector() and ->xpath()
+    . Added capture of arbitrary rectangles to ->content_as_png()
+
+0.06 20091031
+    . added 'autoclose' parameter to specify whether the
+      tab that mechanize creates gets automatically closed upon
+      object release
+    . added ->content_as_png() to save the current page
+      as PNG
+
+0.05 20091030
+    . Added HTTP::Cookies::MozRepl to allow for live cookie querying
+    . Added ->cookies method for cookie access
+
+0.04 20091029
+    . Added ->set_visible
+    . Added ->value (partly buggy with respect to event triggering)
+    . added log passthrough parameter
+
 0.03 20091028
     . Added missing MIME::Base64 prerequisite
     . Now has WWW::Mechanize as a prerequisite

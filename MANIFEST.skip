@@ -11,3 +11,4 @@ CVS/
 ^Makefile$
 ^cvstest$
 ^blibdirs$
+.bak$
