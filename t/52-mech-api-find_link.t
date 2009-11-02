@@ -137,14 +137,17 @@ AREA_CHECKS: {
 
 $x = $mech->find_link( name => 'bongo' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
+@{$_} = @{$_}[0..3] for $x;
 is_deeply( $x, [ 'http://c.cpan.org/', 'CPAN C', 'bongo', 'a' ], 'Got the CPAN C link' );
 
 $x = $mech->find_link( name_regex => qr/^[A-Z]/, n => 2 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
+@{$_} = @{$_}[0..3] for $x;
 is_deeply( $x, [ 'http://www.cnn.com/', 'News', 'Fred', 'a' ], 'Got 2nd link that begins with a capital' );
 
 $x = $mech->find_link( tag => 'a', n => 3 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
+@{$_} = @{$_}[0..3] for $x;
 is_deeply( $x, [ 'http://b.cpan.org/', 'CPAN B', '', 'a' ], 'Got 3rd <A> tag' );
 
 $x = $mech->find_link( tag_regex => qr/^(a|frame)$/, n => 7 );
