@@ -9,6 +9,8 @@ WriteMakefile(
                         'URI' => 0,
                         'HTTP::Response' => 0, # for interface compatibility with WWW::Mechanize
                         'HTML::Selector::XPath' => 0,
+                        'WWW::Mechanize' => 0, # for link filtering and 1:1 API compatibility
+                        'WWW::Mechanize::Link' => 0, # for API compatibility
                         'MIME::Base64' => 0,
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/FireFox.pm', # retrieve abstract from module
