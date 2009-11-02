@@ -612,7 +612,12 @@ sub find_link_dom {
         carp "Unknown option '$_' (ignored)";
     };
     
-    my $q = sprintf "//a[%s]", join " and ", @spec;
+    my $spec;
+    if (@spec) {
+        $spec = sprintf "[%s]", join " and ", @spec;;
+    };
+    
+    my $q = sprintf "//a$spec";
 
     my @res = $document->__xpath($q);
     
