@@ -661,27 +661,20 @@ sub find_link_dom {
                 };
             }  (@tags);
     
-    warn $q;
-    my @res, $document->__xpath($q);
+    my @res = $document->__xpath($q);
     
     if (keys %opts) {
         # post-filter the remaining links through WWW::Mechanize
         # for all the options we don't support with XPath
-        
-        for (@res) {
-            warn "<" . $_->{tagName} . "> " . $_->{innerHTML};
-        };
-        use Data::Dumper;
-        warn Dumper \%opts;
         
         my $base = $self->base;
         require WWW::Mechanize;
         @res = grep { 
             WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
         } @res;
-        for (@res) {
-            warn "<$_->{tagName}>";
-        };
+        #for (@res) {
+        #    warn "<$_->{tagName}>";
+        #};
     };
     
     if ($single) {
@@ -708,10 +701,7 @@ Returns a L<WWW::Mechanize::Link> object.
 
 sub find_link {
     my ($self,%opts) = @_;
-    (my $base) = $self->selector('base');
-    $base = $base->{href}
-        if $base;
-    $base ||= $self->uri;
+    my $base = $self->base;
     if (my $link = $self->find_link_dom(%opts)) {
         return $self->make_link($link, $base)
     } else {
@@ -731,7 +721,27 @@ on context.
 sub find_all_links {
     my ($self,%opts) = @_;
     $opts{ n } = 'all';
-    my @matches = $self->find_link( %opts );
+    my $base = $self->base;
+    my @matches = map {
+        $self->make_link($_, $base);
+    } $self->find_all_links_dom( %opts );
+    return @matches if wantarray;
+    return \@matches;
+};
+
+=head2 C<< $mech->find_all_links_dom OPTIONS >>
+
+Finds all matching linky DOM nodes in the document.
+
+Returns them as list or an array reference, depending
+on context.
+
+=cut
+
+sub find_all_links_dom {
+    my ($self,%opts) = @_;
+    $opts{ n } = 'all';
+    my @matches = $self->find_link_dom( %opts );
     return @matches if wantarray;
     return \@matches;
 };
