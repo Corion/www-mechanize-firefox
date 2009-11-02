@@ -91,6 +91,12 @@ waiting for a reply
 
 C<repl> - a premade L<MozRepl::RemoteObject> instance
 
+C<pre_events> - the events that are sent to an input field before its
+value is changed. By default this is C<[focus]>.
+
+C<post_events> - the events that are sent to an input field after its
+value is changed. By default this is C<[blur, change]>.
+
 =cut
 
 sub new {
@@ -117,6 +123,8 @@ sub new {
     }
 
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
+    $args{ pre_value } ||= ['focus'];
+    $args{ post_value } ||= ['change','blur'];
 
     die "No tab found"
         unless $args{tab};
@@ -823,7 +831,7 @@ sub set_visible {
     }
 }
 
-=head2 C<< $mech->value NAME [, VALUE] [EVENTS] >>
+=head2 C<< $mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS] >>
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -831,34 +839,44 @@ Returns the value.
 Note that this uses the C<name> attribute of the HTML,
 not the C<id> attribute.
 
-By passing the array reference C<EVENTS>, you can indicate which
-Javascript events you want to be triggered after setting the value.
-By default, no Javascript events are triggered.
+By passing the array reference C<PRE EVENTS>, you can indicate which
+Javascript events you want to be triggered before setting the value.
+C<POST EVENTS> contains the evens you want to be triggered
+after setting the value.
+
+By default, the events set in the
+constructor for C<pre_events> and C<post_events>
+are triggered.
+
+=head3 Set a value without triggering events
+
+  $mech->value( 'myfield', 'myvalue', [], [] );
 
 =cut
 
 sub value {
-    my ($self,$name,$value,$events) = @_;
-    my @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, $name, $name, $name);
-    $events ||= [];
-    $events = [$events]
-        if (! ref $events);
+    my ($self,$name,$value,$pre,$post) = @_;
+    my @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, 
+                                          $name,              $name,                 $name);
+    $pre ||= $self->{pre_value};
+    $pre = [$pre]
+        if (! ref $pre);
+    $post ||= $self->{post_value};
+    $post = [$post]
+        if (! ref $pre);
     croak "No field found for '$name'"
         if (! @fields);
     croak "Too many fields found for '$name'"
         if (@fields > 1);
     if (@_ >= 3) {
+        for my $ev (@$pre) {
+            $fields[0]->__event($ev);
+        };
+
         $fields[0]->{value} = $value;
-        # Trigger the events
-        for my $ev (@$events) {
-            my $meth = '__' . $ev; # XXX ugly hack!
-            #warn $meth;
-            $fields[0]->$meth();
-            #warn "Testing '$ev' on '$name'";
-            #if (my $fn = $fields[0]->{$ev}) {
-            #    #warn "Triggering '$ev' on '$name'";
-            #    $fn->($fields[0]);
-            #};
+
+        for my $ev (@$post) {
+            $fields[0]->__event($ev);
         };
     }
     $fields[0]->{value}
@@ -1335,6 +1353,10 @@ as PNG graphics.
 =item *
 
 The MozRepl FireFox plugin at L<http://wiki.github.com/bard/mozrepl>
+
+=item *
+
+L<WWW::Mechanize> - the module whose API grandfathered this module
 
 =item *
 
