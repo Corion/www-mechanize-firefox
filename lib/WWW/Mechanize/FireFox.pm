@@ -532,9 +532,21 @@ sub make_link {
     my ($self,$node,$base) = @_;
     my $tag = lc $node->{tagName};
     
-    my $loc = $node->{ $link_tags{ $tag }};
-    if (defined $loc) {
-        my $url = URI->new_abs($loc,$base);
+    my $url = $node->{ $link_tags{ $tag }};
+    
+    if ($tag eq 'meta') {
+        my $content = $url;
+        if ( $content =~ /^\d+\s*;\s*url\s*=\s*(\S+)/i ) {
+            $url = $1;
+            $url =~ s/^"(.+)"$/$1/ or $url =~ s/^'(.+)'$/$1/;
+        }
+        else {
+            undef $url;
+        }
+    };
+    
+    if (defined $url) {
+        $url = URI->new_abs($url,$base);
         WWW::Mechanize::Link->new({
             tag   => $tag,
             name  => $node->{name},
@@ -612,12 +624,19 @@ sub find_link_dom {
         carp "Unknown option '$_' (ignored)";
     };
     
-    my $spec;
+    my ($spec,$meta_spec) = ('') x2;
     if (@spec) {
-        $spec = sprintf "[%s]", join " and ", @spec;;
+        $spec = sprintf "[%s]", join " and ", @spec;
     };
+    $meta_spec = sprintf "[%s]", join " and ", (
+                     q{@http-equiv='Refresh'}, 
+                     @spec,
+                 );
     
-    my $q = sprintf "//a$spec";
+    my $q = sprintf q{//a%s     | //link%s | //meta%s},
+                         $spec,   $spec,     $meta_spec;
+
+    warn $q;
 
     my @res = $document->__xpath($q);
     
