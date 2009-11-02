@@ -20,7 +20,7 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 $mech->allow('metaredirects', 0); # protect ourselves against redirects
-$mech->allow('frames', 0); # protect ourselves against redirects
+#$mech->allow('frames', 0); # protect ourselves against redirects
 
 my $fn = 't/52-mech-api-find_link.html';
 open my $fh, '<', $fn
