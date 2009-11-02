@@ -549,9 +549,39 @@ sub links {
     } @links;
 };
 
+=head2 C<< $mech->find_link_dom OPTIONS >>
+
+A method to find links, like L<WWW::Mechanize>'s
+C<< ->find_links >> method.
+
+Returns the DOM object as L<MozRepl::RemoteObject>::Instance.
+
+The supported options are:
+
+C<< text >> - the text of the link
+
+C<< id >> - the C<id> attribute of the link
+
+C<< name >> - the C<name> attribute of the link
+
+C<< class >> - the C<class> attribute of the link
+
+C<< n >> - the (1-based) index. Defaults to returning the first link.
+
+C<< single >> - If true, ensure that only one element is found.
+
+The method C<croak>s if no link is found. If the C<single> option is true,
+it also C<croak>s when more than one link is found.
+
+=cut
+
 sub find_link_dom {
     my ($self,%opts) = @_;
     my $document = delete $opts{ document } || $self->document;
+    my $single = delete $opts{ single };
+    if ($single and exists $opts{ n }) {
+        croak "Cannot use 'single' and 'n' option together"
+    };
     my $n = (delete $opts{ n } || 1)-1; # 1-based indexing
     my @spec;
     if ($opts{ text }) {
@@ -569,8 +599,25 @@ sub find_link_dom {
     my $q = sprintf "//a[%s]", join " and ", @spec;
 
     my @res = $document->__xpath($q);
+    
+    if ($single) {
+        if (0 == @res) { croak "No link found matching '$q'" };
+        if (1 <  @res) {
+            $self->highlight_node(@res);
+            croak sprintf "%d elements found found matching '%s'", scalar @res, $q;
+        };
+    };
+    
     $res[$n]
 }
+
+=head2 C<< $mech->find_link OPTIONS >>
+
+A method quite similar to L<WWW::Mechanize>'s method.
+
+Returns a L<WWW::Mechanize::Link> object.
+
+=cut
 
 sub find_link {
     my ($self,%opts) = @_;
