@@ -422,7 +422,9 @@ sub reload {
     if ($bypass_cache) {
         $bypass_cache = $self->repl->expr('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
     };
-    $self->tab->{linkedBrowser}->reloadWithFlags($bypass_cache);
+    $self->synchronize( sub {
+        $self->tab->{linkedBrowser}->reloadWithFlags($bypass_cache);
+    });
     $self->response
 }
 
@@ -436,7 +438,9 @@ Returns the (new) response.
 
 sub back {
     my ($self) = @_;
-    $self->tab->{linkedBrowser}->goBack;
+    $self->synchronize( sub {
+        $self->tab->{linkedBrowser}->goBack;
+    });
     $self->response
 }
 
@@ -450,7 +454,9 @@ Returns the (new) response.
 
 sub forward {
     my ($self) = @_;
-    $self->tab->{linkedBrowser}->goForward;
+    $self->synchronize( sub {
+        $self->tab->{linkedBrowser}->goForward;
+    });
     $self->response
 }
 
