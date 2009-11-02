@@ -12,7 +12,7 @@ use strict;
 my @files;
 my $blib = File::Spec->catfile(qw(blib lib));
 find(\&wanted, grep { -d } ($blib, 'bin'));
-plan tests => scalar @files;
+plan tests => 2* @files;
 foreach my $file (@files) {
   source_file_ok($file);
 }
@@ -37,6 +37,11 @@ sub source_file_ok {
     my @x = grep /XXX/, @lines;
 
     if ( !is( scalar @x, 0, "Looking for XXXes in $file" ) ) {
+        diag( $_ ) for @x;
+    }
+    my @x = grep /<<<|>>>/, @lines;
+
+    if ( !is( scalar @x, 0, "Looking for <<<<|>>>> in $file" ) ) {
         diag( $_ ) for @x;
     }
 } 
