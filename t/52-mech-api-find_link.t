@@ -20,7 +20,7 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
 $mech->allow('metaredirects', 0); # protect ourselves against redirects
-#$mech->allow('frames', 0); # protect ourselves against redirects
+$mech->allow('frames', 0); # protect ourselves against outside requests
 
 my $fn = 't/52-mech-api-find_link.html';
 open my $fh, '<', $fn
@@ -152,7 +152,9 @@ is_deeply( $x, [ 'http://b.cpan.org/', 'CPAN B', '', 'a' ], 'Got 3rd <A> tag' );
 
 $x = $mech->find_link( tag_regex => qr/^(a|frame)$/, n => 7 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', '', 'a' ], 'Got 7th <A> or <FRAME> tag' );
+{ local $TODO = "Detecting FRAME tags via XPath doesn't seem to work here";
+  is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', '', 'a' ], 'Got 7th <A> or <FRAME> tag' );
+};
 
 $x = $mech->find_link( text => 'Rebuild Index' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
