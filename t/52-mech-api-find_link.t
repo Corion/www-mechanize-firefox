@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 61;
+    plan tests => 60;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
@@ -150,7 +150,8 @@ is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', undef, 'a' ], 'Got 7th <A> or <
 
 $x = $mech->find_link( text => 'Rebuild Index' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-is_deeply( [@{$x}[0..3]], [ '/cgi-bin/MT/mt.cgi', 'Rebuild Index', undef, 'a' ], 'Got the JavaScript link' );
+# We don't need to fudge around with JS
+#is_deeply( [@{$x}[0..3]], [ '/cgi-bin/MT/mt.cgi', 'Rebuild Index', undef, 'a' ], 'Got the JavaScript link' );
 
 $x = $mech->find_link( url => 'blongo.html' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
