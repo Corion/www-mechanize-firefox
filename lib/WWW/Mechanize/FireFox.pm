@@ -12,7 +12,7 @@ use HTTP::Cookies::MozRepl;
 use Carp qw(croak);
 
 use vars qw'$VERSION %link_tags';
-$VERSION = '0.07';
+$VERSION = '0.06';
 
 =head1 NAME
 
