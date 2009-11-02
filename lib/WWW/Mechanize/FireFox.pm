@@ -405,6 +405,55 @@ sub status {
     $_[0]->response->code
 };
 
+=head2 C<< $mech->reload BYPASS_CACHE >>
+
+Reloads the current page. If C<BYPASS_CACHE>
+is a true value, the browser is not allowed to
+use a cached page. This is the difference between
+pressing C<F5> (cached) and C<shift-F5> (uncached).
+
+Returns the (new) response.
+
+=cut
+
+sub reload {
+    my ($self, $bypass_cache) = @_;
+    $bypass_cache ||= 0;
+    if ($bypass_cache) {
+        $bypass_cache = $self->repl->expr('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
+    };
+    $self->tab->{linkedBrowser}->reloadWithFlags($bypass_cache);
+    $self->response
+}
+
+=head2 C<< $mech->back >>
+
+Goes one page back in the page history.
+
+Returns the (new) response.
+
+=cut
+
+sub back {
+    my ($self) = @_;
+    $self->tab->{linkedBrowser}->goBack;
+    $self->response
+}
+
+=head2 C<< $mech->forward >>
+
+Goes one page back in the page history.
+
+Returns the (new) response.
+
+=cut
+
+sub forward {
+    my ($self) = @_;
+    $self->tab->{linkedBrowser}->goForward;
+    $self->response
+}
+
 =head2 C<< $mech->uri >>
 
 Returns the current document URI.
@@ -695,11 +744,7 @@ sub cookies {
 
 =head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
 
-<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 Returns the given tab or the current page rendered as PNG image.
-=======
-Returns the current page rendered as PNG image.
->>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 
 This is specific to WWW::Mechanize::FireFox.
 
@@ -707,7 +752,6 @@ Currently, the data transfer between FireFox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
 
-<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 If the coordinates are given, that rectangle will be cut out.
 The coordinates should be a hash with the four usual entries,
 C<left>,C<top>,C<width>,C<height>.
@@ -727,8 +771,6 @@ C<left>,C<top>,C<width>,C<height>.
   print {$fh} $png;
   close $fh;
 
-=======
->>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
 =cut
 
 sub content_as_png {
@@ -773,7 +815,6 @@ JS
 
 =head2 C<< $mech->element_as_png $element >>
 
-<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
 Returns PNG image data for a single element
 
 =cut
