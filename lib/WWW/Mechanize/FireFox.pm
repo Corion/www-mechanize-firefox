@@ -1274,46 +1274,58 @@ can be C<undef>.
 
 =item *
 
-C<< ->put >>
-
-=item *
-
 C<< ->find_all_inputs >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->find_all_submits >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->images >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->find_image >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->find_all_images >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->forms >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->form_number >>
 
+This function is likely best implemented through C<< $mech->xpath >>.
+
 =item *
 
 C<< ->form_name >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->form_id >>
 
 This one certainly would be easier done
-by C<< $mech->document->getElementById() >>
+by C<< $mech->xpath >>
 
 =item *
 
@@ -1331,6 +1343,8 @@ C<< ->select >>
 
 C<< ->set_fields >>
 
+This is basically a loop over C<< $mech->value >>.
+
 =item *
 
 C<< ->tick >>
@@ -1347,41 +1361,48 @@ C<< ->click >>
 
 C<< ->submit >>
 
+=back
+
+=head2 Functions that will likely never be implemented
+
+These functions are unlikely to be implemented because
+they make little sense in the context of FireFox.
+
 =item *
 
 C<< ->add_header >>
-
-Likely will never be implemented
 
 =item *
 
 C<< ->delete_header >>
 
-Likely will never be implemented
-
 =item *
 
 C<< ->clone >>
-
-Likely will never be implemented
 
 =item *
 
 C<< ->credentials( $username, $password ) >>
 
-Unlikely to be implemented
-
 =item *
 
 C<< ->get_basic_credentials( $realm, $uri, $isproxy ) >>
-
-Unlikely to be implemented
 
 =item *
 
 C<< ->clear_credentials() >>
 
-Unlikely to be implemented
+=item *
+
+C<< ->put >>
+
+I have no use for it
+
+=item *
+
+C<< ->post >>
+
+I have no use for it
 
 =back
 
@@ -1407,13 +1428,8 @@ Preferrably, there should be a common API between the two.
 
 =item *
 
-Spin off XPath queries and CSS selectors into
-their own Mechanize plugin.
-
-=item *
-
-Implement C<element_to_png> to render single elements
-as PNG graphics.
+Spin off XPath queries (C<< ->xpath >>) and CSS selectors (C<< ->selector >>)
+into their own Mechanize plugin(s).
 
 =back
 
