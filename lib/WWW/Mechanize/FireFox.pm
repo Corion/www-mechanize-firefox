@@ -637,19 +637,23 @@ sub find_link_dom {
         if ($n ne 'all'); # 1-based indexing
     my @spec;
     if (my $p = delete $opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', $p;
+        push @spec, sprintf 'text() = "%s"', quotemeta $p;
     }
+    # broken?
+    #if (my $p = delete $opts{ text_contains }) {
+    #    push @spec, sprintf 'contains(text(),"%s")', quotemeta $p;
+    #}
     if (my $p = delete $opts{ id }) {
-        push @spec, sprintf '@id = "%s"', $p;
+        push @spec, sprintf '@id = "%s"', quotemeta $p;
     }
     if (my $p = delete $opts{ name }) {
-        push @spec, sprintf '@name = "%s"', $p;
+        push @spec, sprintf '@name = "%s"', quotemeta $p;
     }
     if (my $p = delete $opts{ class }) {
-        push @spec, sprintf '@class = "%s"', $p;
+        push @spec, sprintf '@class = "%s"', quotemeta $p;
     }
     if (my $p = delete $opts{ url }) {
-        push @spec, sprintf '@href = "%s"', $p;
+        push @spec, sprintf '@href = "%s"', quotemeta $p;
     }
     my @tags = (sort keys %link_spec);
     if (my $p = delete $opts{ tag }) {
@@ -794,8 +798,13 @@ uses.
 =cut
 
 sub follow_link {
-    my ($self,%opts) = @_;
-    my $link = $self->find_link_dom(%opts);
+    my ($self,$link,%opts);
+    if (@_ == 2) { # assume only a link parameter
+        ($self,$link) = @_
+    } else {
+        ($self,%opts) = @_;
+        my $link = $self->find_link_dom(%opts);
+    }
     $self->synchronize( sub {
         $link->__click();
     });
