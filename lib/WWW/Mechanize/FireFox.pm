@@ -1183,6 +1183,68 @@ sub allow  {
     };
 };
 
+=head2 C<< $mech->eval_in_page STR >>
+
+Evaluates the given Javascript fragment in the
+context of the web page.
+Returns a pair of value and Javascript type.
+
+This allows access to variables and functions declared
+"globally" on the web page.
+
+The returned result needs to be treated with 
+extreme care because
+it might lead to Javascript execution in the context of
+your application instead of the context of the webpage.
+This should be evident for functions and complex data
+structures like objects. When working with results from
+untrusted sources, you can only safely use simple
+types like C<string>.
+
+This method is special to WWW::Mechanize::FireFox.
+
+Also, using this method opens a potential C<security risk>.
+
+=cut
+
+sub eval_in_page {
+    my ($self,$str) = @_;
+    my $eval_in_sandbox = $self->repl->declare(<<'JS');
+    function (uri,w,d,str) {
+        var unsafeWin = w.wrappedJSObject;
+        var safeWin = XPCNativeWrapper(unsafeWin);
+        var sandbox = Components.utils.Sandbox(safeWin);
+        sandbox.window = safeWin;
+        sandbox.document = sandbox.window.document;
+        sandbox.__proto__ = unsafeWin;
+        var res = Components.utils.evalInSandbox(str, sandbox);
+        return [res,typeof(res)];
+    };
+JS
+    my $window = $self->tab->{linkedBrowser}->{contentWindow};
+    my $uri = $self->uri;
+    return @{ $eval_in_sandbox->("$uri",$window,$self->document,$str) };
+};
+
+=head2 C<< $mech->unsafe_page_property_access ELEMENT >>
+
+Allows you unsafe access to properties of the current page. Using
+such properties is an incredibly bad idea.
+
+This is why the function C<die>s. If you really want to use
+this function, edit the source code.
+
+=cut
+
+sub unsafe_page_property_access {
+    my ($mech,$element) = @_;
+    die;
+    my $window = $mech->tab->{linkedBrowser}->{contentWindow};
+    my $unsafe = $window->{wrappedJSObject};
+    $unsafe->{$element}
+};
+
+
 1;
 
 __END__
