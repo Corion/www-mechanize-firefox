@@ -576,15 +576,16 @@ sub make_link {
     };
     
     if (defined $url) {
-        $url = URI->new($url);
-        WWW::Mechanize::Link->new({
+        my $res = WWW::Mechanize::Link->new({
             tag   => $tag,
             name  => $node->{name},
             base  => $base,
             url   => $url,
             text  => $node->{innerHTML},
             attrs => {},
-        })
+        });
+        
+        $res
     } else {
         ()
     };
@@ -614,6 +615,8 @@ C<< id >> - the C<id> attribute of the link
 
 C<< name >> - the C<name> attribute of the link
 
+C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
+
 C<< class >> - the C<class> attribute of the link
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
@@ -624,6 +627,12 @@ The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
 
 =cut
+
+sub quote_xpath($) {
+    local $_ = $_[0];
+    s/(['"\[])/\\$1/g;
+    $_
+};
 
 sub find_link_dom {
     my ($self,%opts) = @_;
@@ -637,23 +646,23 @@ sub find_link_dom {
         if ($n ne 'all'); # 1-based indexing
     my @spec;
     if (my $p = delete $opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', quotemeta $p;
+        push @spec, sprintf 'text() = "%s"', quote_xpath $p;
     }
     # broken?
     #if (my $p = delete $opts{ text_contains }) {
     #    push @spec, sprintf 'contains(text(),"%s")', quotemeta $p;
     #}
     if (my $p = delete $opts{ id }) {
-        push @spec, sprintf '@id = "%s"', quotemeta $p;
+        push @spec, sprintf '@id = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ name }) {
-        push @spec, sprintf '@name = "%s"', quotemeta $p;
+        push @spec, sprintf '@name = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ class }) {
-        push @spec, sprintf '@class = "%s"', quotemeta $p;
+        push @spec, sprintf '@class = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ url }) {
-        push @spec, sprintf '@href = "%s"', quotemeta $p;
+        push @spec, sprintf '@href = "%s" or @src="%s"', quote_xpath $p, quote_xpath $p;
     }
     my @tags = (sort keys %link_spec);
     if (my $p = delete $opts{ tag }) {
@@ -665,13 +674,14 @@ sub find_link_dom {
     
     my $q = join '|', 
             map {
-                my @full = grep {defined} (@spec, $link_spec{$_}->{xpath});
+                my @full = map {qq{($_)}} grep {defined} (@spec, $link_spec{$_}->{xpath});
                 if (@full) {
                     sprintf "//%s[%s]", $_, join " and ", @full;
                 } else {
                     sprintf "//%s", $_
                 };
             }  (@tags);
+    #warn $q;
     
     my @res = $document->__xpath($q);
     
@@ -684,9 +694,6 @@ sub find_link_dom {
         @res = grep { 
             WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
         } @res;
-        #for (@res) {
-        #    warn "<$_->{tagName}>";
-        #};
     };
     
     if ($single) {
