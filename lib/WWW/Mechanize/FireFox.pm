@@ -24,6 +24,9 @@ WWW::Mechanize::FireFox - use FireFox as if it were WWW::Mechanize
   my $mech = WWW::Mechanize::FireFox->new();
   $mech->get('http://google.com');
 
+  $mech->eval_in_page('alert("Hello FireFox")');
+  my $png = $mech->content_as_png();
+
 This will let you automate FireFox through the
 Mozrepl plugin, which you need to have installed
 in your FireFox.
@@ -1011,7 +1014,7 @@ If the coordinates are given, that rectangle will be cut out.
 The coordinates should be a hash with the four usual entries,
 C<left>,C<top>,C<width>,C<height>.
 
-=head3 Save top left corner the current page as PNG
+=head3 Save top left corner of the current page as PNG
 
   my $rect = {
     left  =>    0,
