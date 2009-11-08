@@ -1212,16 +1212,30 @@ C<js_console_messages> instead.
 
 =cut
 
+sub js_console {
+    my ($self) = @_;
+    my $getConsoleService = $self->repl->declare(<<'JS');
+    function() {
+        return  Components.classes["@mozilla.org/consoleservice;1"]
+                .getService(Ci.nsIConsoleService);
+    }
+JS
+    $getConsoleService->()
+}
+
 sub js_errors {
     my ($self,$page) = @_;
+    my $console = $self->js_console;
     my $getErrorMessages = $self->repl->declare(<<'JS');
-        var consoleService = Components.classes["@mozilla.org/consoleservice;1"];
+    function (consoleService) {
         var messages = [];
         var cnt = 0;
-        consoleService.getErrorMessages(messages,cnt);
-        return messages
+        var out = {};
+        consoleService.getMessageArray(out, {});
+        return out.value || []
+    };
 JS
-    my $m = $getErrorMessages->();
+    my $m = $getErrorMessages->($console);
     @$m
 }
 
@@ -1233,11 +1247,8 @@ Clears all Javascript messages from the console
 
 sub clear_js_errors {
     my ($self,$page) = @_;
-    my $resetConsole = $self->repl->declare(<<'JS');
-        var consoleService = Components.classes["@mozilla.org/consoleservice;1"];
-        consoleService.reset()
-JS
-    $resetConsole->()
+    $self->js_console->reset;
+
 };
 
 =head2 C<< $mech->eval_in_page STR >>
@@ -1300,7 +1311,6 @@ sub unsafe_page_property_access {
     my $unsafe = $window->{wrappedJSObject};
     $unsafe->{$element}
 };
-
 
 1;
 
