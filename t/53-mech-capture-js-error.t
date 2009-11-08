@@ -21,24 +21,35 @@ if (! $mech) {
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
-can_ok $mech, 'errors';
+can_ok $mech, 'js_errors','clear_js_errors';
+
+isa_ok $mech->js_console, 'MozRepl::RemoteObject::Instance',
+    'We can get at the console';
 
 sub load_file_ok {
-    my ($htmlfile) = @_;
+    my ($htmlfile,@options) = @_;
     my $fn = File::Spec->rel2abs(
-                 File::Spec->catfile(dirname $0,$htmlfile),
+                 File::Spec->catfile(dirname($0),$htmlfile),
                  getcwd,
              );
-    $fn =~ s!\\!/!; # fakey "make file:// URL"
-    $mech->get_ok("file://$fn");
-    is $mech->title, $htmlfile, "We loaded the right file";
+    $mech->allow(@options);
+    $fn =~ s!\\!/!g; # fakey "make file:// URL"
+    diag "Loading $fn";
+    $mech->get("file://$fn");
+    ok $mech->success, $htmlfile;
+    is $mech->title, $htmlfile, "We loaded the right file (@options)";
 };
 
-load_file_ok('53-mech-capture-js-noerror.html');
+load_file_ok('53-mech-capture-js-noerror.html', javascript => 0);
+is_deeply [$mech->js_errors], [], "No errors reported on page";
 
-is_deeply [$mech->errors], [], "No errors on page";
+load_file_ok('53-mech-capture-js-noerror.html', javascript => 1 );
+is_deeply [$mech->js_errors], [], "No errors reported on page";
 
-load_file_ok('53-mech-capture-js-error.html');
-is_deeply [$mech->errors], [
+load_file_ok('53-mech-capture-js-error.html', javascript => 0);
+is_deeply [$mech->js_errors], [], "Errors on page";
+
+load_file_ok('53-mech-capture-js-error.html', javascript => 1);
+is_deeply [$mech->js_errors], [
     '',
-], "No errors on page";
+], "Errors are found on page";
