@@ -1422,6 +1422,8 @@ C<< ->submit >>
 These functions are unlikely to be implemented because
 they make little sense in the context of FireFox.
 
+=over 4
+
 =item *
 
 C<< ->add_header >>

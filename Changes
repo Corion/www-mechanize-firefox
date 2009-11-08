@@ -1,4 +1,4 @@
-0.07 200911xx
+0.07 20091106
     . added ->eval_in_page() to evaluate Javascript in
       the context of the page
     . added better frame / iframe handling.
