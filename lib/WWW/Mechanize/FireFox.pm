@@ -1228,8 +1228,6 @@ sub js_errors {
     my $console = $self->js_console;
     my $getErrorMessages = $self->repl->declare(<<'JS');
     function (consoleService) {
-        var messages = [];
-        var cnt = 0;
         var out = {};
         consoleService.getMessageArray(out, {});
         return out.value || []
