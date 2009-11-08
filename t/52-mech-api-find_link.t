@@ -2,7 +2,6 @@
 use strict;
 use Test::More;
 use WWW::Mechanize::FireFox;
-use URI::file;
 
 my $mech = eval { WWW::Mechanize::FireFox->new( 
     autodie => 0,
