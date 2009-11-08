@@ -17,14 +17,11 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 19;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 can_ok $mech, 'js_errors','clear_js_errors';
-
-isa_ok $mech->js_console, 'MozRepl::RemoteObject::Instance',
-    'We can get at the console';
 
 sub load_file_ok {
     my ($htmlfile,@options) = @_;
@@ -40,6 +37,9 @@ sub load_file_ok {
     is $mech->title, $htmlfile, "We loaded the right file (@options)";
 };
 
+$mech->clear_js_errors;
+is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
+
 load_file_ok('53-mech-capture-js-noerror.html', javascript => 0);
 is_deeply [$mech->js_errors], [], "No errors reported on page";
 
@@ -50,6 +50,11 @@ load_file_ok('53-mech-capture-js-error.html', javascript => 0);
 is_deeply [$mech->js_errors], [], "Errors on page";
 
 load_file_ok('53-mech-capture-js-error.html', javascript => 1);
-is_deeply [$mech->js_errors], [
-    '',
-], "Errors are found on page";
+is scalar $mech->js_errors, 1, "One error message found";
+(my $msg) = $mech->js_errors;
+like $msg->{message}, qr/^\[JavaScript Error: "nonexisting_function is not defined"/, "Errors message";
+like $msg->{message}, qr!\Q53-mech-capture-js-error.html\E"!, "File name";
+like $msg->{message}, qr!\bline: 5\b!, "Line number";
+
+$mech->clear_js_errors;
+is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
