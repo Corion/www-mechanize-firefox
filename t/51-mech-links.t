@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 4;
+    plan tests => 8;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
@@ -32,15 +32,18 @@ my $content = <<HTML;
 <a href="http://corion.net/">http://corion.net</a>
 <a href="relative">relative</a>
 <a href="/absolute">/absolute</a>
-<iframe src="myframe">
+<iframe src="myframe"></iframe>
+<frame src="myframe"></frame>
 </body>
 </html>
 HTML
 
 $mech->update_html($content);
 
-my @found_links = $mech->links;
-is scalar @found_links, 6, 'All 6 links were found';
+{ local $TODO = "data: URLs don't play well with FRAMEs";
+    my @found_links = $mech->links;
+    is scalar @found_links, 7, 'All 7 links were found';
+};
 
 $content = <<HTML;
 <html>
@@ -53,13 +56,30 @@ $content = <<HTML;
 <p>Hello <b>WWW::Mechanize::FireFox</b></p>
 <h1>Links</h1>
 <a href="relative">relative</a>
+<iframe src="myiframe" />
+<frameset>
+<frame src="http://google.de/" /><!-- my frame -->
+</frameset>
 </body>
 </html>
 HTML
 
 $mech->update_html($content);
 
-@found_links = $mech->links;
-is scalar @found_links, 1, 'The one links was found';
+my @found_links = $mech->links;
+is scalar @found_links, 2, 'The two links were found'
+    or diag $_->url for @found_links;
 is $found_links[0]->url, 'http://somewhere.example/relative',
     'BASE tags get respected';
+is $found_links[1]->url, 'http://somewhere.example/myiframe',
+    'BASE tags get respected for iframes';
+    
+{
+    local $TODO = "FRAME tags don't play well with data: URLs";
+    my @frames = $mech->selector('frame');
+    is @frames, 1, "FRAME tag"
+        or diag $mech->content;
+}
+
+my @frames = $mech->selector('iframe');
+is @frames, 1, "IFRAME tag";

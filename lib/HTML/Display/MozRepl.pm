@@ -4,7 +4,7 @@ use Carp qw(carp);
 use WWW::Mechanize::FireFox;
 use parent 'HTML::Display::Common';
 use vars qw($VERSION);
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 =head1 NAME
 
@@ -12,7 +12,7 @@ HTML::Display::MozRepl - use a mozrepl enabled FireFox to display HTML
 
 =head1 SYNOPSIS
 
-See L<HTML::Display>
+  $ENV{PERL_HTML_DISPLAY} = 'HTML::Display::MozRepl';
 
 =cut
 

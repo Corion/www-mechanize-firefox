@@ -12,7 +12,7 @@ use HTTP::Cookies::MozRepl;
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 =head1 NAME
 
@@ -576,15 +576,16 @@ sub make_link {
     };
     
     if (defined $url) {
-        $url = URI->new($url);
-        WWW::Mechanize::Link->new({
+        my $res = WWW::Mechanize::Link->new({
             tag   => $tag,
             name  => $node->{name},
             base  => $base,
             url   => $url,
             text  => $node->{innerHTML},
             attrs => {},
-        })
+        });
+        
+        $res
     } else {
         ()
     };
@@ -614,6 +615,8 @@ C<< id >> - the C<id> attribute of the link
 
 C<< name >> - the C<name> attribute of the link
 
+C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
+
 C<< class >> - the C<class> attribute of the link
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
@@ -624,6 +627,12 @@ The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
 
 =cut
+
+sub quote_xpath($) {
+    local $_ = $_[0];
+    s/(['"\[])/\\$1/g;
+    $_
+};
 
 sub find_link_dom {
     my ($self,%opts) = @_;
@@ -637,19 +646,23 @@ sub find_link_dom {
         if ($n ne 'all'); # 1-based indexing
     my @spec;
     if (my $p = delete $opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', $p;
+        push @spec, sprintf 'text() = "%s"', quote_xpath $p;
     }
+    # broken?
+    #if (my $p = delete $opts{ text_contains }) {
+    #    push @spec, sprintf 'contains(text(),"%s")', quotemeta $p;
+    #}
     if (my $p = delete $opts{ id }) {
-        push @spec, sprintf '@id = "%s"', $p;
+        push @spec, sprintf '@id = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ name }) {
-        push @spec, sprintf '@name = "%s"', $p;
+        push @spec, sprintf '@name = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ class }) {
-        push @spec, sprintf '@class = "%s"', $p;
+        push @spec, sprintf '@class = "%s"', quote_xpath $p;
     }
     if (my $p = delete $opts{ url }) {
-        push @spec, sprintf '@href = "%s"', $p;
+        push @spec, sprintf '@href = "%s" or @src="%s"', quote_xpath $p, quote_xpath $p;
     }
     my @tags = (sort keys %link_spec);
     if (my $p = delete $opts{ tag }) {
@@ -661,13 +674,14 @@ sub find_link_dom {
     
     my $q = join '|', 
             map {
-                my @full = grep {defined} (@spec, $link_spec{$_}->{xpath});
+                my @full = map {qq{($_)}} grep {defined} (@spec, $link_spec{$_}->{xpath});
                 if (@full) {
                     sprintf "//%s[%s]", $_, join " and ", @full;
                 } else {
                     sprintf "//%s", $_
                 };
             }  (@tags);
+    #warn $q;
     
     my @res = $document->__xpath($q);
     
@@ -680,9 +694,6 @@ sub find_link_dom {
         @res = grep { 
             WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
         } @res;
-        #for (@res) {
-        #    warn "<$_->{tagName}>";
-        #};
     };
     
     if ($single) {
@@ -794,8 +805,13 @@ uses.
 =cut
 
 sub follow_link {
-    my ($self,%opts) = @_;
-    my $link = $self->find_link_dom(%opts);
+    my ($self,$link,%opts);
+    if (@_ == 2) { # assume only a link parameter
+        ($self,$link) = @_
+    } else {
+        ($self,%opts) = @_;
+        my $link = $self->find_link_dom(%opts);
+    }
     $self->synchronize( sub {
         $link->__click();
     });
@@ -1221,6 +1237,68 @@ JS
     $resetConsole->()
 };
 
+=head2 C<< $mech->eval_in_page STR >>
+
+Evaluates the given Javascript fragment in the
+context of the web page.
+Returns a pair of value and Javascript type.
+
+This allows access to variables and functions declared
+"globally" on the web page.
+
+The returned result needs to be treated with 
+extreme care because
+it might lead to Javascript execution in the context of
+your application instead of the context of the webpage.
+This should be evident for functions and complex data
+structures like objects. When working with results from
+untrusted sources, you can only safely use simple
+types like C<string>.
+
+This method is special to WWW::Mechanize::FireFox.
+
+Also, using this method opens a potential C<security risk>.
+
+=cut
+
+sub eval_in_page {
+    my ($self,$str) = @_;
+    my $eval_in_sandbox = $self->repl->declare(<<'JS');
+    function (uri,w,d,str) {
+        var unsafeWin = w.wrappedJSObject;
+        var safeWin = XPCNativeWrapper(unsafeWin);
+        var sandbox = Components.utils.Sandbox(safeWin);
+        sandbox.window = safeWin;
+        sandbox.document = sandbox.window.document;
+        sandbox.__proto__ = unsafeWin;
+        var res = Components.utils.evalInSandbox(str, sandbox);
+        return [res,typeof(res)];
+    };
+JS
+    my $window = $self->tab->{linkedBrowser}->{contentWindow};
+    my $uri = $self->uri;
+    return @{ $eval_in_sandbox->("$uri",$window,$self->document,$str) };
+};
+
+=head2 C<< $mech->unsafe_page_property_access ELEMENT >>
+
+Allows you unsafe access to properties of the current page. Using
+such properties is an incredibly bad idea.
+
+This is why the function C<die>s. If you really want to use
+this function, edit the source code.
+
+=cut
+
+sub unsafe_page_property_access {
+    my ($mech,$element) = @_;
+    die;
+    my $window = $mech->tab->{linkedBrowser}->{contentWindow};
+    my $unsafe = $window->{wrappedJSObject};
+    $unsafe->{$element}
+};
+
+
 1;
 
 __END__
@@ -1250,46 +1328,58 @@ can be C<undef>.
 
 =item *
 
-C<< ->put >>
-
-=item *
-
 C<< ->find_all_inputs >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->find_all_submits >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->images >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->find_image >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->find_all_images >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->forms >>
 
+This function is likely best implemented through C<< $mech->selector >>.
+
 =item *
 
 C<< ->form_number >>
 
+This function is likely best implemented through C<< $mech->xpath >>.
+
 =item *
 
 C<< ->form_name >>
+
+This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
 C<< ->form_id >>
 
 This one certainly would be easier done
-by C<< $mech->document->getElementById() >>
+by C<< $mech->xpath >>
 
 =item *
 
@@ -1307,6 +1397,8 @@ C<< ->select >>
 
 C<< ->set_fields >>
 
+This is basically a loop over C<< $mech->value >>.
+
 =item *
 
 C<< ->tick >>
@@ -1323,41 +1415,48 @@ C<< ->click >>
 
 C<< ->submit >>
 
+=back
+
+=head2 Functions that will likely never be implemented
+
+These functions are unlikely to be implemented because
+they make little sense in the context of FireFox.
+
 =item *
 
 C<< ->add_header >>
-
-Likely will never be implemented
 
 =item *
 
 C<< ->delete_header >>
 
-Likely will never be implemented
-
 =item *
 
 C<< ->clone >>
-
-Likely will never be implemented
 
 =item *
 
 C<< ->credentials( $username, $password ) >>
 
-Unlikely to be implemented
-
 =item *
 
 C<< ->get_basic_credentials( $realm, $uri, $isproxy ) >>
-
-Unlikely to be implemented
 
 =item *
 
 C<< ->clear_credentials() >>
 
-Unlikely to be implemented
+=item *
+
+C<< ->put >>
+
+I have no use for it
+
+=item *
+
+C<< ->post >>
+
+I have no use for it
 
 =back
 
@@ -1383,13 +1482,8 @@ Preferrably, there should be a common API between the two.
 
 =item *
 
-Spin off XPath queries and CSS selectors into
-their own Mechanize plugin.
-
-=item *
-
-Implement C<element_to_png> to render single elements
-as PNG graphics.
+Spin off XPath queries (C<< ->xpath >>) and CSS selectors (C<< ->selector >>)
+into their own Mechanize plugin(s).
 
 =back
 
