@@ -1193,6 +1193,53 @@ sub allow  {
     };
 };
 
+=head2 C<< $mech->js_errors [PAGE] >>
+
+An interface to the Javascript Error Console
+
+Returns the list of errors in the JEC
+
+=head3 Check that your Page has no Javascript compile errors
+
+  $mech->get('mypage');
+  my @errors = $mech->js_errors();
+  if (@errors) {
+      die "Found errors on page: @errors";
+  };
+
+Maybbe this should be called C<js_messages> or
+C<js_console_messages> instead.
+
+=cut
+
+sub js_errors {
+    my ($self,$page) = @_;
+    my $getErrorMessages = $self->repl->declare(<<'JS');
+        var consoleService = Components.classes["@mozilla.org/consoleservice;1"];
+        var messages = [];
+        var cnt = 0;
+        consoleService.getErrorMessages(messages,cnt);
+        return messages
+JS
+    my $m = $getErrorMessages->();
+    @$m
+}
+
+=head2 C<< $mech->clear_js_errors >>
+
+Clears all Javascript messages from the console
+
+=cut
+
+sub clear_js_errors {
+    my ($self,$page) = @_;
+    my $resetConsole = $self->repl->declare(<<'JS');
+        var consoleService = Components.classes["@mozilla.org/consoleservice;1"];
+        consoleService.reset()
+JS
+    $resetConsole->()
+};
+
 =head2 C<< $mech->eval_in_page STR >>
 
 Evaluates the given Javascript fragment in the
@@ -1377,6 +1424,8 @@ C<< ->submit >>
 
 These functions are unlikely to be implemented because
 they make little sense in the context of FireFox.
+
+=over 4
 
 =item *
 
