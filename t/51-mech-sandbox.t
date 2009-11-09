@@ -17,7 +17,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 12;
+    plan tests => 13;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
@@ -27,10 +27,20 @@ my $file = File::Spec->catfile( $dir, '51-mech-sandbox.html' );
 $file =~ s!\\!/!g; # fakey file:// construction
 $file = "file://$file";
 my $uri = URI::file->new($file);
+diag "Loading $file";
+
 $mech->get("$uri");
 $mech->allow('javascript' => 1);
 
-my ($get,$type) = $mech->eval_in_page('get');
+my ($state,$type) = eval { $mech->eval_in_page('state') };
+
+if (! $state) {
+    BAIL_OUT("Couldn't get at 'state'. Do you have a Javascript blocker?");
+};
+
+ok $state, "We found 'state'";
+
+(my ($get),$type) = eval { $mech->eval_in_page('get') };
 ok $get, "We found 'get'";
 is $type, 'function', "Result type";
 
@@ -41,7 +51,7 @@ eval {
 is $@, "", "No error when calling get()";
 is $v, 'Hello', "We got the initial value";
 
-(my ($set),$type) = $mech->eval_in_page('set');
+(my ($set),$type) = eval { $mech->eval_in_page('set') };
 ok $set, "We found 'set'";
 
 eval {

@@ -1,3 +1,8 @@
+0.08 20091109
+    . Make tests warn if I suspect that Javascript is
+      blocked by Noscript. This makes some tests fail.
+    . Require latest MozRepl::RemoteObject for sane encoding handling.
+
 0.07 20091106
     . added ->eval_in_page() to evaluate Javascript in
       the context of the page
