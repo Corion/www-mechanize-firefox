@@ -9,6 +9,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
+use Encode qw(encode);
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
@@ -398,7 +399,8 @@ sub response {
     };   
 
     # We're cool!
-    return HTTP::Response->new(200,'',[],$self->content)
+    my $c = $self->content;
+    return HTTP::Response->new(200,'',[],encode 'UTF-8', $c)
 }
 *res = \&response;
 
