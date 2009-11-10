@@ -2,6 +2,9 @@
 use strict;
 use Test::More;
 use WWW::Mechanize::FireFox;
+use URI::file;
+use Cwd;
+use File::Basename;
 
 my $mech = eval { WWW::Mechanize::FireFox->new( 
     autodie => 0,
@@ -18,7 +21,7 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
-my $res = eval { $mech->get('http://www.hotmail.com'); 1 };
+my $res = eval { $mech->get_local('70-rt71216.html'); 1 };
 my $err = $@;
 is $res, 1, 'Got Hotmail OK';
 is $err, "", 'No fatal errors';

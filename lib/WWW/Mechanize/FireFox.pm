@@ -4,6 +4,8 @@ use Time::HiRes;
 
 use MozRepl::RemoteObject;
 use URI;
+use Cwd;
+use File::Basename;
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
@@ -220,6 +222,27 @@ sub get {
     return $self->response
 };
 
+=head2 C<< $mech->get_local $filename >>
+
+Shorthand method to construct the appropriate
+C<< file:// >> URI and load it into FireFox.
+
+This method is special to WWW::Mechanize::FireFox but could
+also exist in WWW::Mechanize through a plugin.
+
+=cut
+
+sub get_local {
+    my ($self, $htmlfile) = @_;
+    my $fn = File::Spec->rel2abs(
+                 File::Spec->catfile(dirname($0),$htmlfile),
+                 getcwd,
+             );
+    $fn =~ s!\\!/!g; # fakey "make file:// URL"
+
+    $self->get("file://$fn")
+}
+
 # Should I port this to Perl?
 # Should this become part of MozRepl::RemoteObject?
 sub _addEventListener {
@@ -401,6 +424,7 @@ sub response {
     # We're cool!
     my $c = $self->content;
     return HTTP::Response->new(200,'',[],encode 'UTF-8', $c)
+    #return HTTP::Response->new(200,'',[],$c)
 }
 *res = \&response;
 
