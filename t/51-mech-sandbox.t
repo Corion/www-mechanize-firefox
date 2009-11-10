@@ -22,20 +22,14 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
 
-my $dir = File::Spec->rel2abs( dirname $0, getcwd() );
-my $file = File::Spec->catfile( $dir, '51-mech-sandbox.html' );
-$file =~ s!\\!/!g; # fakey file:// construction
-$file = "file://$file";
-my $uri = URI::file->new($file);
-diag "Loading $file";
-
-$mech->get("$uri");
+$mech->get_local('51-mech-sandbox.html');
 $mech->allow('javascript' => 1);
 
 my ($state,$type) = eval { $mech->eval_in_page('state') };
 
 if (! $state) {
-    BAIL_OUT("Couldn't get at 'state'. Do you have a Javascript blocker?");
+    SKIP: { skip "Couldn't get at 'state'. Do you have a Javascript blocker?", 12; };
+    exit;
 };
 
 ok $state, "We found 'state'";
