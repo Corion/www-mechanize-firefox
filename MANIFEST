@@ -6,6 +6,8 @@ lib/WWW/Mechanize/FireFox.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
+t/49-mech-get-file.html
+t/49-mech-get-file.t
 t/50-mech-ct.t
 t/50-mech-event.t
 t/50-mech-get.t
@@ -13,13 +15,19 @@ t/50-mech-multi-event.t
 t/50-mech-new.t
 t/50-mech-status.t
 t/51-mech-links.t
+t/51-mech-sandbox.html
+t/51-mech-sandbox.t
 t/51-mech-set-content.t
 t/52-mech-api-find_link-frames.t
 t/52-mech-api-find_link.html
 t/52-mech-api-find_link.t
 t/52-mech-xpath.t
+t/53-mech-capture-js-error.html
+t/53-mech-capture-js-error.t
+t/53-mech-capture-js-noerror.html
 t/60-mech-cookies.t
 t/70-mech-png.t
+t/70-rt71216.t
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t
