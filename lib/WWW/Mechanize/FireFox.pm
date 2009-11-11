@@ -1300,22 +1300,27 @@ Also, using this method opens a potential C<security risk>.
 =cut
 
 sub eval_in_page {
-    my ($self,$str) = @_;
+    my ($self,$str,$env) = @_;
+    $env ||= {};
     my $eval_in_sandbox = $self->repl->declare(<<'JS');
-    function (uri,w,d,str) {
+    function (w,d,str,env) {
         var unsafeWin = w.wrappedJSObject;
         var safeWin = XPCNativeWrapper(unsafeWin);
         var sandbox = Components.utils.Sandbox(safeWin);
         sandbox.window = safeWin;
         sandbox.document = sandbox.window.document;
+        // Transfer the environment
+        for (var e in env) {
+            sandbox[e] = env[e]
+            sandbox.window[e] = env[e]
+        }
         sandbox.__proto__ = unsafeWin;
         var res = Components.utils.evalInSandbox(str, sandbox);
         return [res,typeof(res)];
     };
 JS
     my $window = $self->tab->{linkedBrowser}->{contentWindow};
-    my $uri = $self->uri;
-    return @{ $eval_in_sandbox->("$uri",$window,$self->document,$str) };
+    return @{ $eval_in_sandbox->($window,$self->document,$str,$env) };
 };
 
 =head2 C<< $mech->unsafe_page_property_access ELEMENT >>

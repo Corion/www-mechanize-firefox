@@ -25,17 +25,13 @@ can_ok $mech, 'js_errors','clear_js_errors';
 
 sub load_file_ok {
     my ($htmlfile,@options) = @_;
-    my $fn = File::Spec->rel2abs(
-                 File::Spec->catfile(dirname($0),$htmlfile),
-                 getcwd,
-             );
     $mech->allow(@options);
-    $fn =~ s!\\!/!g; # fakey "make file:// URL"
-    diag "Loading $fn";
-    $mech->get("file://$fn");
+    $mech->get_local($htmlfile);
     ok $mech->success, $htmlfile;
     is $mech->title, $htmlfile, "We loaded the right file (@options)";
 };
+
+diag "Please make sure that file:// URLs are trusted";
 
 $mech->clear_js_errors;
 is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
