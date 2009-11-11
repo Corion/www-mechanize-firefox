@@ -47,21 +47,28 @@ sub openTabs {
 function() {
     var idx = 0;
     var tabs = [];
-
-    Array.prototype.forEach.call(
-        window.getBrowser().tabContainer.childNodes, 
-        function(tab) {
-            var d = tab.linkedBrowser.contentWindow.document;
-            tabs.push({
-                location: d.location.href,
-                document: d,
-                title:    d.title,
-                "id":     d.id,
-                index:    idx++,
-                panel:    tab.linkedPanel,
-                tab:      tab,
+    
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                       .getService(Components.interfaces.nsIWindowMediator);
+    var win = wm.getMostRecentWindow('navigator:browser');
+    if (win) {
+        var browser = win.getBrowser();
+        Array.prototype.forEach.call(
+            browser.tabContainer.childNodes, 
+            function(tab) {
+                var d = tab.linkedBrowser.contentWindow.document;
+                tabs.push({
+                    location: d.location.href,
+                    document: d,
+                    title:    d.title,
+                    "id":     d.id,
+                    index:    idx++,
+                    panel:    tab.linkedPanel,
+                    tab:      tab,
+                });
             });
-        });
+    };
+
     return tabs;
 }
 JS
@@ -153,11 +160,27 @@ sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->name;
-    my $tab = $repl->expr(<<'JS');
-        window.getBrowser().addTab()
+    my $tab = $repl->declare(<<'JS')->();
+    function (){
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        var win = wm.getMostRecentWindow('navigator:browser');
+        if (! win) {
+          // No browser windows are open, so open a new one.
+          window.open('about:blank');
+        };
+        return win.getBrowser().addTab()
+    }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
-        $tab->__release_action('window.getBrowser().removeTab(self)');
+        $tab->__release_action(<<'JS');
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        var win = wm.getMostRecentWindow('navigator:browser');
+        if (win) {
+            win.getBrowser().removeTab(self)
+        };
+JS
     };
     
     $tab

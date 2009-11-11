@@ -28,7 +28,7 @@ my $browser_id = $browser->__id;
 # Now fire the event
 $mech->repl->expr(<<JS);
     var b = $rn.getLink($browser_id);
-    var ev = content.document.createEvent('Events');
+    var ev = b.contentWindow.content.document.createEvent('Events');
     ev.initEvent("$name", true, true);
     b.dispatchEvent(ev);
 JS
@@ -37,7 +37,7 @@ is $listener->{event}, $name, '... and it was our event';
 
 $mech->repl->expr(<<JS, $mech->repl);
     var b = $rn.getLink($browser_id);
-    var ev = content.document.createEvent('MouseEvents');
+    var ev = b.contentWindow.content.document.createEvent('MouseEvents');
     ev.initMouseEvent('click', true, true, window,
                              0, 0, 0, 0, 0, false, false, false,
                              false, 0, null);
