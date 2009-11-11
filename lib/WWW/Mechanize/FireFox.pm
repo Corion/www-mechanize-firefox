@@ -1325,7 +1325,9 @@ write the Javascript yourself.
 
 This method is special to WWW::Mechanize::FireFox.
 
-Also, using this method opens a potential B<security risk>.
+Also, using this method opens a potential B<security risk> as
+the returned values can be objects and using these objects
+can execute malicious code in the context of the FireFox application.
 
 =head3 Override the Javascript C<alert()> function
 
