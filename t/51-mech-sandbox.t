@@ -17,7 +17,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 13;
+    plan tests => 17;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
@@ -28,7 +28,7 @@ $mech->allow('javascript' => 1);
 my ($state,$type) = eval { $mech->eval_in_page('state') };
 
 if (! $state) {
-    SKIP: { skip "Couldn't get at 'state'. Do you have a Javascript blocker?", 12; };
+    SKIP: { skip "Couldn't get at 'state'. Do you have a Javascript blocker?", 16; };
     exit;
 };
 
@@ -63,3 +63,30 @@ is $v, '123', "We got the new value";
 (my ($val),$type) = $mech->eval_in_page('hello');
 is $type, 'string', "Returning a string";
 is $val, 'Hello MozRepl', "Getting the right value";
+
+# Test for capturing alert():
+my @args;
+($state,$type) = eval { 
+    $mech->eval_in_page('foo',
+        { foo => 'bar' })
+};
+is $@, '', "No error";
+is $state, 'bar', "We can set up the environment";
+
+# Test for capturing alert():
+
+my $func = $mech->repl->declare(<<'JS');
+    function() {
+        alert(arguments);
+    };
+JS
+
+@args = ();
+($state,$type) = eval { 
+    $mech->eval_in_page('alert("Hello")',
+        +{ alert => sub { @args = @_ } }
+    )
+};
+is $@, '', "No error";
+#$mech->repl->poll;
+is_deeply \@args, ["Hello"], "We can override/capture functions";

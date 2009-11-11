@@ -1,3 +1,7 @@
+0.09 20091111
+    . Allow ->eval_in_page() to specify an overriding
+      environment, for example to override alert()
+
 0.08 20091109
     . Make tests warn if I suspect that Javascript is
       blocked by Noscript. This makes some tests fail.

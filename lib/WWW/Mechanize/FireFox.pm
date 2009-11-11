@@ -265,7 +265,6 @@ function(browser,events) {
                 lock.busy++;
                 lock.event = evname;
                 lock.js_event = {};
-                //alert(evname);
                 lock.js_event.target = e.originalTarget;
                 lock.js_event.type = e.type;
                 for( var j = 0; j < listeners.length; j++) {
@@ -1275,7 +1274,7 @@ sub clear_js_errors {
 
 };
 
-=head2 C<< $mech->eval_in_page STR >>
+=head2 C<< $mech->eval_in_page STR [, ENV] >>
 
 Evaluates the given Javascript fragment in the
 context of the web page.
@@ -1293,15 +1292,42 @@ structures like objects. When working with results from
 untrusted sources, you can only safely use simple
 types like C<string>.
 
+If you want to modify the environment the code is run under,
+pass in a hash reference as the second parameter. All keys
+will be inserted into the C<this> object as well as
+C<this.window>. Also, complex data structures are only
+supported if they contain no objects.
+If you need finer control, you'll have to
+write the Javascript yourself.
+
 This method is special to WWW::Mechanize::FireFox.
 
-Also, using this method opens a potential C<security risk>.
+Also, using this method opens a potential B<security risk>.
+
+=head3 Override the Javascript C<alert()> function
+
+  $mech->eval_in_page('alert("Hello");',
+      { alert => sub { print "Captured alert: '@_'\n" } }
+  );
 
 =cut
 
 sub eval_in_page {
     my ($self,$str,$env) = @_;
     $env ||= {};
+    my $js_env = {};
+    
+    # do a manual transfer of keys, to circumvent our stupid
+    # transformation routine:
+    if (keys %$env) {
+        $js_env = $self->repl->declare(<<'JS')->();
+            function () { return new Object }
+JS
+        for my $k (keys %$env) {
+            $js_env->{$k} = $env->{$k};
+        };
+    };
+    
     my $eval_in_sandbox = $self->repl->declare(<<'JS');
     function (w,d,str,env) {
         var unsafeWin = w.wrappedJSObject;
@@ -1320,7 +1346,8 @@ sub eval_in_page {
     };
 JS
     my $window = $self->tab->{linkedBrowser}->{contentWindow};
-    return @{ $eval_in_sandbox->($window,$self->document,$str,$env) };
+    my $d = $self->document;
+    return @{ $eval_in_sandbox->($window,$d,$str,$js_env) };
 };
 
 =head2 C<< $mech->unsafe_page_property_access ELEMENT >>
