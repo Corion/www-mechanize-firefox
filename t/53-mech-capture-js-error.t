@@ -31,12 +31,18 @@ sub load_file_ok {
     is $mech->title, $htmlfile, "We loaded the right file (@options)";
 };
 
-diag "Please make sure that file:// URLs are trusted";
-
 $mech->clear_js_errors;
 is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
 
 load_file_ok('53-mech-capture-js-noerror.html', javascript => 0);
+
+my ($js_ok,$type) = eval { $mech->eval_in_page('js_ok') };
+if (! $js_ok) {
+    SKIP: { skip "Couldn't get at 'js_ok' variable. Do you have a Javascript blocker enabled for file:// URLs?", 14; };
+    exit;
+};
+
+
 is_deeply [$mech->js_errors], [], "No errors reported on page";
 
 load_file_ok('53-mech-capture-js-noerror.html', javascript => 1 );
