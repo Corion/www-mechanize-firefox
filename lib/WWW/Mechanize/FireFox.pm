@@ -13,6 +13,7 @@ use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
 use Encode qw(encode);
 use Carp qw(carp croak);
+use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
 $VERSION = '0.09';
@@ -817,10 +818,10 @@ sub find_all_links_dom {
 };
 
 
-=head2 C<< $mech->click >>
+=head2 C<< $mech->click BUTTON >>
 
 Has the effect of clicking a button on the current form. The first argument
-is the name of the button to be clicked. The second and third arguments
+is the C<name> of the button to be clicked. The second and third arguments
 (optional) allow you to specify the (x,y) coordinates of the click.
 
 If there is only one button on the form, $mech->click() with no arguments
@@ -828,23 +829,70 @@ simply clicks that one button.
 
 Returns a L<HTTP::Response> object.
 
+As a deviation from the WWW::Mechanize API, you can also pass a 
+hash reference as the first parameter. In it, you can specify
+the parameters to search much like for the C<find_link> calls.
+
 =cut
 
 sub click {
     my ($self,$name,$x,$y) = @_;
-    $name = quotemeta($name || '');
-    my @buttons = (
-                   $self->xpath(sprintf q{//button[@name="%s"]}, $name),
-                   $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
-                   $self->xpath(q{//button}),
-                   $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
-                  );
-    if (! @buttons) {
-        croak "No button matching '$name' found";
+    
+    my %options;
+    my $q;
+    if (ref $name) {
+        if (blessed $name and $name->can('__click')) {
+            $options{ dom } = $name;
+            $options{ synchronize } = 1;
+        } else {
+            %options = %$name;
+        };
+    } else {
+        $options{ name } = $name;
+        $options{ synchronize } = 1;
     };
-    my $event = $self->synchronize($self->events, sub { # ,'abort'
+    if (! exists $options{ synchronize }) {
+        $options{ synchronize } = 1;
+    }
+    
+    my @buttons;
+    if ($options{ dom }) {
+        @buttons = $options{ dom };
+        $q = "DOM element";
+    } elsif (exists $options{ selector }) {
+        @buttons = $self->selector( $options{ selector } );
+        $q = "selector = '$options{ selector }'";
+    } elsif (exists $options{ xpath }) {
+        @buttons = $self->xpath( $options{ xpath } );
+        $q = "xpath = '$options{ xpath }'";
+    } elsif (exists $options{ name }) {
+        my $name = delete $options{ $name };
+        $q = "name = '$name'";
+        $name = quotemeta($name || '');
+        @buttons = (
+                       $self->xpath(sprintf q{//button[@name="%s"]}, $name),
+                       $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                       $self->xpath(q{//button}),
+                       $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
+                      );
+    };
+    if (! @buttons) {
+        croak "No button matching '$q' found";
+    };
+    if ($options{ single }) {
+        if (0 == @buttons) { croak "No link found matching '$q'" };
+        if (1 <  @buttons) {
+            $self->highlight_node(@buttons);
+            croak sprintf "%d elements found found matching '%s'", scalar @buttons, $q;
+        };
+    };
+    if ($options{ synchronize }) {
+        my $event = $self->synchronize($self->events, sub { # ,'abort'
+            $buttons[0]->__click();
+        });
+    } else {
         $buttons[0]->__click();
-    });
+    }
     return $self->response
 }
 
