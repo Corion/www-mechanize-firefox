@@ -673,7 +673,9 @@ C<< class >> - the C<class> attribute of the link
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
 
-C<< single >> - If true, ensure that only one element is found.
+C<< single >> - If true, ensure that only one element is found. Otherwise croak.
+
+C<< one >> - If true, ensure that at least one element is found. Otherwise croak.
 
 The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
@@ -690,8 +692,9 @@ sub find_link_dom {
     my ($self,%opts) = @_;
     my $document = delete $opts{ document } || $self->document;
     my $single = delete $opts{ single };
+    my $one = delete $opts{ one } || $single;
     if ($single and exists $opts{ n }) {
-        croak "Cannot use 'single' and 'n' option together"
+        croak "It doesn't make sense to use 'single' and 'n' option together"
     };
     my $n = (delete $opts{ n } || 1);
     $n--
@@ -748,11 +751,13 @@ sub find_link_dom {
         } @res;
     };
     
-    if ($single) {
+    if ($one) {
         if (0 == @res) { croak "No link found matching '$q'" };
-        if (1 <  @res) {
-            $self->highlight_node(@res);
-            croak sprintf "%d elements found found matching '%s'", scalar @res, $q;
+        if ($single) {
+            if (1 <  @res) {
+                $self->highlight_node(@res);
+                croak sprintf "%d elements found found matching '%s'", scalar @res, $q;
+            };
         };
     };
     
@@ -862,11 +867,12 @@ sub follow_link {
         ($self,$link) = @_
     } else {
         ($self,%opts) = @_;
-        $link = $self->find_link_dom(%opts);
+        $link = $self->find_link_dom(one => 1, %opts);
     }
     $self->synchronize( sub {
         $link->__click();
     });
+    
     $self->response
 }
 
