@@ -862,7 +862,7 @@ sub follow_link {
         ($self,$link) = @_
     } else {
         ($self,%opts) = @_;
-        my $link = $self->find_link_dom(%opts);
+        $link = $self->find_link_dom(%opts);
     }
     $self->synchronize( sub {
         $link->__click();
