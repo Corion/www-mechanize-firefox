@@ -177,9 +177,10 @@ JS
         var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                            .getService(Components.interfaces.nsIWindowMediator);
         var win = wm.getMostRecentWindow('navigator:browser');
-        if (win) {
-            win.getBrowser().removeTab(self)
-        };
+        if (!win) {
+            win = window;
+        }
+        win.getBrowser().removeTab(self)
 JS
     };
     
