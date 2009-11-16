@@ -11,6 +11,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
+use Scalar::Util 'blessed';
 use Encode qw(encode);
 use Carp qw(carp croak);
 
@@ -838,15 +839,20 @@ Returns a L<HTTP::Response> object.
 
 sub click {
     my ($self,$name,$x,$y) = @_;
-    $name = quotemeta($name || '');
-    my @buttons = (
-                   $self->xpath(sprintf q{//button[@name="%s"]}, $name),
-                   $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
-                   $self->xpath(q{//button}),
-                   $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
-                  );
-    if (! @buttons) {
-        croak "No button matching '$name' found";
+    my @buttons;
+    if (ref $name and blessed($name) and $name->can('__click')) {
+        @buttons = $name
+    } else {
+        $name = quotemeta($name || '');
+        @buttons = (
+                       $self->xpath(sprintf q{//button[@name="%s"]}, $name),
+                       $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                       $self->xpath(q{//button}),
+                       $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
+                      );
+        if (! @buttons) {
+            croak "No button matching '$name' found";
+        };
     };
     my $event = $self->synchronize($self->events, sub { # ,'abort'
         $buttons[0]->__click();
@@ -930,8 +936,13 @@ are triggered.
 
 sub value {
     my ($self,$name,$value,$pre,$post) = @_;
-    my @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, 
+    my @fields;
+    if (blessed $name) {
+        @fields = $name;
+    } else {
+        @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, 
                                           $name,              $name,                 $name);
+    };
     $pre ||= $self->{pre_value};
     $pre = [$pre]
         if (! ref $pre);
@@ -1021,7 +1032,8 @@ L<WWW::Mechanize>.
 
 sub selector {
     my ($self,$query,%options) = @_;
-    my $q = selector_to_xpath($query);
+    my $single = delete $options{ single };
+    my $q = selector_to_xpath($query, %options);
     
     my @res = $self->xpath($q);
     if ($options{single}) {
