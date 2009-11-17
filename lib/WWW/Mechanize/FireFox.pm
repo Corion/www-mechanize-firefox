@@ -705,7 +705,9 @@ sub quote_xpath($) {
 
 sub find_link_dom {
     my ($self,%opts) = @_;
+    my %xpath_options;
     my $document = delete $opts{ document } || $self->document;
+    my $node = delete $opts{ node } || $document;
     my $single = delete $opts{ single };
     my $one = delete $opts{ one } || $single;
     if ($single and exists $opts{ n }) {
@@ -753,7 +755,7 @@ sub find_link_dom {
             }  (@tags);
     #warn $q;
     
-    my @res = $document->__xpath($q);
+    my @res = $document->__xpath($q, $node);
     
     if (keys %opts) {
         # post-filter the remaining links through WWW::Mechanize
@@ -1132,8 +1134,8 @@ sub xpath {
     $options{ document } ||= $self->document;
     $options{ node } ||= $options{ document };
     $options{ user_info } ||= "'$query'";
-    my $single = delete $opts{ single };
-    my $one = delete $opts{ one } || $single;
+    my $single = delete $options{ single };
+    my $one = delete $options{ one } || $single;
     my @res = $options{ document }->__xpath($query, $options{ node });
     if ($one) {
         if (@res == 0) {
