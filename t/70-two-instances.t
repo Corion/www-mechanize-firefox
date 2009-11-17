@@ -16,7 +16,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 4;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox', "The first instance";

@@ -161,6 +161,7 @@ sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->name;
+    #warn $rn;
     my $tab = $repl->declare(<<'JS')->();
     function (){
         var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
@@ -1440,6 +1441,12 @@ In FireFox, the C<name> attribute of links seems always
 to be present on links, even if it's empty. This is in
 difference to WWW::Mechanize, where the C<name> attribute
 can be C<undef>.
+
+=head2 Multiple Instances
+
+Currently, you cannot use more than one instance of
+WWW::Mechanize::FireFox, because of interaction problems
+with L<MozRepl>.
 
 =head2 Unsupported Methods
 
