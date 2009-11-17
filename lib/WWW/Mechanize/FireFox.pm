@@ -162,7 +162,7 @@ sub addTab {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->name;
-    #warn $rn;
+
     my $tab = $repl->declare(<<'JS')->();
     function (){
         var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
@@ -170,20 +170,18 @@ sub addTab {
         var win = wm.getMostRecentWindow('navigator:browser');
         if (! win) {
           // No browser windows are open, so open a new one.
-          window.open('about:blank');
+          win = window.open('about:blank');
         };
         return win.getBrowser().addTab()
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
+        #var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+        #                   .getService(Components.interfaces.nsIWindowMediator);
+        #var win = wm.getMostRecentWindow('navigator:browser');
+        #if (!win){win = window}
         $tab->__release_action(<<'JS');
-        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                           .getService(Components.interfaces.nsIWindowMediator);
-        var win = wm.getMostRecentWindow('navigator:browser');
-        if (!win) {
-            win = window;
-        }
-        win.getBrowser().removeTab(self)
+window.getBrowser().removeTab(self)
 JS
     };
     
