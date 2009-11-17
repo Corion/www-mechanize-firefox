@@ -1085,8 +1085,8 @@ with an C<onclick> attribute.
 =cut
 
 sub clickables {
-    my ($self) = @_;
-    $self->xpath('//*[@onclick]');
+    my ($self, %options) = @_;
+    $self->xpath('//*[@onclick]', %options);
 };
 
 =head2 C<< $mech->xpath QUERY, %options >>
@@ -1106,6 +1106,16 @@ search a node within a subframe of C<< $mech->document >>.
 
 C<< node >> - node relative to which the code is to be executed
 
+=item *
+
+C<< single >> - If true, ensure that only one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
+
+=item *
+
+C<< one >> - If true, ensure that at least one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
+
 =back
 
 Returns the matched nodes.
@@ -1122,17 +1132,20 @@ sub xpath {
     $options{ document } ||= $self->document;
     $options{ node } ||= $options{ document };
     $options{ user_info } ||= "'$query'";
+    my $single = delete $opts{ single };
+    my $one = delete $opts{ one } || $single;
     my @res = $options{ document }->__xpath($query, $options{ node });
-    if ($options{single}) {
-        if (@res != 1) {
-            if (@res == 0) {
-                $self->signal_condition( "No elements found for $options{ user_info }" );
-            } else {
+    if ($one) {
+        if (@res == 0) {
+            $self->signal_condition( "No elements found for $options{ user_info }" );
+        };
+        if ($single) {
+            if (@res > 1) {
                 $self->highlight_nodes(@res);
                 $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
             }
         };
-        return $res[0];
+        return @res ? $res[0] : ();
     } else {
         return @res
     };
