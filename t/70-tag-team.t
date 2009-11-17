@@ -6,10 +6,12 @@ use URI::file;
 use Cwd;
 use File::Basename;
 
-my $mech = eval {WWW::Mechanize::FireFox->new( 
+my %options = (
     autodie => 0,
     #log => [qw[debug]]
-)};
+);
+
+my $mech = eval {WWW::Mechanize::FireFox->new( %options )};
 
 if (! $mech) {
     my $err = $@;
@@ -21,16 +23,13 @@ if (! $mech) {
 undef $mech;
 
 my @pages = qw(
-    70-rt71216.html
+    49-mech-get-file.html
     51-mech-sandbox.html
-    52-mech-api-find_link.html
+    53-mech-capture-js-noerror.html
 );
 
-my @mech = $mech, map {;
-    WWW::Mechanize::FireFox->new( 
-        autodie => 0,
-        #log => [qw[debug]]
-    )
+my @mech = map {;
+    WWW::Mechanize::FireFox->new( %options )
 } @pages;
 
 for my $mech (@mech) {
@@ -43,5 +42,5 @@ for my $page (0..$#pages) {
 for my $idx (0..$#mech) {
     my $mech = $mech[$idx];
     ok $mech->success;
-    like $mech->url, qr!/\Q$pages[ $idx ]\E$!i, "We navigated to the right file";
+    like $mech->uri, qr!/\Q$pages[ $idx ]\E$!i, "We navigated to the right file";
 };
