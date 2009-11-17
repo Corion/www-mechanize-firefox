@@ -144,6 +144,7 @@ sub new {
         unless $args{tab};
         
     $args{ response } ||= undef;
+    $args{ current_form } ||= undef;
         
     bless \%args, $class;
 };
@@ -219,7 +220,6 @@ This method is special to WWW::Mechanize::FireFox.
 =cut
 
 sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
-
 
 =head2 C<< $mech->get(URL) >>
 
@@ -609,6 +609,7 @@ Currently accepts no parameters.
     meta   => { url => 'content', xpath => q{translate(@http-equiv,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')="refresh"}, },
 );
 
+# taken from WWW::Mechanize. This should possibly just be reused there
 sub make_link {
     my ($self,$node,$base) = @_;
     my $tag = lc $node->{tagName};
@@ -654,6 +655,16 @@ sub links {
     } @links;
 };
 
+# Call croak or cluck, depending on the C< autodie > setting
+sub signal_condition {
+    my ($self,$msg) = @_;
+    if ($self->{autodie}) {
+        croak $msg
+    } else {
+        carp $msg
+    }
+};
+
 =head2 C<< $mech->find_link_dom OPTIONS >>
 
 A method to find links, like L<WWW::Mechanize>'s
@@ -675,9 +686,11 @@ C<< class >> - the C<class> attribute of the link
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
 
-C<< single >> - If true, ensure that only one element is found. Otherwise croak.
+C<< single >> - If true, ensure that only one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
 
-C<< one >> - If true, ensure that at least one element is found. Otherwise croak.
+C<< one >> - If true, ensure that at least one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
 
 The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
@@ -754,11 +767,13 @@ sub find_link_dom {
     };
     
     if ($one) {
-        if (0 == @res) { croak "No link found matching '$q'" };
+        if (0 == @res) { $self->signal_condition( "No link found matching '$q'" )};
         if ($single) {
             if (1 <  @res) {
                 $self->highlight_node(@res);
-                croak sprintf "%d elements found found matching '%s'", scalar @res, $q;
+                $self->signal_condition(
+                    sprintf "%d elements found found matching '%s'", scalar @res, $q
+                );
             };
         };
     };
@@ -852,7 +867,9 @@ sub click {
                        $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
                       );
         if (! @buttons) {
-            croak "No button matching '$name' found";
+            $self->signal_condition(
+                "No button matching '$name' found"
+            );
         };
     };
     my $event = $self->synchronize($self->events, sub { # ,'abort'
@@ -883,6 +900,57 @@ sub follow_link {
     $self->response
 }
 
+=head2 C<< $mech->current_form >>
+
+Returns the current form.
+
+This method is incompatible with L<WWW::Mechanize>.
+It returns the DOM C<< <form> >> object and not
+a L<HTML::Form> instance.
+
+=cut
+
+sub current_form {
+    $_[0]->{current_form}
+};
+
+=head2 C<< $mech->form_name NAME [, OPTIONS] >>
+
+Selects the current form by its name.
+
+=cut
+
+sub form_name {
+    my ($self,$name,%options) = @_;
+    $self->{current_form} = $self->selector("form:$name",single => 1,%options);
+};
+
+=head2 C<< $mech->form_id ID [, OPTIONS] >>
+
+Selects the current form by its C<id> attribute.
+
+This is equivalent to calling
+
+    $mech->selector("#$name",single => 1,%options)
+
+=cut
+
+sub form_id {
+    my ($self,$name,%options) = @_;
+    $self->{current_form} = $self->selector("#$name",single => 1,%options);
+};
+
+=head2 C<< $mech->form_number NUMBER [, OPTIONS] >>
+
+Selects the I<number>th form.
+
+=cut
+
+sub form_number {
+    my ($self,$number,%options) = @_;
+    $self->{current_form} = $self->xpath("//form[$number]",single => 1,%options);
+};
+
 =head2 C<< $mech->set_visible @values >>
 
 This method sets fields of the current form without having to know their
@@ -903,10 +971,15 @@ The specifiers that are possible in WWW::Mechanize are not yet supported.
 
 sub set_visible {
     my ($self,@values) = @_;
-    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]});
+    my $form = $self->current_form;
+    my @form;
+    if ($form) { @form = node => $form };
+    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]}, 
+                                      @form
+                                      );
     for my $idx (0..$#values) {
         if ($idx > $#visible_fields) {
-            croak "Not enough fields on page";
+            $self->signal_condition( "Not enough fields on page" );
         }
         $visible_fields[ $idx ]->{value} = $values[ $idx ];
     }
@@ -950,9 +1023,9 @@ sub value {
     $post ||= $self->{post_value};
     $post = [$post]
         if (! ref $pre);
-    croak "No field found for '$name'"
+    $self->signal_condition( "No field found for '$name'" )
         if (! @fields);
-    croak "Too many fields found for '$name'"
+    $self->signal_condition( "Too many fields found for '$name'" )
         if (@fields > 1);
     if (@_ >= 3) {
         for my $ev (@$pre) {
@@ -1016,10 +1089,10 @@ sub xpath {
     if ($options{single}) {
         if (@res != 1) {
             if (@res == 0) {
-                croak "No element found for '$query'";
+                $self->signal_condition( "No element found for '$query'" );
             } else {
                 $self->highlight_nodes(@res);
-                croak scalar @res . " elements found for '$query'";
+                $self->signal_condition( scalar @res . " elements found for '$query'" );
             }
         };
         return $res[0];
@@ -1046,10 +1119,10 @@ sub selector {
     if ($options{single}) {
         if (@res != 1) {
             if (@res == 0) {
-                croak "No element found for '$query'";
+                $self->signal_condition( "No element found for '$query'" );
             } else {
                 $self->highlight_nodes(@res);
-                croak scalar(@res) . " elements found for '$query'";
+                $self->signal_condition( scalar(@res) . " elements found for '$query'" );
             }
         };
         return $res[0];
@@ -1484,25 +1557,6 @@ This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
-C<< ->form_number >>
-
-This function is likely best implemented through C<< $mech->xpath >>.
-
-=item *
-
-C<< ->form_name >>
-
-This function is likely best implemented through C<< $mech->selector >>.
-
-=item *
-
-C<< ->form_id >>
-
-This one certainly would be easier done
-by C<< $mech->xpath >>
-
-=item *
-
 C<< ->form_with_fields >>
 
 =item *
@@ -1529,15 +1583,7 @@ C<< ->untick >>
 
 =item *
 
-C<< ->click >>
-
-=item *
-
 C<< ->submit >>
-
-=item *
-
-Make C<< ->selector >> and C<< ->xpath >> work across subframes.
 
 =back
 
@@ -1592,7 +1638,7 @@ I have no use for it
 
 =item *
 
-Implement C<autodie>
+Make C<< ->selector >> and C<< ->xpath >> work across subframes.
 
 =item *
 

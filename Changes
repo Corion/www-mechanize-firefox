@@ -1,3 +1,6 @@
+0.10 200911xx
+    . implemented ->form_name, ->form_id, ->form_number
+    
 0.09 20091111
     . Allow ->eval_in_page() to specify an overriding
       environment, for example to override alert()
