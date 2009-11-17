@@ -922,7 +922,11 @@ Selects the current form by its name.
 
 sub form_name {
     my ($self,$name,%options) = @_;
-    $self->{current_form} = $self->selector("form:$name",single => 1,%options);
+    $self->{current_form} = $self->selector("form:$name",
+        user_info => "form id '$name'",
+        single => 1,
+        %options
+    );
 };
 
 =head2 C<< $mech->form_id ID [, OPTIONS] >>
@@ -937,7 +941,11 @@ This is equivalent to calling
 
 sub form_id {
     my ($self,$name,%options) = @_;
-    $self->{current_form} = $self->selector("#$name",single => 1,%options);
+    $self->{current_form} = $self->selector("#$name",
+        user_info => "form id '$name'",
+        single => 1,
+        %options
+    );
 };
 
 =head2 C<< $mech->form_number NUMBER [, OPTIONS] >>
@@ -948,7 +956,35 @@ Selects the I<number>th form.
 
 sub form_number {
     my ($self,$number,%options) = @_;
-    $self->{current_form} = $self->xpath("//form[$number]",single => 1,%options);
+    $self->{current_form} = $self->xpath("//form[$number]",
+        user_info => "form number $number",
+        single => 1,
+        %options
+    );
+};
+
+=head2 C<< $mech->form_with_fields [$OPTIONS], FIELDS >>
+
+Find the form which has the listed fields.
+
+If the first argument is a hash reference, it's taken
+as options to C<< ->xpath >>
+
+=cut
+
+sub form_with_fields {
+    my ($self,@fields) = @_;
+    my $options = {};
+    if (ref $fields[0] eq 'HASH') {
+        $options = shift @fields;
+    };
+    my @clauses = map { sprintf '[@name="%s"]', quote_xpath($_) } @fields;
+    my $q = "//form" . join "", @clauses;
+    $self->{current_form} = $self->xpath($q,
+        single => 1,
+        user_info => "form fields [@fields]",
+        %$options
+    );
 };
 
 =head2 C<< $mech->set_visible @values >>
@@ -973,7 +1009,7 @@ sub set_visible {
     my ($self,@values) = @_;
     my $form = $self->current_form;
     my @form;
-    if ($form) { @form = node => $form };
+    if ($form) { @form = (node => $form) };
     my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]}, 
                                       @form
                                       );
@@ -1085,14 +1121,15 @@ sub xpath {
     my ($self,$query,%options) = @_;
     $options{ document } ||= $self->document;
     $options{ node } ||= $options{ document };
+    $options{ user_info } ||= "'$query'";
     my @res = $options{ document }->__xpath($query, $options{ node });
     if ($options{single}) {
         if (@res != 1) {
             if (@res == 0) {
-                $self->signal_condition( "No element found for '$query'" );
+                $self->signal_condition( "No elements found for $options{ user_info }" );
             } else {
                 $self->highlight_nodes(@res);
-                $self->signal_condition( scalar @res . " elements found for '$query'" );
+                $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
             }
         };
         return $res[0];
@@ -1112,23 +1149,9 @@ L<WWW::Mechanize>.
 
 sub selector {
     my ($self,$query,%options) = @_;
-    my $single = delete $options{ single };
-    my $q = selector_to_xpath($query, %options);
-    
-    my @res = $self->xpath($q);
-    if ($options{single}) {
-        if (@res != 1) {
-            if (@res == 0) {
-                $self->signal_condition( "No element found for '$query'" );
-            } else {
-                $self->highlight_nodes(@res);
-                $self->signal_condition( scalar(@res) . " elements found for '$query'" );
-            }
-        };
-        return $res[0];
-    } else {
-        return @res
-    }
+    $options{ user_info } ||= "CSS selector '$query'";
+    my $q = selector_to_xpath($query);    
+    $self->xpath($q, %options);
 };
 
 =head2 C<< $mech->cookies >>
