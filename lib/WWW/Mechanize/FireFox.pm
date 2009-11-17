@@ -39,44 +39,6 @@ in your FireFox.
 
 =cut
 
-# This should maybe become MozRepl::FireFox::Util?
-# or MozRepl::FireFox::UI ?
-sub openTabs {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    my $open_tabs = $repl->declare(<<'JS');
-function() {
-    var idx = 0;
-    var tabs = [];
-    
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                       .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    if (win) {
-        var browser = win.getBrowser();
-        Array.prototype.forEach.call(
-            browser.tabContainer.childNodes, 
-            function(tab) {
-                var d = tab.linkedBrowser.contentWindow.document;
-                tabs.push({
-                    location: d.location.href,
-                    document: d,
-                    title:    d.title,
-                    "id":     d.id,
-                    index:    idx++,
-                    panel:    tab.linkedPanel,
-                    tab:      tab,
-                });
-            });
-    };
-
-    return tabs;
-}
-JS
-    my $tabs = $open_tabs->();
-    return @$tabs
-}
-
 sub execute {
     my ($package,$repl,$js) = @_;
     if (2 == @_) {
@@ -149,6 +111,207 @@ sub new {
     bless \%args, $class;
 };
 
+=head1 JAVASCRIPT METHODS
+
+=head2 C<< $mech->allow OPTIONS >>
+
+Enables or disables browser features for the current tab.
+The following options are recognized:
+
+C<plugins> 	 - Whether to allow plugin execution.
+
+C<javascript> 	 - Whether to allow Javascript execution.
+
+C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
+
+C<frames>, C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
+
+C<images> 	 - Attribute stating whether or not images should be loaded.
+
+Options not listed remain unchanged.
+
+=head3 Disable Javascript
+
+  $mech->allow( javascript => 0 );
+
+=cut
+
+use vars '%known_options';
+%known_options = (
+    'javascript'    => 'allowJavascript',
+    'plugins'       => 'allowPlugins',
+    'metaredirects' => 'allowMetaRedirects',
+    'subframes'     => 'allowSubframes',
+    'frames'        => 'allowSubframes',
+    'images'        => 'allowImages',
+);
+
+sub allow  {
+    my ($self,%options) = @_;
+    my $shell = $self->docshell;
+    for my $opt (sort keys %options) {
+        if (my $opt_js = $known_options{ $opt }) {
+            $shell->{$opt_js} = $options{ $opt };
+        } else {
+            carp "Unknown option '$opt_js' (ignored)";
+        };
+    };
+};
+
+=head2 C<< $mech->js_errors [PAGE] >>
+
+An interface to the Javascript Error Console
+
+Returns the list of errors in the JEC
+
+=head3 Check that your Page has no Javascript compile errors
+
+  $mech->get('mypage');
+  my @errors = $mech->js_errors();
+  if (@errors) {
+      die "Found errors on page: @errors";
+  };
+
+Maybbe this should be called C<js_messages> or
+C<js_console_messages> instead.
+
+=cut
+
+sub js_console {
+    my ($self) = @_;
+    my $getConsoleService = $self->repl->declare(<<'JS');
+    function() {
+        return  Components.classes["@mozilla.org/consoleservice;1"]
+                .getService(Ci.nsIConsoleService);
+    }
+JS
+    $getConsoleService->()
+}
+
+sub js_errors {
+    my ($self,$page) = @_;
+    my $console = $self->js_console;
+    my $getErrorMessages = $self->repl->declare(<<'JS');
+    function (consoleService) {
+        var out = {};
+        consoleService.getMessageArray(out, {});
+        return out.value || []
+    };
+JS
+    my $m = $getErrorMessages->($console);
+    @$m
+}
+
+=head2 C<< $mech->clear_js_errors >>
+
+Clears all Javascript messages from the console
+
+=cut
+
+sub clear_js_errors {
+    my ($self,$page) = @_;
+    $self->js_console->reset;
+
+};
+
+=head2 C<< $mech->eval_in_page STR [, ENV] >>
+
+Evaluates the given Javascript fragment in the
+context of the web page.
+Returns a pair of value and Javascript type.
+
+This allows access to variables and functions declared
+"globally" on the web page.
+
+The returned result needs to be treated with 
+extreme care because
+it might lead to Javascript execution in the context of
+your application instead of the context of the webpage.
+This should be evident for functions and complex data
+structures like objects. When working with results from
+untrusted sources, you can only safely use simple
+types like C<string>.
+
+If you want to modify the environment the code is run under,
+pass in a hash reference as the second parameter. All keys
+will be inserted into the C<this> object as well as
+C<this.window>. Also, complex data structures are only
+supported if they contain no objects.
+If you need finer control, you'll have to
+write the Javascript yourself.
+
+This method is special to WWW::Mechanize::FireFox.
+
+Also, using this method opens a potential B<security risk> as
+the returned values can be objects and using these objects
+can execute malicious code in the context of the FireFox application.
+
+=head3 Override the Javascript C<alert()> function
+
+  $mech->eval_in_page('alert("Hello");',
+      { alert => sub { print "Captured alert: '@_'\n" } }
+  );
+
+=cut
+
+sub eval_in_page {
+    my ($self,$str,$env) = @_;
+    $env ||= {};
+    my $js_env = {};
+    
+    # do a manual transfer of keys, to circumvent our stupid
+    # transformation routine:
+    if (keys %$env) {
+        $js_env = $self->repl->declare(<<'JS')->();
+            function () { return new Object }
+JS
+        for my $k (keys %$env) {
+            $js_env->{$k} = $env->{$k};
+        };
+    };
+    
+    my $eval_in_sandbox = $self->repl->declare(<<'JS');
+    function (w,d,str,env) {
+        var unsafeWin = w.wrappedJSObject;
+        var safeWin = XPCNativeWrapper(unsafeWin);
+        var sandbox = Components.utils.Sandbox(safeWin);
+        sandbox.window = safeWin;
+        sandbox.document = sandbox.window.document;
+        // Transfer the environment
+        for (var e in env) {
+            sandbox[e] = env[e]
+            sandbox.window[e] = env[e]
+        }
+        sandbox.__proto__ = unsafeWin;
+        var res = Components.utils.evalInSandbox(str, sandbox);
+        return [res,typeof(res)];
+    };
+JS
+    my $window = $self->tab->{linkedBrowser}->{contentWindow};
+    my $d = $self->document;
+    return @{ $eval_in_sandbox->($window,$d,$str,$js_env) };
+};
+
+=head2 C<< $mech->unsafe_page_property_access ELEMENT >>
+
+Allows you unsafe access to properties of the current page. Using
+such properties is an incredibly bad idea.
+
+This is why the function C<die>s. If you really want to use
+this function, edit the source code.
+
+=cut
+
+sub unsafe_page_property_access {
+    my ($mech,$element) = @_;
+    die;
+    my $window = $mech->tab->{linkedBrowser}->{contentWindow};
+    my $unsafe = $window->{wrappedJSObject};
+    $unsafe->{$element}
+};
+
+=head1 UI METHODS
+
 =head2 C<< $mech->addTab( OPTIONS ) >>
 
 Creates a new tab. The tab will be automatically closed upon program exit.
@@ -188,6 +351,44 @@ JS
     $tab
 };
 
+# This should maybe become MozRepl::FireFox::Util?
+# or MozRepl::FireFox::UI ?
+sub openTabs {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    my $open_tabs = $repl->declare(<<'JS');
+function() {
+    var idx = 0;
+    var tabs = [];
+    
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                       .getService(Components.interfaces.nsIWindowMediator);
+    var win = wm.getMostRecentWindow('navigator:browser');
+    if (win) {
+        var browser = win.getBrowser();
+        Array.prototype.forEach.call(
+            browser.tabContainer.childNodes, 
+            function(tab) {
+                var d = tab.linkedBrowser.contentWindow.document;
+                tabs.push({
+                    location: d.location.href,
+                    document: d,
+                    title:    d.title,
+                    "id":     d.id,
+                    index:    idx++,
+                    panel:    tab.linkedPanel,
+                    tab:      tab,
+                });
+            });
+    };
+
+    return tabs;
+}
+JS
+    my $tabs = $open_tabs->();
+    return @$tabs
+}
+
 =head2 C<< $mech->tab >>
 
 Gets the object that represents the FireFox tab used by WWW::Mechanize::FireFox.
@@ -218,6 +419,52 @@ This method is special to WWW::Mechanize::FireFox.
 =cut
 
 sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
+
+=head2 C<< $mech->cookies >>
+
+Returns a L<HTTP::Cookies> object that was initialized
+from the live FireFox instance.
+
+B<Note:> C<< ->set_cookie >> is not yet implemented,
+as is saving the cookie jar.
+
+=cut
+
+sub cookies {
+    return HTTP::Cookies::MozRepl->new(
+        repl => $_[0]->repl
+    )
+}
+
+=head2 C<< $mech->highlight_node NODES >>
+
+Convenience method that marks all nodes in the arguments
+with
+
+  background: red;
+  border: solid black 1px;
+  display: block; /* if the element was display: none before */
+
+This is convenient if you need visual verification that you've
+got the right nodes.
+
+There currently is no way to restore the nodes to their original
+visual state except reloading the page.
+
+=cut
+
+sub highlight_node {
+    my ($self,@nodes) = @_;
+    for (@nodes) {
+        my $style = $_->{style};
+        $style->{display}    = 'block'
+            if $style->{display} eq 'none';
+        $style->{background} = 'red';
+        $style->{border}     = 'solid black 1px;';
+    };
+};
+
+=head1 NAVIGATION METHODS
 
 =head2 C<< $mech->get(URL) >>
 
@@ -364,72 +611,6 @@ sub synchronize {
     $self->_wait_while_busy($load_lock);
 };
 
-=head2 C<< $mech->document >>
-
-Returns the DOM document object.
-
-This is WWW::Mechanize::FireFox specific.
-
-=cut
-
-sub document {
-    my ($self) = @_;
-    $self->tab->__dive(qw[linkedBrowser contentWindow document]);
-}
-
-=head2 C<< $mech->docshell >>
-
-Returns the C<docShell> Javascript object.
-
-=cut
-
-sub docshell {
-    my ($self) = @_;
-    $self->tab->__dive(qw[linkedBrowser docShell]);
-}
-
-=head2 C<< $mech->content >>
-
-Returns the current content of the tab as a scalar.
-
-This is likely not binary-safe.
-
-It also currently only works for HTML pages.
-
-=cut
-
-sub content {
-    my ($self) = @_;
-    
-    my $rn = $self->repl->repl;
-    my $d = $self->document; # keep a reference to it!
-    
-    my $html = $self->repl->declare(<<'JS');
-function(d){
-    var e = d.createElement("div");
-    e.appendChild(d.documentElement.cloneNode(true));
-    return e.innerHTML;
-}
-JS
-    $html->($d);
-};
-
-=head2 C<< $mech->update_html $html >>
-
-Writes C<$html> into the current document. This is mostly
-implemented as a convenience method for L<HTML::Display::MozRepl>.
-
-=cut
-
-sub update_html {
-    my ($self,$content) = @_;
-    my $data = encode_base64($content,'');
-    my $url = qq{data:text/html;base64,$data};
-    $self->synchronize($self->events, sub {
-        $self->tab->{linkedBrowser}->loadURI($url);
-    });
-};
-
 =head2 C<< $mech->res >> / C<< $mech->response >>
 
 Returns the current response as a L<HTTP::Response> object.
@@ -546,6 +727,76 @@ sub uri {
     return URI->new( $loc );
 };
 
+=head1 CONTENT METHODS
+
+=head2 C<< $mech->document >>
+
+Returns the DOM document object.
+
+This is WWW::Mechanize::FireFox specific.
+
+=cut
+
+sub document {
+    my ($self) = @_;
+    $self->tab->__dive(qw[linkedBrowser contentWindow document]);
+}
+
+=head2 C<< $mech->docshell >>
+
+Returns the C<docShell> Javascript object.
+
+This is WWW::Mechanize::FireFox specific.
+
+=cut
+
+sub docshell {
+    my ($self) = @_;
+    $self->tab->__dive(qw[linkedBrowser docShell]);
+}
+
+=head2 C<< $mech->content >>
+
+Returns the current content of the tab as a scalar.
+
+This is likely not binary-safe.
+
+It also currently only works for HTML pages.
+
+=cut
+
+sub content {
+    my ($self) = @_;
+    
+    my $rn = $self->repl->repl;
+    my $d = $self->document; # keep a reference to it!
+    
+    my $html = $self->repl->declare(<<'JS');
+function(d){
+    var e = d.createElement("div");
+    e.appendChild(d.documentElement.cloneNode(true));
+    return e.innerHTML;
+}
+JS
+    $html->($d);
+};
+
+=head2 C<< $mech->update_html $html >>
+
+Writes C<$html> into the current document. This is mostly
+implemented as a convenience method for L<HTML::Display::MozRepl>.
+
+=cut
+
+sub update_html {
+    my ($self,$content) = @_;
+    my $data = encode_base64($content,'');
+    my $url = qq{data:text/html;base64,$data};
+    $self->synchronize($self->events, sub {
+        $self->tab->{linkedBrowser}->loadURI($url);
+    });
+};
+
 =head2 C<< $mech->base >>
 
 Returns the URL base for the current page.
@@ -578,6 +829,18 @@ sub content_type {
 
 *ct = \&content_type;
 
+=head2 C<< $mech->is_html() >>
+
+Returns true/false on whether our content is HTML, according to the
+HTTP headers.
+
+=cut
+
+sub is_html {       
+    my $self = shift;
+    return defined $self->ct && ($self->ct eq 'text/html');
+}
+
 =head2 C<< $mech->title >>
 
 Returns the current document title.
@@ -589,6 +852,7 @@ sub title {
     return $self->document->{title};
 };
 
+=head1 EXTRACTION METHODS
 
 =head2 C<< $mech->links >>
 
@@ -900,6 +1164,8 @@ sub follow_link {
     $self->response
 }
 
+=head1 FORM METHODS
+
 =head2 C<< $mech->current_form >>
 
 Returns the current form.
@@ -987,39 +1253,23 @@ sub form_with_fields {
     );
 };
 
-=head2 C<< $mech->set_visible @values >>
+=head2 C<< $mech->forms OPTIONS >>
 
-This method sets fields of the current form without having to know their
-names. So if you have a login screen that wants a username and password,
-you do not have to fetch the form and inspect the source (or use the
-C<mech-dump> utility, installed with L<WWW::Mechanize>) to see what
-the field names are; you can just say
+When called in a list context, returns a list 
+of the forms found in the last fetched page.
+In a scalar context, returns a reference to
+an array with those forms.
 
-  $mech->set_visible( $username, $password );
-
-and the first and second fields will be set accordingly. The method is
-called set_visible because it acts only on visible fields;
-hidden form inputs are not considered. 
-
-The specifiers that are possible in WWW::Mechanize are not yet supported.
+The returned elements are the DOM C<< <form> >> elements.
 
 =cut
 
-sub set_visible {
-    my ($self,@values) = @_;
-    my $form = $self->current_form;
-    my @form;
-    if ($form) { @form = (node => $form) };
-    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]}, 
-                                      @form
-                                      );
-    for my $idx (0..$#values) {
-        if ($idx > $#visible_fields) {
-            $self->signal_condition( "Not enough fields on page" );
-        }
-        $visible_fields[ $idx ]->{value} = $values[ $idx ];
-    }
-}
+sub forms {
+    my ($self, %options) = @_;
+    my @res = $self->selector('form', %options);
+    return wantarray ? @res
+                     : \@res
+};
 
 =head2 C<< $mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS] >>
 
@@ -1075,6 +1325,40 @@ sub value {
         };
     }
     $fields[0]->{value}
+}
+
+=head2 C<< $mech->set_visible @values >>
+
+This method sets fields of the current form without having to know their
+names. So if you have a login screen that wants a username and password,
+you do not have to fetch the form and inspect the source (or use the
+C<mech-dump> utility, installed with L<WWW::Mechanize>) to see what
+the field names are; you can just say
+
+  $mech->set_visible( $username, $password );
+
+and the first and second fields will be set accordingly. The method is
+called set_visible because it acts only on visible fields;
+hidden form inputs are not considered. 
+
+The specifiers that are possible in WWW::Mechanize are not yet supported.
+
+=cut
+
+sub set_visible {
+    my ($self,@values) = @_;
+    my $form = $self->current_form;
+    my @form;
+    if ($form) { @form = (node => $form) };
+    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]}, 
+                                      @form
+                                      );
+    for my $idx (0..$#values) {
+        if ($idx > $#visible_fields) {
+            $self->signal_condition( "Not enough fields on page" );
+        }
+        $visible_fields[ $idx ]->{value} = $values[ $idx ];
+    }
 }
 
 =head2 C<< $mech->clickables >>
@@ -1167,21 +1451,7 @@ sub selector {
     $self->xpath($q, %options);
 };
 
-=head2 C<< $mech->cookies >>
-
-Returns a L<HTTP::Cookies> object that was initialized
-from the live FireFox instance.
-
-B<Note:> C<< ->set_cookie >> is not yet implemented,
-as is saving the cookie jar.
-
-=cut
-
-sub cookies {
-    return HTTP::Cookies::MozRepl->new(
-        repl => $_[0]->repl
-    )
-}
+=head1 IMAGE METHODS
 
 =head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
 
@@ -1303,231 +1573,6 @@ JS
     $findPos->($element);
 };
 
-=head2 C<< $mech->highlight_node NODES >>
-
-Convenience method that marks all nodes in the arguments
-with
-
-  background: red;
-  border: solid black 1px;
-  display: block; /* if the element was display: none before */
-
-This is convenient if you need visual verification that you've
-got the right nodes.
-
-There currently is no way to restore the nodes to their original
-visual state except reloading the page.
-
-=cut
-
-sub highlight_node {
-    my ($self,@nodes) = @_;
-    for (@nodes) {
-        my $style = $_->{style};
-        $style->{display}    = 'block'
-            if $style->{display} eq 'none';
-        $style->{background} = 'red';
-        $style->{border}     = 'solid black 1px;';
-    };
-};
-
-=head2 C<< $mech->allow OPTIONS >>
-
-Enables or disables browser features for the current tab.
-The following options are recognized:
-
-C<plugins> 	 - Whether to allow plugin execution.
-
-C<javascript> 	 - Whether to allow Javascript execution.
-
-C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
-
-C<frames>, C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
-
-C<images> 	 - Attribute stating whether or not images should be loaded.
-
-Options not listed remain unchanged.
-
-=head3 Disable Javascript
-
-  $mech->allow( javascript => 0 );
-
-=cut
-
-use vars '%known_options';
-%known_options = (
-    'javascript'    => 'allowJavascript',
-    'plugins'       => 'allowPlugins',
-    'metaredirects' => 'allowMetaRedirects',
-    'subframes'     => 'allowSubframes',
-    'frames'        => 'allowSubframes',
-    'images'        => 'allowImages',
-);
-
-sub allow  {
-    my ($self,%options) = @_;
-    my $shell = $self->docshell;
-    for my $opt (sort keys %options) {
-        if (my $opt_js = $known_options{ $opt }) {
-            $shell->{$opt_js} = $options{ $opt };
-        } else {
-            carp "Unknown option '$opt_js' (ignored)";
-        };
-    };
-};
-
-=head2 C<< $mech->js_errors [PAGE] >>
-
-An interface to the Javascript Error Console
-
-Returns the list of errors in the JEC
-
-=head3 Check that your Page has no Javascript compile errors
-
-  $mech->get('mypage');
-  my @errors = $mech->js_errors();
-  if (@errors) {
-      die "Found errors on page: @errors";
-  };
-
-Maybbe this should be called C<js_messages> or
-C<js_console_messages> instead.
-
-=cut
-
-sub js_console {
-    my ($self) = @_;
-    my $getConsoleService = $self->repl->declare(<<'JS');
-    function() {
-        return  Components.classes["@mozilla.org/consoleservice;1"]
-                .getService(Ci.nsIConsoleService);
-    }
-JS
-    $getConsoleService->()
-}
-
-sub js_errors {
-    my ($self,$page) = @_;
-    my $console = $self->js_console;
-    my $getErrorMessages = $self->repl->declare(<<'JS');
-    function (consoleService) {
-        var out = {};
-        consoleService.getMessageArray(out, {});
-        return out.value || []
-    };
-JS
-    my $m = $getErrorMessages->($console);
-    @$m
-}
-
-=head2 C<< $mech->clear_js_errors >>
-
-Clears all Javascript messages from the console
-
-=cut
-
-sub clear_js_errors {
-    my ($self,$page) = @_;
-    $self->js_console->reset;
-
-};
-
-=head2 C<< $mech->eval_in_page STR [, ENV] >>
-
-Evaluates the given Javascript fragment in the
-context of the web page.
-Returns a pair of value and Javascript type.
-
-This allows access to variables and functions declared
-"globally" on the web page.
-
-The returned result needs to be treated with 
-extreme care because
-it might lead to Javascript execution in the context of
-your application instead of the context of the webpage.
-This should be evident for functions and complex data
-structures like objects. When working with results from
-untrusted sources, you can only safely use simple
-types like C<string>.
-
-If you want to modify the environment the code is run under,
-pass in a hash reference as the second parameter. All keys
-will be inserted into the C<this> object as well as
-C<this.window>. Also, complex data structures are only
-supported if they contain no objects.
-If you need finer control, you'll have to
-write the Javascript yourself.
-
-This method is special to WWW::Mechanize::FireFox.
-
-Also, using this method opens a potential B<security risk> as
-the returned values can be objects and using these objects
-can execute malicious code in the context of the FireFox application.
-
-=head3 Override the Javascript C<alert()> function
-
-  $mech->eval_in_page('alert("Hello");',
-      { alert => sub { print "Captured alert: '@_'\n" } }
-  );
-
-=cut
-
-sub eval_in_page {
-    my ($self,$str,$env) = @_;
-    $env ||= {};
-    my $js_env = {};
-    
-    # do a manual transfer of keys, to circumvent our stupid
-    # transformation routine:
-    if (keys %$env) {
-        $js_env = $self->repl->declare(<<'JS')->();
-            function () { return new Object }
-JS
-        for my $k (keys %$env) {
-            $js_env->{$k} = $env->{$k};
-        };
-    };
-    
-    my $eval_in_sandbox = $self->repl->declare(<<'JS');
-    function (w,d,str,env) {
-        var unsafeWin = w.wrappedJSObject;
-        var safeWin = XPCNativeWrapper(unsafeWin);
-        var sandbox = Components.utils.Sandbox(safeWin);
-        sandbox.window = safeWin;
-        sandbox.document = sandbox.window.document;
-        // Transfer the environment
-        for (var e in env) {
-            sandbox[e] = env[e]
-            sandbox.window[e] = env[e]
-        }
-        sandbox.__proto__ = unsafeWin;
-        var res = Components.utils.evalInSandbox(str, sandbox);
-        return [res,typeof(res)];
-    };
-JS
-    my $window = $self->tab->{linkedBrowser}->{contentWindow};
-    my $d = $self->document;
-    return @{ $eval_in_sandbox->($window,$d,$str,$js_env) };
-};
-
-=head2 C<< $mech->unsafe_page_property_access ELEMENT >>
-
-Allows you unsafe access to properties of the current page. Using
-such properties is an incredibly bad idea.
-
-This is why the function C<die>s. If you really want to use
-this function, edit the source code.
-
-=cut
-
-sub unsafe_page_property_access {
-    my ($mech,$element) = @_;
-    die;
-    my $window = $mech->tab->{linkedBrowser}->{contentWindow};
-    my $unsafe = $window->{wrappedJSObject};
-    $unsafe->{$element}
-};
-
 1;
 
 __END__
@@ -1554,6 +1599,10 @@ can be C<undef>.
 =head2 Unsupported Methods
 
 =over 4
+
+=item *
+
+C<< ->form_with_fields >> needs tests
 
 =item *
 
@@ -1584,16 +1633,6 @@ This function is likely best implemented through C<< $mech->selector >>.
 C<< ->find_all_images >>
 
 This function is likely best implemented through C<< $mech->selector >>.
-
-=item *
-
-C<< ->forms >>
-
-This function is likely best implemented through C<< $mech->selector >>.
-
-=item *
-
-C<< ->form_with_fields >>
 
 =item *
 
