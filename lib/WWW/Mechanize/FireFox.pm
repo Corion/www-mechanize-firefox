@@ -989,6 +989,11 @@ The options allow the following keys:
 
 =item *
 
+C<< document >> - document in which the code is to be executed. Use this to
+search a node within a subframe of C<< $mech->document >>.
+
+=item *
+
 C<< node >> - node relative to which the code is to be executed
 
 =back
@@ -1004,8 +1009,9 @@ L<WWW::Mechanize>.
 
 sub xpath {
     my ($self,$query,%options) = @_;
-    $options{ node } ||= $self->document;
-    my @res = $self->document->__xpath($query, $options{ node });
+    $options{ document } ||= $self->document;
+    $options{ node } ||= $options{ document };
+    my @res = $options{ document }->__xpath($query, $options{ node });
     if ($options{single}) {
         if (@res != 1) {
             if (@res == 0) {
@@ -1527,6 +1533,10 @@ C<< ->click >>
 =item *
 
 C<< ->submit >>
+
+=item *
+
+Make C<< ->selector >> and C<< ->xpath >> work across subframes.
 
 =back
 
