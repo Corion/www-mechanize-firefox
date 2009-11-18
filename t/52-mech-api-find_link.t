@@ -21,11 +21,8 @@ isa_ok $mech, 'WWW::Mechanize::FireFox';
 $mech->allow('metaredirects', 0); # protect ourselves against redirects
 $mech->allow('frames', 0); # protect ourselves against outside requests
 
-my $fn = 't/52-mech-api-find_link.html';
-open my $fh, '<', $fn
-    or die "Couldn't read '$fn': $!";
-my $content = do { local $/; <$fh> };
-$mech->update_html($content);
+my $fn = '52-mech-api-find_link.html';
+$mech->get_local($fn);
 ok( $mech->success, "Fetched $fn" ) or die q{Can't get test page};
 
 my $x;
@@ -36,8 +33,8 @@ is( $x->url, 'http://www.drphil.com/', 'First link on the page' );
 
 $x = $mech->find_link( n => 3 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-is( $x->[0], 'styles.css', 'Third link should be the CSS' );
-is( $x->url, 'styles.css', 'Third link should be the CSS' );
+like( $x->[0], qr/styles\.css$/, 'Third link should be the CSS' );
+like( $x->url, qr/styles\.css$/, 'Third link should be the CSS' );
 
 $x = $mech->find_link( url_regex => qr/upcase/i );
 isa_ok( $x, 'WWW::Mechanize::Link' );

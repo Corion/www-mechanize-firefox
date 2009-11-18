@@ -17,7 +17,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 5;
+    plan tests => 7;
 };
 
 isa_ok $mech, 'WWW::Mechanize::FireFox';
@@ -37,4 +37,10 @@ sub load_file_ok {
 };
 
 load_file_ok('49-mech-get-file.html', javascript => 0);
-load_file_ok('49-mech-get-file.html', javascript => 1 );
+$mech->get('about:blank');
+load_file_ok('49-mech-get-file.html', javascript => 1);
+$mech->get('about:blank');
+
+$mech->get_local('49-mech-get-file.html');
+ok $mech->success, '49-mech-get-file.html';
+is $mech->title, '49-mech-get-file.html', "We loaded the right file";
