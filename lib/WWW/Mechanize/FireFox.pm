@@ -1104,7 +1104,7 @@ sub find_all_links_dom {
 };
 
 
-=head2 C<< $mech->click >>
+=head2 C<< $mech->click NAME [,X,Y] >>
 
 Has the effect of clicking a button on the current form. The first argument
 is the name of the button to be clicked. The second and third arguments
@@ -1113,15 +1113,47 @@ is the name of the button to be clicked. The second and third arguments
 If there is only one button on the form, $mech->click() with no arguments
 simply clicks that one button.
 
+If you pass in a hash reference instead of a name,
+the following keys are recognized:
+
+=over 4
+
+=item * C<selector> - Find the element to click by the CSS selector
+
+=item * C<xpath> - Find the element to click by the XPath query
+
+=item * C<synchronize> - Synchronize the click (default is 1)
+
+=back
+
 Returns a L<HTTP::Response> object.
 
 =cut
 
 sub click {
     my ($self,$name,$x,$y) = @_;
+    my %options = (
+        synchronize => 1,
+    );
     my @buttons;
     if (ref $name and blessed($name) and $name->can('__click')) {
         @buttons = $name
+    } elsif (ref $name eq 'HASH') { # options
+        if (exists $name->{ dom }) {
+            @buttons = delete $name->{dom};
+        } else {
+            my ($method,$q);
+            for my $meth (qw(selector xpath)) {
+                if (exists $name->{ $meth }) {
+                    $q = delete $name->{ $meth };
+                    $method = $meth;
+                }
+            };
+            croak "Need either a selector or an xpath key!"
+                if not $method;
+            @buttons = $self->$method( $q => %$name );
+        };
+        %options = (%options, %$name);
     } else {
         $name = quotemeta($name || '');
         @buttons = (
@@ -1136,9 +1168,14 @@ sub click {
             );
         };
     };
-    my $event = $self->synchronize($self->events, sub { # ,'abort'
+    
+    if ($options{ synchronize }) {
+        my $event = $self->synchronize($self->events, sub { # ,'abort'
+            $buttons[0]->__click();
+        });
+    } else {
         $buttons[0]->__click();
-    });
+    }
     return $self->response
 }
 
@@ -1710,6 +1747,10 @@ I have no use for it
 =head1 TODO
 
 =over 4
+
+=item *
+
+Make C<< ->click >> use C<< ->click_with_options >>
 
 =item *
 
