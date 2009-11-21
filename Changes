@@ -1,6 +1,8 @@
 0.10 200911xx
     . implemented ->form_name, ->form_id, ->form_number
     . unified API between ->find_link, ->selector, ->xpath
+    . Needs MozRepl::RemoteObject 0.09 to ensure that
+      multiple $mech instances work
     
 0.09 20091111
     . Allow ->eval_in_page() to specify an overriding
