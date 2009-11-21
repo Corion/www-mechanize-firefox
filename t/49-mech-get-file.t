@@ -44,3 +44,5 @@ $mech->get('about:blank');
 $mech->get_local('49-mech-get-file.html');
 ok $mech->success, '49-mech-get-file.html';
 is $mech->title, '49-mech-get-file.html', "We loaded the right file";
+
+undef $mech;

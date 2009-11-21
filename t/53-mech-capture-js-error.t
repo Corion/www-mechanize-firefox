@@ -60,3 +60,5 @@ like $msg->{message}, qr!\bline: 5\b!, "Line number";
 
 $mech->clear_js_errors;
 is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
+
+undef $mech; # global destruction ...
