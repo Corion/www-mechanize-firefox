@@ -574,7 +574,7 @@ pass an array reference as the first parameter.
 
 Usually, you want to use it like this:
 
-  my $l = $mech->xpath('//a[@onclick]');
+  my $l = $mech->xpath('//a[@onclick]', single => 1);
   $mech->synchronize('DOMFrameContentLoaded', sub {
       $l->__click()
   });
