@@ -66,17 +66,9 @@ sub onStatusChange {
 }
 
 sub onProgressChange {
-    #my ($progress,$request,$uri) = @_;
-    
-    #my ($progress,$request,$uri) = @_;
-    #my $url = $uri->{spec};
     diag "Progress changed:  @_\n";
-    #push @changed_locations, $url;
 }
 
-#my $browser = $mech->repl->expr('window.getBrowser()');
-#my $browser = $mech->document;
-#my $browser = $mech->docshell;
 my $browser = $mech->tab->{linkedBrowser};
 
 my $eventlistener = $mech->progress_listener(
