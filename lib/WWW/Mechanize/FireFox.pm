@@ -399,6 +399,72 @@ This method is special to WWW::Mechanize::FireFox.
 
 sub tab { $_[0]->{tab} };
 
+=head2 C<< $mech->progress_listener SOURCE, CALLBACKS >>
+
+Sets up the callbacks for the C<< nsIWebProgressListener >> interface
+to be the Perl subroutines you pass in.
+
+Returns a handle. Once the handle gets released, all callbacks will
+get stopped.
+
+=head3 Get notified when the current tab changes
+
+    my $browser = $mech->repl->expr('window.getBrowser()');
+
+    my $eventlistener = progress_listener(
+        $browser,
+        onLocationChange => \&onLocationChange,
+    );
+
+    while (1) {
+        $mech->repl->poll();
+        sleep 1;
+    };
+
+=cut
+
+sub progress_listener {
+    my ($mech,$source,%handlers) = @_;
+    my $NOTIFY_STATE_DOCUMENT = $mech->repl->expr('Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT');
+    my ($obj) = $mech->repl->expr('new Object');
+    for my $key (keys %handlers) {
+        $obj->{$key} = $handlers{$key};
+    };
+    
+    my $mk_nsIWebProgressListener = $mech->repl->declare(<<'JS');
+    function (myListener,source) {
+        myListener.source = source;
+        //const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
+        //const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+        var callbacks = ['onStateChange',
+                       'onLocationChange',
+                       "onProgressChange",
+                       "onStatusChange",
+                       "onSecurityChange",
+                            ];
+        for (var h in callbacks) {
+            var e = callbacks[h];
+            if (! myListener[e]) {
+                myListener[e] = function(){}
+            };
+        };
+        myListener.QueryInterface = function(aIID) {
+            if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
+               aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+               aIID.equals(Components.interfaces.nsISupports))
+                return this;
+            throw Components.results.NS_NOINTERFACE;
+        };
+        return myListener
+    }
+JS
+    
+    my $lsn = $mk_nsIWebProgressListener->($obj,$source);
+    $lsn->__release_action('self.source.removeProgressListener(self)');
+    $source->addProgressListener($lsn,$NOTIFY_STATE_DOCUMENT);
+    $lsn
+};
+
 =head2 C<< $mech->repl >>
 
 Gets the L<MozRepl::RemoteObject> instance that is used.
