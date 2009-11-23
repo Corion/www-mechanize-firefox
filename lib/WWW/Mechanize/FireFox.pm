@@ -659,6 +659,45 @@ be used instead.
 
 =cut
 
+sub _install_response_header_listener {
+    my ($self) = @_;
+    
+    # These should be cached and optimized into one hash query
+    my $STATE_STOP = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_STOP');
+    my $STATE_IS_DOCUMENT = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
+    my $STATE_IS_WINDOW = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
+    my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
+
+    my $state_change = sub {
+        my ($progress,$request,$flags,$status) = @_;
+        #printf "State     : <progress> <request> %08x %08x\n", $flags, $status;
+        #printf "                                 %08x\n", $STATE_STOP;
+        
+        if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
+            $self->{ response } = $request;
+            if ($status) {
+                warn sprintf "%08x", $status;
+            };
+        };
+    };
+    my $status_change = sub {
+        my ($progress,$request,$status,$msg) = @_;
+        printf "Status     : <progress> <request> %08x %s\n", $status, $msg;
+        #printf "                                 %08x\n", $STATE_STOP;
+    };
+
+    my $browser = $self->tab->{linkedBrowser};
+
+    # These should mimick the LWP::UserAgent events maybe?
+    return $self->progress_listener(
+        $browser,
+        onStateChange => $state_change,
+        onProgressChange => sub { print  "Progress  : @_\n" },
+        onLocationChange => sub { printf "Location  : %s\n", $_[2]->{spec} },
+        onStatusChange   => sub { print  "Status    : @_\n"; },
+    );
+};
+
 sub synchronize {
     my ($self,$events,$callback) = @_;
     if (ref $events and ref $events eq 'CODE') {
@@ -669,12 +708,16 @@ sub synchronize {
     $events = [ $events ]
         unless ref $events;
     
+    undef $self->{response};
+    my $response_catcher = $self->_install_response_header_listener();
+    
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
     my $b = $self->tab->{linkedBrowser};
     my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
     $self->_wait_while_busy($load_lock);
+    $self->{response}
 };
 
 =head2 C<< $mech->res >> / C<< $mech->response >>
@@ -683,9 +726,45 @@ Returns the current response as a L<HTTP::Response> object.
 
 =cut
 
+sub _headerVisitor {
+    my ($self,$cb) = @_;
+    my $obj = $self->repl->expr('new Object');
+    $obj->{visitHeader} = $cb;
+    $obj
+};
+
+sub _extract_response {
+    my ($self,$request) = @_;
+    
+    my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
+    
+    $request->{requestSucceeded};
+    print $request->QueryInterface($nsIChannel)->{URI}->{scheme};
+    
+    
+    if (my $status = $request->{responseStatus}) {
+        my @headers;
+        my $v = $self->_headerVisitor(sub{push @headers, @_});
+        $request->visitResponseHeaders($v);
+        my $res = HTTP::Response->new(
+            $request->{responseStatus},
+            $request->{responseStatusText},
+            \@headers,
+            undef, # no body so far
+        );
+        return $res;
+    };
+};
+
 sub response {
     my ($self) = @_;
+    
+    if (my $js_res = $self->{ response }) {
+        return $self->_extract_response( $js_res );
+    };
+    
     my $eff_url = $self->document->{documentURI};
+    warn $eff_url;
     if ($eff_url =~ /^about:neterror/) {
         # this is an error
         return HTTP::Response->new(500)
@@ -694,7 +773,6 @@ sub response {
     # We're cool!
     my $c = $self->content;
     return HTTP::Response->new(200,'',[],encode 'UTF-8', $c)
-    #return HTTP::Response->new(200,'',[],$c)
 }
 *res = \&response;
 
