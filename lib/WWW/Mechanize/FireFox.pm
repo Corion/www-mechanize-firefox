@@ -674,15 +674,19 @@ sub _install_response_header_listener {
         #printf "                                 %08x\n", $STATE_STOP;
         
         if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
-            $self->{ response } = $request;
-            if ($status) {
-                warn sprintf "%08x", $status;
+            if ($status == 0) {
+                $self->{ response } = $request;
+            } else {
+                undef $self->{ response };
             };
+            #if ($status) {
+            #    warn sprintf "%08x", $status;
+            #};
         };
     };
     my $status_change = sub {
         my ($progress,$request,$status,$msg) = @_;
-        printf "Status     : <progress> <request> %08x %s\n", $status, $msg;
+        #printf "Status     : <progress> <request> %08x %s\n", $status, $msg;
         #printf "                                 %08x\n", $STATE_STOP;
     };
 
@@ -692,9 +696,9 @@ sub _install_response_header_listener {
     return $self->progress_listener(
         $browser,
         onStateChange => $state_change,
-        onProgressChange => sub { print  "Progress  : @_\n" },
-        onLocationChange => sub { printf "Location  : %s\n", $_[2]->{spec} },
-        onStatusChange   => sub { print  "Status    : @_\n"; },
+        #onProgressChange => sub { print  "Progress  : @_\n" },
+        #onLocationChange => sub { printf "Location  : %s\n", $_[2]->{spec} },
+        #onStatusChange   => sub { print  "Status    : @_\n"; },
     );
 };
 
@@ -739,8 +743,6 @@ sub _extract_response {
     my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
     
     $request->{requestSucceeded};
-    print $request->QueryInterface($nsIChannel)->{URI}->{scheme};
-    
     
     if (my $status = $request->{responseStatus}) {
         my @headers;
@@ -764,7 +766,7 @@ sub response {
     };
     
     my $eff_url = $self->document->{documentURI};
-    warn $eff_url;
+    #warn $eff_url;
     if ($eff_url =~ /^about:neterror/) {
         # this is an error
         return HTTP::Response->new(500)

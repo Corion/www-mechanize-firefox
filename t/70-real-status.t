@@ -10,7 +10,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 4;
 };
 
 $mech->get('http://google.de');
