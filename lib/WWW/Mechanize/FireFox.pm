@@ -11,7 +11,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
-use Scalar::Util 'blessed';
+use Scalar::Util qw'blessed weaken';
 use Encode qw(encode);
 use Carp qw(carp croak);
 
@@ -110,6 +110,20 @@ sub new {
         
     bless \%args, $class;
 };
+
+sub DESTROY {
+    my ($self) = @_;
+    #warn "Cleaning up mech";
+    local $@;
+    my $repl = delete $self->{ repl };
+    if ($repl) {
+        undef $self->{tab};
+        %$self = (); # wipe out all references we keep
+        # but keep $repl alive until we can dispose of it
+        # as the last thing, now:
+        $repl = undef;
+    };
+}
 
 =head1 JAVASCRIPT METHODS
 
@@ -339,13 +353,12 @@ sub addTab {
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
+        warn "Installing autoclose";
         #var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
         #                   .getService(Components.interfaces.nsIWindowMediator);
         #var win = wm.getMostRecentWindow('navigator:browser');
         #if (!win){win = window}
-        $tab->__release_action(<<'JS');
-window.getBrowser().removeTab(self)
-JS
+        $tab->__release_action('window.getBrowser().removeTab(self)');
     };
     
     $tab
@@ -662,6 +675,8 @@ be used instead.
 sub _install_response_header_listener {
     my ($self) = @_;
     
+    weaken $self;
+    
     # These should be cached and optimized into one hash query
     my $STATE_STOP = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
@@ -742,7 +757,7 @@ sub _extract_response {
     
     my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
     
-    $request->{requestSucceeded};
+    #$request->{requestSucceeded};
     
     if (my $status = $request->{responseStatus}) {
         my @headers;
@@ -761,10 +776,18 @@ sub _extract_response {
 sub response {
     my ($self) = @_;
     
+    # If we still have a valid JS response,
+    # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
-        return $self->_extract_response( $js_res );
+        #warn "JS response";
+        if ($js_res->{originalURI}->{scheme} =~ /^https?/) {
+            return $self->_extract_response( $js_res );
+        } else {
+            # ???
+        };
     };
     
+    # Otherwise, make up a reason:
     my $eff_url = $self->document->{documentURI};
     #warn $eff_url;
     if ($eff_url =~ /^about:neterror/) {
@@ -788,7 +811,8 @@ This is a convenience function that wraps C<< $mech->res->is_success >>.
 =cut
 
 sub success {
-    $_[0]->response->is_success
+    my $res = $_[0]->response;
+    $res and $res->is_success
 }
 
 =head2 C<< $mech->status >>

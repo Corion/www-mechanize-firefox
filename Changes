@@ -1,3 +1,6 @@
+0.11 200911xx
+    * Fix a memory leak/cycle that prevented tabs from closing
+
 0.10 200911xx
     . implemented ->form_name, ->form_id, ->form_number
     . unified API between ->find_link, ->selector, ->xpath
