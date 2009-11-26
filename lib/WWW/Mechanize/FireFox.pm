@@ -353,7 +353,7 @@ sub addTab {
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
-        warn "Installing autoclose";
+        #warn "Installing autoclose";
         #var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
         #                   .getService(Components.interfaces.nsIWindowMediator);
         #var win = wm.getMostRecentWindow('navigator:browser');
@@ -418,7 +418,9 @@ Sets up the callbacks for the C<< nsIWebProgressListener >> interface
 to be the Perl subroutines you pass in.
 
 Returns a handle. Once the handle gets released, all callbacks will
-get stopped.
+get stopped. Also, all Perl callbacks will get deregistered from the
+Javascript bridge, so make sure not to use the same callback
+in different progress listeners at the same time.
 
 =head3 Get notified when the current tab changes
 
@@ -474,6 +476,10 @@ JS
     
     my $lsn = $mk_nsIWebProgressListener->($obj,$source);
     $lsn->__release_action('self.source.removeProgressListener(self)');
+    $lsn->__on_destroy(sub {
+        # Clean up some memory leaks
+        $_[0]->bridge->remove_callback(values %handlers);
+    });
     $source->addProgressListener($lsn,$NOTIFY_STATE_DOCUMENT);
     $lsn
 };
@@ -783,7 +789,7 @@ sub response {
         if ($js_res->{originalURI}->{scheme} =~ /^https?/) {
             return $self->_extract_response( $js_res );
         } else {
-            # ???
+            # make up a response, below
         };
     };
     
@@ -817,9 +823,8 @@ sub success {
 
 =head2 C<< $mech->status >>
 
-Returns the HTTP status code of the response. This is a 3-digit number like 200 for OK, 404 for not found, and so on.
-
-Currently can only return 200 (for OK) and 500 (for error)
+Returns the HTTP status code of the response.
+This is a 3-digit number like 200 for OK, 404 for not found, and so on.
 
 =cut
 
