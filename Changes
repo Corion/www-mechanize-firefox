@@ -1,4 +1,8 @@
-0.11 200911xx
+0.12 200911xx
+    . Added ->save_url for downloading content to disk
+    . Added ->save_document for downloading the current document to disk
+
+0.11 20091126
     . Implement real HTTP response codes instead of the faked
       response codes.
     * Fix a memory leak/cycle that prevented tabs from closing

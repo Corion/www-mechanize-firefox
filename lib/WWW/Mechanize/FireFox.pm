@@ -589,8 +589,8 @@ It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
-Currently, the response will only have the status
-codes of 200 for a successful fetch and 500 for everything else.
+The detection of non-HTTP responses (like DNS failures, local
+network failures etc.) is sketchy at this time.
 
 =cut
 
@@ -1002,11 +1002,107 @@ sub update_html {
     });
 };
 
+=head2 C<< $mech->save_content $localname [, $resource_directory] >>
+
+Saves the given URL to the given filename. The URL will be
+fetched from the cache if possible, avoiding unnecessary network
+traffic.
+
+If C<$resource_directory> is given, the whole page including CSS,
+subframes and images
+is saved into that directory.
+
+Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
+download by calling its C<< ->cancelSave >> method. Also, you can poll
+the download status through the C<< ->{currentState} >> property.
+
+The download will
+continue in the background. It will also not show up in the
+Download Manager.
+
+=cut
+
+sub save_content {
+    my ($self,$localname,$resource_directory) = @_;
+    
+    $localname = File::Spec->rel2abs($localname, '.');    
+    # Touch the file
+    if (! -f $localname) {
+    	open my $fh, '>', $localname
+    	    or die "Couldn't create '$localname': $!";
+    };
+
+    if ($resource_directory) {
+        $resource_directory = File::Spec->rel2abs($resource_directory, '.');
+
+        # Create the directory
+        if (! -d $resource_directory) {
+            mkdir $resource_directory
+                or die "Couldn't create '$resource_directory': $!";
+        };
+    };
+    
+    my $transfer_file = $self->repl->declare(<<'JS');
+function (document,filetarget,rscdir) {
+    //new file object
+    var obj_target;
+    if (filetarget) {
+        obj_target = Components.classes["@mozilla.org/file/local;1"]
+        .createInstance(Components.interfaces.nsILocalFile);
+    };
+
+    //set file with path
+    obj_target.initWithPath(filetarget);
+
+    var obj_rscdir;
+    if (rscdir) {
+        obj_rscdir = Components.classes["@mozilla.org/file/local;1"]
+        .createInstance(Components.interfaces.nsILocalFile);
+        obj_rscdir.initWithPath(rscdir);
+    };
+
+    var obj_Persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+        .createInstance(Components.interfaces.nsIWebBrowserPersist);
+
+    // with persist flags if desired
+    const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+    const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+
+    //save file to target
+    obj_Persist.saveDocument(document,obj_target, obj_rscdir, null,0,0);
+    return obj_Persist
+};
+JS
+    warn "=> $localname / $resource_directory";
+    $transfer_file->($self->document, $localname, $resource_directory);
+}
+
 =head2 C<< $mech->save_url $url, $localname >>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
 traffic.
+
+Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
+download by calling its C<< ->cancelSave >> method. Also, you can poll
+the download status through the C<< ->{currentState} >> property.
+
+The download will
+continue in the background. It will also not show up in the
+Download Manager.
+
+=head3 Upload a file to an C<ftp> server
+
+You can use C<< ->save_url >> to I<transfer> files. C<$localname>
+can be a local filename, a C<file://> URL or any other URL that allows
+uploads, like C<ftp://>.
+
+  $mech->save_url('file://path/to/my/file.txt'
+      => 'ftp://myserver.example/my/file.txt');
+
+B< Not implemented > - this requires instantiating and passing
+a C< nsIURI > object instead of a C< nsILocalFile >.
 
 =cut
 
@@ -1020,23 +1116,25 @@ sub save_url {
     	    or die "Couldn't create '$localname': $!";
     };
     
-    my $download_file = $self->repl->declare(<<'JS');
-function (httpLoc,target) {
+    my $transfer_file = $self->repl->declare(<<'JS');
+function (source,filetarget) {
     //new obj_URI object
     var obj_URI = Components.classes["@mozilla.org/network/io-service;1"]
-        .getService(Components.interfaces.nsIIOService).newURI(httpLoc, null, null);
+        .getService(Components.interfaces.nsIIOService).newURI(source, null, null);
 
     //new file object
-    var obj_TargetFile = Components.classes["@mozilla.org/file/local;1"]
+    var obj_target;
+    if (filetarget) {
+        obj_target = Components.classes["@mozilla.org/file/local;1"]
         .createInstance(Components.interfaces.nsILocalFile);
+    };
 
     //set file with path
-    obj_TargetFile.initWithPath(target);
+    obj_target.initWithPath(filetarget);
 
     //new persitence object
     var obj_Persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
         .createInstance(Components.interfaces.nsIWebBrowserPersist);
-    // alert(target);
 
     // with persist flags if desired
     const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
@@ -1044,11 +1142,11 @@ function (httpLoc,target) {
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
 
     //save file to target
-    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_TargetFile);
+    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target);
+    return obj_Persist
 };
 JS
-    $download_file->("$url" => $localname);
-    return $localname
+    $transfer_file->("$url" => $localname);
 }
 
 =head2 C<< $mech->base >>
@@ -2001,6 +2099,11 @@ I have no use for it
 =head1 TODO
 
 =over 4
+
+=item *
+
+Implement download progress via C<nsIWebBrowserPersist.progressListener>
+and our own C<nsIWebProgressListener>.
 
 =item *
 
