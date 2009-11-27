@@ -57,21 +57,37 @@ extension installed.
 
 The following options are recognized:
 
+=over 4
+
+=item * 
+
 C<tab> - regex for the title of the tab to reuse. If no matching tab is
 found, the constructor dies.
 
+=item * 
+
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
+
+=item * 
 
 C<events> - the set of default Javascript events to listen for while
 waiting for a reply
 
+=item * 
+
 C<repl> - a premade L<MozRepl::RemoteObject> instance
+
+=item * 
 
 C<pre_events> - the events that are sent to an input field before its
 value is changed. By default this is C<[focus]>.
 
+=item * 
+
 C<post_events> - the events that are sent to an input field after its
 value is changed. By default this is C<[blur, change]>.
+
+=back
 
 =cut
 
@@ -132,15 +148,29 @@ sub DESTROY {
 Enables or disables browser features for the current tab.
 The following options are recognized:
 
+=over 4
+
+=item * 
+
 C<plugins> 	 - Whether to allow plugin execution.
+
+=item * 
 
 C<javascript> 	 - Whether to allow Javascript execution.
 
+=item * 
+
 C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
+
+=item * 
 
 C<frames>, C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
 
+=item * 
+
 C<images> 	 - Attribute stating whether or not images should be loaded.
+
+=back
 
 Options not listed remain unchanged.
 
