@@ -1002,6 +1002,55 @@ sub update_html {
     });
 };
 
+=head2 C<< $mech->save_url $url, $localname >>
+
+Saves the given URL to the given filename. The URL will be
+fetched from the cache if possible, avoiding unnecessary network
+traffic.
+
+=cut
+
+sub save_url {
+    my ($self,$url,$localname,%options) = @_;
+    
+    $localname = File::Spec->rel2abs($localname, '.');
+    
+    if (! -f $localname) {
+    	open my $fh, '>', $localname
+    	    or die "Couldn't create '$localname': $!";
+    };
+    
+    my $download_file = $self->repl->declare(<<'JS');
+function (httpLoc,target) {
+    //new obj_URI object
+    var obj_URI = Components.classes["@mozilla.org/network/io-service;1"]
+        .getService(Components.interfaces.nsIIOService).newURI(httpLoc, null, null);
+
+    //new file object
+    var obj_TargetFile = Components.classes["@mozilla.org/file/local;1"]
+        .createInstance(Components.interfaces.nsILocalFile);
+
+    //set file with path
+    obj_TargetFile.initWithPath(target);
+
+    //new persitence object
+    var obj_Persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
+        .createInstance(Components.interfaces.nsIWebBrowserPersist);
+    // alert(target);
+
+    // with persist flags if desired
+    const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
+    const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+
+    //save file to target
+    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_TargetFile);
+};
+JS
+    $download_file->("$url" => $localname);
+    return $localname
+}
+
 =head2 C<< $mech->base >>
 
 Returns the URL base for the current page.
