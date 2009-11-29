@@ -50,4 +50,3 @@ while ($countdown-- and $download->{currentState} != 3) {
     sleep 1;
 };
 is $download->{currentState}, 3, "Download finished properly";
-# give FireFox a second to download+save the file

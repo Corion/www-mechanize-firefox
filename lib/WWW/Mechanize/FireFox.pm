@@ -1008,16 +1008,17 @@ Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
 traffic.
 
-If C<$resource_directory> is given, the whole page including CSS,
-subframes and images
-is saved into that directory.
+If C<$resource_directory> is given, the whole page will be saved.
+All CSS, subframes and images
+will be saved into that directory, while the page HTML itself will
+still be saved in the file pointed to by C<$localname>.
 
 Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
 The download will
-continue in the background. It will also not show up in the
+continue in the background. It will not show up in the
 Download Manager.
 
 =cut
