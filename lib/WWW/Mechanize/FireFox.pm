@@ -1002,7 +1002,7 @@ sub update_html {
     });
 };
 
-=head2 C<< $mech->save_content $localname [, $resource_directory] >>
+=head2 C<< $mech->save_content $localname [, $resource_directory] [, %OPTIONS ] >>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1017,6 +1017,10 @@ Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
+If you are interested in the intermediate download progress, create
+a ProgressListener through C<< $mech->progress_listener >>
+and pass it in the C<progress> option.
+
 The download will
 continue in the background. It will not show up in the
 Download Manager.
@@ -1024,7 +1028,7 @@ Download Manager.
 =cut
 
 sub save_content {
-    my ($self,$localname,$resource_directory) = @_;
+    my ($self,$localname,$resource_directory,%options) = @_;
     
     $localname = File::Spec->rel2abs($localname, '.');    
     # Touch the file
@@ -1044,7 +1048,7 @@ sub save_content {
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
-function (document,filetarget,rscdir) {
+function (document,filetarget,rscdir,progress) {
     //new file object
     var obj_target;
     if (filetarget) {
@@ -1069,17 +1073,24 @@ function (document,filetarget,rscdir) {
     const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+    
+    obj_Persist.progressListener = progress;
 
     //save file to target
     obj_Persist.saveDocument(document,obj_target, obj_rscdir, null,0,0);
     return obj_Persist
 };
 JS
-    warn "=> $localname / $resource_directory";
-    $transfer_file->($self->document, $localname, $resource_directory);
+    #warn "=> $localname / $resource_directory";
+    $transfer_file->(
+        $self->document,
+        $localname,
+        $resource_directory,
+        $options{progress}
+    );
 }
 
-=head2 C<< $mech->save_url $url, $localname >>
+=head2 C<< $mech->save_url $url, $localname, [%OPTIONS] >>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1088,6 +1099,10 @@ traffic.
 Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
+
+If you are interested in the intermediate download progress, create
+a ProgressListener through C<< $mech->progress_listener >>
+and pass it in the C<progress> option.
 
 The download will
 continue in the background. It will also not show up in the
@@ -1118,7 +1133,7 @@ sub save_url {
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
-function (source,filetarget) {
+function (source,filetarget,progress) {
     //new obj_URI object
     var obj_URI = Components.classes["@mozilla.org/network/io-service;1"]
         .getService(Components.interfaces.nsIIOService).newURI(source, null, null);
@@ -1141,13 +1156,15 @@ function (source,filetarget) {
     const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+    
+    obj_Persist.progressListener = progress;
 
     //save file to target
     obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target);
     return obj_Persist
 };
 JS
-    $transfer_file->("$url" => $localname);
+    $transfer_file->("$url" => $localname, $options{progress});
 }
 
 =head2 C<< $mech->base >>
@@ -1221,7 +1238,9 @@ Currently accepts no parameters.
     frame  => { url => 'src', },
     iframe => { url => 'src', },
     link   => { url => 'href', },
-    meta   => { url => 'content', xpath => q{translate(@http-equiv,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')="refresh"}, },
+    meta   => { url => 'content', xpath => (join '',
+                    q{translate(@http-equiv,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',},
+                    q{'abcdefghijklmnopqrstuvwxyz')="refresh"}), },
 );
 
 # taken from WWW::Mechanize. This should possibly just be reused there
