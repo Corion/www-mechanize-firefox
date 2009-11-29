@@ -1,4 +1,4 @@
-package WWW::Mechanize::FireFox;
+package WWW::Mechanize::Firefox;
 use strict;
 use Time::HiRes;
 
@@ -20,20 +20,20 @@ $VERSION = '0.11';
 
 =head1 NAME
 
-WWW::Mechanize::FireFox - use FireFox as if it were WWW::Mechanize
+WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
 
 =head1 SYNOPSIS
 
-  use WWW::Mechanize::FireFox;
-  my $mech = WWW::Mechanize::FireFox->new();
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new();
   $mech->get('http://google.com');
 
-  $mech->eval_in_page('alert("Hello FireFox")');
+  $mech->eval_in_page('alert("Hello Firefox")');
   my $png = $mech->content_as_png();
 
-This will let you automate FireFox through the
+This will let you automate Firefox through the
 Mozrepl plugin, which you need to have installed
-in your FireFox.
+in your Firefox.
 
 =head1 METHODS
 
@@ -284,11 +284,11 @@ supported if they contain no objects.
 If you need finer control, you'll have to
 write the Javascript yourself.
 
-This method is special to WWW::Mechanize::FireFox.
+This method is special to WWW::Mechanize::Firefox.
 
 Also, using this method opens a potential B<security risk> as
 the returned values can be objects and using these objects
-can execute malicious code in the context of the FireFox application.
+can execute malicious code in the context of the Firefox application.
 
 =head3 Override the Javascript C<alert()> function
 
@@ -394,8 +394,8 @@ JS
     $tab
 };
 
-# This should maybe become MozRepl::FireFox::Util?
-# or MozRepl::FireFox::UI ?
+# This should maybe become MozRepl::Firefox::Util?
+# or MozRepl::Firefox::UI ?
 sub openTabs {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
@@ -434,9 +434,9 @@ JS
 
 =head2 C<< $mech->tab >>
 
-Gets the object that represents the FireFox tab used by WWW::Mechanize::FireFox.
+Gets the object that represents the Firefox tab used by WWW::Mechanize::Firefox.
 
-This method is special to WWW::Mechanize::FireFox.
+This method is special to WWW::Mechanize::Firefox.
 
 =cut
 
@@ -518,7 +518,7 @@ JS
 
 Gets the L<MozRepl::RemoteObject> instance that is used.
 
-This method is special to WWW::Mechanize::FireFox.
+This method is special to WWW::Mechanize::Firefox.
 
 =cut
 
@@ -526,10 +526,10 @@ sub repl { $_[0]->{repl} };
 
 =head2 C<< $mech->events >>
 
-Sets or gets the set of Javascript events that WWW::Mechanize::FireFox
+Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
 will wait for after requesting a new page. Returns an array reference.
 
-This method is special to WWW::Mechanize::FireFox.
+This method is special to WWW::Mechanize::Firefox.
 
 =cut
 
@@ -538,7 +538,7 @@ sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
 =head2 C<< $mech->cookies >>
 
 Returns a L<HTTP::Cookies> object that was initialized
-from the live FireFox instance.
+from the live Firefox instance.
 
 B<Note:> C<< ->set_cookie >> is not yet implemented,
 as is saving the cookie jar.
@@ -611,9 +611,9 @@ sub get {
 =head2 C<< $mech->get_local $filename >>
 
 Shorthand method to construct the appropriate
-C<< file:// >> URI and load it into FireFox.
+C<< file:// >> URI and load it into Firefox.
 
-This method is special to WWW::Mechanize::FireFox but could
+This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
 
 =cut
@@ -698,7 +698,7 @@ It is necessary to synchronize with the browser whenever
 a click performs an action that takes longer and
 fires an event on the browser object.
 
-The C<DOMFrameContentLoaded> event is fired by FireFox when
+The C<DOMFrameContentLoaded> event is fired by Firefox when
 the whole DOM and all C<iframe>s have been loaded.
 If your document doesn't have frames, use the C<DOMContentLoaded>
 event instead.
@@ -938,7 +938,7 @@ sub uri {
 
 Returns the DOM document object.
 
-This is WWW::Mechanize::FireFox specific.
+This is WWW::Mechanize::Firefox specific.
 
 =cut
 
@@ -951,7 +951,7 @@ sub document {
 
 Returns the C<docShell> Javascript object.
 
-This is WWW::Mechanize::FireFox specific.
+This is WWW::Mechanize::Firefox specific.
 
 =cut
 
@@ -1174,7 +1174,7 @@ Returns the URL base for the current page.
 The base is either specified through a C<base>
 tag or is the current URL.
 
-This method is specific to WWW::Mechanize::FireFox
+This method is specific to WWW::Mechanize::Firefox
 
 =cut
 
@@ -1784,7 +1784,7 @@ sub clickables {
 
 =head2 C<< $mech->xpath QUERY, %options >>
 
-Runs an XPath query in FireFox against the current document.
+Runs an XPath query in Firefox against the current document.
 
 The options allow the following keys:
 
@@ -1866,9 +1866,9 @@ sub selector {
 
 Returns the given tab or the current page rendered as PNG image.
 
-This is specific to WWW::Mechanize::FireFox.
+This is specific to WWW::Mechanize::Firefox.
 
-Currently, the data transfer between FireFox and Perl
+Currently, the data transfer between Firefox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
 
@@ -1988,7 +1988,7 @@ __END__
 
 =head1 COOKIE HANDLING
 
-FireFox cookies will be read through L<HTTP::Cookies::MozRepl>. This is
+Firefox cookies will be read through L<HTTP::Cookies::MozRepl>. This is
 relatively slow currently.
 
 =head1 INCOMPATIBILITIES WITH WWW::Mechanize
@@ -2000,7 +2000,7 @@ have been implemented by me so far.
 
 =head2 Link attributes
 
-In FireFox, the C<name> attribute of links seems always
+In Firefox, the C<name> attribute of links seems always
 to be present on links, even if it's empty. This is in
 difference to WWW::Mechanize, where the C<name> attribute
 can be C<undef>.
@@ -2074,7 +2074,7 @@ C<< ->submit >>
 =head2 Functions that will likely never be implemented
 
 These functions are unlikely to be implemented because
-they make little sense in the context of FireFox.
+they make little sense in the context of Firefox.
 
 =over 4
 
@@ -2141,7 +2141,7 @@ Implement "reuse tab if exists, otherwise create new"
 
 Rip out parts of Test::HTML::Content and graft them
 onto the C<links()> and C<find_link()> methods here.
-FireFox is a conveniently unified XPath engine.
+Firefox is a conveniently unified XPath engine.
 
 Preferrably, there should be a common API between the two.
 
@@ -2158,7 +2158,7 @@ into their own Mechanize plugin(s).
 
 =item *
 
-The MozRepl FireFox plugin at L<http://wiki.github.com/bard/mozrepl>
+The MozRepl Firefox plugin at L<http://wiki.github.com/bard/mozrepl>
 
 =item *
 
@@ -2178,7 +2178,7 @@ for more tab info
 =head1 REPOSITORY
 
 The public repository of this module is 
-L<http://github.com/Corion/www-mechanize-firefox>.
+L<http://github.com/Corion/www-mechanize-Firefox>.
 
 =head1 AUTHOR
 

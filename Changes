@@ -1,4 +1,5 @@
 0.12 200911xx
+    o Renamed to ::Firefox
     . Added ->save_url for downloading content to disk
     . Added ->save_document for downloading the current document to disk
 

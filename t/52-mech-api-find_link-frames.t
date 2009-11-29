@@ -1,9 +1,9 @@
 #!perl -w
 use strict;
 use Test::More;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::FireFox->new( 
+my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]]
 )};
@@ -18,7 +18,7 @@ if (! $mech) {
     plan tests => 3;
 };
 
-isa_ok $mech, 'WWW::Mechanize::FireFox';
+isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 $mech->allow('metaredirects', 0); # protect ourselves against redirects
 #$mech->allow('frames', 0); # protect ourselves against redirects

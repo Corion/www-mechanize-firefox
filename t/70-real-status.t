@@ -1,9 +1,9 @@
 use strict;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 
-my $mech = eval {WWW::Mechanize::FireFox->new()};
+my $mech = eval {WWW::Mechanize::Firefox->new()};
 
 if (! $mech) {
     my $err = $@;

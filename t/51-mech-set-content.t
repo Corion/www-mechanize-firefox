@@ -1,9 +1,9 @@
 #!perl -w
 use strict;
 use Test::More;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::FireFox->new( 
+my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]]
 )};
@@ -16,16 +16,16 @@ if (! $mech) {
     plan tests => 2;
 };
 
-isa_ok $mech, 'WWW::Mechanize::FireFox';
+isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 my $content = <<HTML;
 <html>
 <head>
-<title>Hello FireFox!</title>
+<title>Hello Firefox!</title>
 </head>
 <body>
 <h1>Hello World!</h1>
-<p>Hello <b>WWW::Mechanize::FireFox</b></p>
+<p>Hello <b>WWW::Mechanize::Firefox</b></p>
 </body>
 </html>
 HTML

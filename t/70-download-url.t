@@ -1,10 +1,10 @@
 use strict;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 use File::Spec;
 
-my $mech = eval {WWW::Mechanize::FireFox->new(
+my $mech = eval {WWW::Mechanize::Firefox->new(
     #log => ['debug'],
 )};
 

@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use Test::More;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use URI::file;
 use Cwd;
 use File::Basename;
@@ -11,7 +11,7 @@ my %options = (
     #log => [qw[debug]]
 );
 
-my $mech = eval {WWW::Mechanize::FireFox->new( %options )};
+my $mech = eval {WWW::Mechanize::Firefox->new( %options )};
 
 if (! $mech) {
     my $err = $@;
@@ -29,11 +29,11 @@ my @pages = qw(
 );
 
 my @mech = map {;
-    WWW::Mechanize::FireFox->new( %options )
+    WWW::Mechanize::Firefox->new( %options )
 } @pages;
 
 for my $mech (@mech) {
-    isa_ok $mech, 'WWW::Mechanize::FireFox';
+    isa_ok $mech, 'WWW::Mechanize::Firefox';
 };
 
 for my $page (0..$#pages) {

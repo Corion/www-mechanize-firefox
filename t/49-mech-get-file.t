@@ -5,9 +5,9 @@ use Cwd;
 use URI::file;
 use File::Basename;
 use File::Spec;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::FireFox->new( 
+my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]]
 )};
@@ -20,7 +20,7 @@ if (! $mech) {
     plan tests => 7;
 };
 
-isa_ok $mech, 'WWW::Mechanize::FireFox';
+isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 sub load_file_ok {
     my ($htmlfile,@options) = @_;
