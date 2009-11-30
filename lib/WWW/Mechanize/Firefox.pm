@@ -67,6 +67,11 @@ found, the constructor dies.
 
 =item * 
 
+C<launch> - name of the program to launch if we can't connect to it on
+the first try.
+
+=item * 
+
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
 
 =item * 
@@ -90,13 +95,27 @@ value is changed. By default this is C<[blur, change]>.
 
 =back
 
+=head3 Launch Firefox if C<mozrepl> is not running
+
+This will launch Firefox if the program can't connect to the
+C<mozrepl> plugin in Firefox. This will also enable C<mozrepl>
+in a Firefox process if it is not already running.
+
+  my $mech = WWW::Mechanize::Firefox->new(
+      launch => 'firefox',
+  );
+
 =cut
 
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     if (! $args{ repl }) {
-        $args{ repl } = MozRepl::RemoteObject->install_bridge(log => $loglevel);
+        my $ff = delete $args{ launch };
+        $args{ repl } = MozRepl::RemoteObject->install_bridge(
+            launch => $ff,
+            log => $loglevel,
+        );
     };
     
     if (my $tabname = delete $args{ tab }) {
