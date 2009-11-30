@@ -1173,7 +1173,7 @@ sub click {
             if (1 <  @buttons) {
                 $self->highlight_node(@buttons);
                 $self->signal_condition(
-                    sprintf "%d buttons found found matching '%s'", scalar @buttons, $q;
+                    sprintf "%d buttons found found matching '%s'", scalar @buttons, $q
                 );
             };
         };
@@ -1471,7 +1471,7 @@ sub xpath {
         };
         if ($single) {
             if (@res > 1) {
-                $self->highlight_nodes(@res);
+                $self->highlight_node(@res);
                 $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
             }
         };
