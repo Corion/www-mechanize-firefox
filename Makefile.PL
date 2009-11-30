@@ -12,6 +12,7 @@ WriteMakefile(
                         'WWW::Mechanize' => 0, # for link filtering and 1:1 API compatibility
                         'WWW::Mechanize::Link' => 0, # for API compatibility
                         'MIME::Base64' => 0,
+                        'Shell::Command' => 0, # just for cleanup of a test
                         'parent' => 0,
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/Firefox.pm', # retrieve abstract from module

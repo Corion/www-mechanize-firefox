@@ -3,6 +3,7 @@ use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 use File::Spec;
+use Shell::Command qw(rm_rf);
 
 my $mech = eval {WWW::Mechanize::Firefox->new(
     #log => ['debug'],
@@ -19,16 +20,14 @@ if (! $mech) {
 my $target = "$0.tmp";
 my $target_dir = "$0.tmp_files";
 END {
-    if(0) {
     if (-f $target) {
         unlink $target 
             or warn "Couldn't remove tempfile '$target': $!";
     };
     if (-d $target_dir) {
-        unlink $target_dir 
+        rm_rf( $target_dir )
             or warn "Couldn't remove tempdir '$target_dir': $!";
     };
-};
 }
 
 my $download = $mech->save_url('http://google.de' => $target);
@@ -42,7 +41,7 @@ is $download->{currentState}, 3, "Download finished properly";
 unlink $target  or warn "Couldn't remove tempfile '$target': $!";
 
 $mech->get('http://google.de');
-my $download = $mech->save_content($target,$target_dir);
+$download = $mech->save_content($target,$target_dir);
 isa_ok $download, 'MozRepl::RemoteObject::Instance', 'Downloading complete page of google.de';
 
 $countdown = 30; # seconds until we decide that Google isn't answering
