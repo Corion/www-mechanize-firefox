@@ -1,5 +1,5 @@
 use strict;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 
