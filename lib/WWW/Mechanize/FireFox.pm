@@ -385,11 +385,15 @@ sub addTab {
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
         #warn "Installing autoclose";
-        #var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-        #                   .getService(Components.interfaces.nsIWindowMediator);
-        #var win = wm.getMostRecentWindow('navigator:browser');
-        #if (!win){win = window}
-        $tab->__release_action('window.getBrowser().removeTab(self)');
+        my $release = join "",
+        q{var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]},
+        q{                   .getService(Components.interfaces.nsIWindowMediator);},
+        q{var win = wm.getMostRecentWindow('navigator:browser');},
+        q{if (!win){win = window};},
+        q{win.getBrowser().removeTab(self)},
+        ;
+        #warn $release;
+        $tab->__release_action($release);
     };
     
     $tab
