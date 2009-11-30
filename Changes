@@ -4,6 +4,7 @@
     . Added ->save_url for downloading content to disk
     . Added ->save_document for downloading the current document to disk
     . Make ->synchronize and ->click not automatically fetch the response
+    . Guard against empty/undefined schemes when constructing the JS response
 
 0.11 20091126
     . Implement real HTTP response codes instead of the faked
