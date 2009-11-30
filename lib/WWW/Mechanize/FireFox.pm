@@ -590,23 +590,15 @@ It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
-The detection of non-HTTP responses (like DNS failures, local
-network failures etc.) is sketchy at this time.
-
 =cut
 
 sub get {
     my ($self,$url) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    my $event = $self->synchronize($self->events, sub {
+    $self->synchronize($self->events, sub {
         $b->loadURI($url);
     });
-    
-    # The event we get back is not necessarily indicative :-(
-    # Let's just look at the kind of response we get back
-    
-    return $self->response
 };
 
 =head2 C<< $mech->get_local $filename >>
@@ -778,7 +770,10 @@ sub synchronize {
     my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
     $self->_wait_while_busy($load_lock);
-    $self->{response}
+    
+    if ($need_response) {
+        return $self->response
+    };
 };
 
 =head2 C<< $mech->res >> / C<< $mech->response >>
@@ -888,7 +883,6 @@ sub reload {
     $self->synchronize( sub {
         $self->tab->{linkedBrowser}->reloadWithFlags($bypass_cache);
     });
-    $self->response
 }
 
 =head2 C<< $mech->back >>
@@ -904,7 +898,6 @@ sub back {
     $self->synchronize( sub {
         $self->tab->{linkedBrowser}->goBack;
     });
-    $self->response
 }
 
 =head2 C<< $mech->forward >>
@@ -920,7 +913,6 @@ sub forward {
     $self->synchronize( sub {
         $self->tab->{linkedBrowser}->goForward;
     });
-    $self->response
 }
 
 =head2 C<< $mech->uri >>
@@ -1611,8 +1603,6 @@ sub follow_link {
     $self->synchronize( sub {
         $link->__click();
     });
-    
-    $self->response
 }
 
 =head1 FORM METHODS
