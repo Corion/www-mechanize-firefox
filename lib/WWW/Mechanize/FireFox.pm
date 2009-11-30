@@ -797,10 +797,9 @@ sub _extract_response {
     my ($self,$request) = @_;
     
     my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
-    
-    #$request->{requestSucceeded};
-    
+    warn "Before status";
     if (my $status = $request->{responseStatus}) {
+        warn $status;
         my @headers;
         my $v = $self->_headerVisitor(sub{push @headers, @_});
         $request->visitResponseHeaders($v);
@@ -820,8 +819,12 @@ sub response {
     # If we still have a valid JS response,
     # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
-        #warn "JS response";
-        if ($js_res->{originalURI}->{scheme} =~ /^https?/) {
+        my $ouri = $js_res->{originalURI};
+        my $scheme;
+        if ($ouri) {
+            $scheme = $ouri->{scheme};
+        };
+        if ($scheme and $scheme =~ /^https?/) {
             return $self->_extract_response( $js_res );
         } else {
             # make up a response, below
