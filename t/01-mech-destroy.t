@@ -1,6 +1,10 @@
 #!perl -w
 use strict;
 use Test::More;
+use Cwd;
+use URI::file;
+use File::Basename;
+use File::Spec;
 use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
@@ -13,16 +17,15 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 3;
+    plan tests => 2;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-my $cookies = $mech->cookies;
-isa_ok $cookies, 'HTTP::Cookies';
-
-# Count how many cookies we get as a test.
-my $count = 0;
-$cookies->scan(sub{$count++; });
-
-ok $count > 0, 'We found at least one cookie';
+my $destroyed;
+no warnings 'redefine';
+*WWW::Mechanize::Firefox::DESTROY = sub {
+    $destroyed++
+};
+undef $mech;
+is $destroyed, 1, "Nothing keeps the instance alive";

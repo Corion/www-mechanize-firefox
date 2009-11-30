@@ -1,6 +1,20 @@
+0.12 200911xx
+    o Renamed to ::Firefox
+    . Added ->save_url for downloading content to disk
+    . Added ->save_document for downloading the current document to disk
+
+0.11 20091126
+    . Implement real HTTP response codes instead of the faked
+      response codes.
+    * Fix a memory leak/cycle that prevented tabs from closing
+    . Now needs MozRepl::RemoteObject 0.10 for the API to deregister
+      callbacks.
+
 0.10 200911xx
     . implemented ->form_name, ->form_id, ->form_number
     . unified API between ->find_link, ->selector, ->xpath
+    . Needs MozRepl::RemoteObject 0.09 to ensure that
+      multiple $mech instances work
     
 0.09 20091111
     . Allow ->eval_in_page() to specify an overriding

@@ -2,9 +2,9 @@
 use strict;
 use Test::More;
 
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::FireFox->new( 
+my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]]
 )};
@@ -19,13 +19,13 @@ if (! $mech) {
 
 my $repl = $mech->repl;
 
-my @tabs = WWW::Mechanize::FireFox->openTabs($repl);
+my @tabs = WWW::Mechanize::Firefox->openTabs($repl);
 
 sleep 1;
 
 undef $mech; # our own tab should now close automatically
 
-my @new_tabs = WWW::Mechanize::FireFox->openTabs($repl);
+my @new_tabs = WWW::Mechanize::Firefox->openTabs($repl);
 
 if (! is scalar @new_tabs, @tabs-1, "Our tab was presumably closed") {
     for (@new_tabs) {

@@ -2,10 +2,11 @@
 Changes
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
-lib/WWW/Mechanize/FireFox.pm
+lib/WWW/Mechanize/Firefox.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
+t/01-mech-destroy.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/50-mech-ct.t
@@ -27,7 +28,15 @@ t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html
 t/60-mech-cookies.t
 t/70-mech-png.t
+t/70-real-status.t
+t/70-rt71216.html
 t/70-rt71216.t
+t/70-tag-team.t
+t/70-two-instances.t
+t/70-urlbar-2.html
+t/70-urlbar.html
+t/70-urlbar.pl
+t/70-urlbar.t
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t

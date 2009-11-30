@@ -5,9 +5,9 @@ use Cwd;
 use URI::file;
 use File::Basename;
 use File::Spec;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::FireFox->new( 
+my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]]
 )};
@@ -20,7 +20,7 @@ if (! $mech) {
     plan tests => 19;
 };
 
-isa_ok $mech, 'WWW::Mechanize::FireFox';
+isa_ok $mech, 'WWW::Mechanize::Firefox';
 can_ok $mech, 'js_errors','clear_js_errors';
 
 sub load_file_ok {
@@ -60,3 +60,5 @@ like $msg->{message}, qr!\bline: 5\b!, "Line number";
 
 $mech->clear_js_errors;
 is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
+
+undef $mech; # global destruction ...
