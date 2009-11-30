@@ -765,7 +765,12 @@ sub synchronize {
         unless ref $events;
     
     undef $self->{response};
-    my $response_catcher = $self->_install_response_header_listener();
+    
+    my $need_response = defined wantarray;
+    my $response_catcher;
+    if ($need_response) {
+        $response_catcher = $self->_install_response_header_listener();
+    };
     
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
@@ -1515,7 +1520,6 @@ sub click {
     if (ref $name and blessed($name) and $name->can('__click')) {
         $options{ dom } = $name;
         $options{ synchronize } = 1;
-        @buttons = $name
     } elsif (ref $name eq 'HASH') { # options
         if (exists $name->{ dom }) {
             @buttons = delete $name->{dom};
@@ -1540,7 +1544,6 @@ sub click {
         $options{ synchronize } = 1;
     };
     
-    my @buttons;
     if ($options{ dom }) {
         @buttons = $options{ dom };
         $q = "DOM element";
@@ -1576,10 +1579,7 @@ sub click {
             };
         };
     };
-<<<<<<< HEAD:lib/WWW/Mechanize/FireFox.pm
-=======
     
->>>>>>> origin/master:lib/WWW/Mechanize/FireFox.pm
     if ($options{ synchronize }) {
         my $event = $self->synchronize($self->events, sub { # ,'abort'
             $buttons[0]->__click();
@@ -1587,7 +1587,10 @@ sub click {
     } else {
         $buttons[0]->__click();
     }
-    return $self->response
+
+    if (defined wantarray) {
+        return $self->response
+    };
 }
 
 =head2 C<< $mech->follow_link >>
