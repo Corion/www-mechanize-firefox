@@ -818,7 +818,6 @@ sub _extract_response {
     my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
     warn "Before status";
     if (my $status = $request->{responseStatus}) {
-        warn $status;
         my @headers;
         my $v = $self->_headerVisitor(sub{push @headers, @_});
         $request->visitResponseHeaders($v);
