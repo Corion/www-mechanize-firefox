@@ -182,7 +182,7 @@ sub DESTROY {
 
 =head1 JAVASCRIPT METHODS
 
-=head2 C<< $mech->allow OPTIONS >>
+=head2 C<< $mech->allow( OPTIONS ) >>
 
 Enables or disables browser features for the current tab.
 The following options are recognized:
@@ -241,7 +241,7 @@ sub allow  {
     };
 };
 
-=head2 C<< $mech->js_errors [PAGE] >>
+=head2 C<< $mech->js_errors( [PAGE] )>>
 
 An interface to the Javascript Error Console
 
@@ -297,7 +297,7 @@ sub clear_js_errors {
 
 };
 
-=head2 C<< $mech->eval_in_page STR [, ENV] >>
+=head2 C<< $mech->eval_in_page( STR [, ENV] ) >>
 
 Evaluates the given Javascript fragment in the
 context of the web page.
@@ -375,7 +375,7 @@ JS
     return @{ $eval_in_sandbox->($window,$d,$str,$js_env) };
 };
 
-=head2 C<< $mech->unsafe_page_property_access ELEMENT >>
+=head2 C<< $mech->unsafe_page_property_access( ELEMENT ) >>
 
 Allows you unsafe access to properties of the current page. Using
 such properties is an incredibly bad idea.
@@ -504,7 +504,7 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub tab { $_[0]->{tab} };
 
-=head2 C<< $mech->progress_listener SOURCE, CALLBACKS >>
+=head2 C<< $mech->progress_listener( SOURCE, CALLBACKS ) >>
 
 Sets up the callbacks for the C<< nsIWebProgressListener >> interface
 to be the Perl subroutines you pass in.
@@ -613,7 +613,7 @@ sub cookies {
     )
 }
 
-=head2 C<< $mech->highlight_node NODES >>
+=head2 C<< $mech->highlight_node( NODES )>>
 
 Convenience method that marks all nodes in the arguments
 with
@@ -643,7 +643,7 @@ sub highlight_node {
 
 =head1 NAVIGATION METHODS
 
-=head2 C<< $mech->get(URL) >>
+=head2 C<< $mech->get( URL ) >>
 
 Retrieves the URL C<URL> into the tab.
 
@@ -662,7 +662,7 @@ sub get {
     });
 };
 
-=head2 C<< $mech->get_local $filename >>
+=head2 C<< $mech->get_local( $filename ) >>
 
 Shorthand method to construct the appropriate
 C<< file:// >> URI and load it into Firefox.
@@ -926,7 +926,7 @@ sub status {
     $_[0]->response->code
 };
 
-=head2 C<< $mech->reload BYPASS_CACHE >>
+=head2 C<< $mech->reload( [BYPASS_CACHE] ) >>
 
 Reloads the current page. If C<BYPASS_CACHE>
 is a true value, the browser is not allowed to
@@ -1047,7 +1047,7 @@ JS
     $html->($d);
 };
 
-=head2 C<< $mech->update_html $html >>
+=head2 C<< $mech->update_html( $html ) >>
 
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
@@ -1063,7 +1063,7 @@ sub update_html {
     });
 };
 
-=head2 C<< $mech->save_content $localname [, $resource_directory] [, %OPTIONS ] >>
+=head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] )>>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1151,7 +1151,7 @@ JS
     );
 }
 
-=head2 C<< $mech->save_url $url, $localname, [%OPTIONS] >>
+=head2 C<< $mech->save_url( $url, $localname, [%OPTIONS] )>>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1360,7 +1360,7 @@ sub signal_condition {
     }
 };
 
-=head2 C<< $mech->find_link_dom OPTIONS >>
+=head2 C<< $mech->find_link_dom( OPTIONS ) >>
 
 A method to find links, like L<WWW::Mechanize>'s
 C<< ->find_links >> method.
@@ -1481,7 +1481,7 @@ sub find_link_dom {
     $res[$n]
 }
 
-=head2 C<< $mech->find_link OPTIONS >>
+=head2 C<< $mech->find_link( OPTIONS ) >>
 
 A method quite similar to L<WWW::Mechanize>'s method.
 
@@ -1499,7 +1499,7 @@ sub find_link {
     };
 };
 
-=head2 C<< $mech->find_all_links OPTIONS >>
+=head2 C<< $mech->find_all_links( OPTIONS ) >>
 
 Finds all links in the document.
 
@@ -2243,6 +2243,13 @@ Make C<< ->click >> use C<< ->click_with_options >>
 =item *
 
 Make C<< ->selector >> and C<< ->xpath >> work across subframes.
+
+=item *
+
+Write a unified C<find_element> handler that handles
+the C<single>, C<one> etc. options, instead of (badly)
+reimplementing it in C<xpath>, C<selector>, C<links>
+and C<click>.
 
 =item *
 
