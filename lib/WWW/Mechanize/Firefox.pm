@@ -17,7 +17,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 =head1 NAME
 
@@ -67,6 +67,11 @@ found, the constructor dies.
 
 If you pass in the string C<current>, the currently
 active tab will be used instead.
+
+=item *
+
+C<create> - will create a new tab if no existing tab matching
+the criteria given in C<tab> can be found.
 
 =item * 
 
@@ -127,16 +132,26 @@ sub new {
         } else {
             ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ repl });
             if (! $args{ tab }) {
-                die "Couldn't find a tab matching /$tabname/";
-            }
-            $args{ tab } = $args{ tab }->{tab};
+                if (! delete $args{ create }) {
+                    croak "Couldn't find a tab matching /$tabname/";
+                } else {
+                    # fall through into tab creation
+                };
+            } else {
+                $args{ tab } = $args{ tab }->{tab};
+            };
         };
-    } else {
+    };
+    if (! $args{ tab }) {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
         $args{ tab } = $class->addTab( repl => $args{ repl }, @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
-    }
+    };
+
+    if (delete $args{ autoclose }) {
+        $class->autoclose_tab($args{ tab });
+    };
 
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ pre_value } ||= ['focus'];
@@ -407,19 +422,24 @@ sub addTab {
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
-        #warn "Installing autoclose";
-        my $release = join "",
-        q{var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]},
-        q{                   .getService(Components.interfaces.nsIWindowMediator);},
-        q{var win = wm.getMostRecentWindow('navigator:browser');},
-        q{if (!win){win = window};},
-        q{win.getBrowser().removeTab(self)},
-        ;
-        #warn $release;
-        $tab->__release_action($release);
+        $self->autoclose_tab($tab)
     };
     
     $tab
+};
+
+sub autoclose_tab {
+    my ($self,$tab) = @_;
+    #warn "Installing autoclose";
+    my $release = join "",
+    q{var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]},
+    q{                   .getService(Components.interfaces.nsIWindowMediator);},
+    q{var win = wm.getMostRecentWindow('navigator:browser');},
+    q{if (!win){win = window};},
+    q{win.getBrowser().removeTab(self)},
+    ;
+    #warn $release;
+    $tab->__release_action($release);
 };
 
 # This should maybe become MozRepl::Firefox::Util?
@@ -1941,15 +1961,31 @@ sub selector {
 
 Returns the given tab or the current page rendered as PNG image.
 
+All parameters are optional. 
+ 
+TAB defaults to current TAB.
+
+If the coordinates are given, that rectangle will be cut out.
+The coordinates should be a hash with the four usual entries,
+C<left>,C<top>,C<width>,C<height>.
+
 This is specific to WWW::Mechanize::Firefox.
 
 Currently, the data transfer between Firefox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
 
-If the coordinates are given, that rectangle will be cut out.
-The coordinates should be a hash with the four usual entries,
-C<left>,C<top>,C<width>,C<height>.
+=head3 Save the current page as PNG
+
+  my $png = $mech->content_as_png();
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
+Also see the file C<screenshot.pl> included in the
+distribution.
 
 =head3 Save top left corner of the current page as PNG
 
