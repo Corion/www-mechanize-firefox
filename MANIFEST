@@ -1,5 +1,6 @@
 .gitignore
 Changes
+eg/screenshot.pl
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
@@ -10,6 +11,7 @@ t/01-mech-destroy.t
 t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
+t/49-mech-reuse.t
 t/50-mech-ct.t
 t/50-mech-event.t
 t/50-mech-get.t

@@ -2246,10 +2246,6 @@ Make C<< ->selector >> and C<< ->xpath >> work across subframes.
 
 =item *
 
-Implement "reuse tab if exists, otherwise create new"
-
-=item *
-
 Rip out parts of Test::HTML::Content and graft them
 onto the C<links()> and C<find_link()> methods here.
 Firefox is a conveniently unified XPath engine.

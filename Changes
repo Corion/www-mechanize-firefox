@@ -1,3 +1,8 @@
+0.13 2009120x
+    . Added way to use the "current" tab instead of a new/known tab
+    . Fixed a bug regarding reusing tabs
+    . Added eg/ directory with examples
+
 0.12 20091130
     ! Renamed to ::Firefox
       This affects all your scripts, unfortunately.
