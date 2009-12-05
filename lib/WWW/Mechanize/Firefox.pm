@@ -65,6 +65,9 @@ The following options are recognized:
 C<tab> - regex for the title of the tab to reuse. If no matching tab is
 found, the constructor dies.
 
+If you pass in the string C<current>, the currently
+active tab will be used instead.
+
 =item * 
 
 C<launch> - name of the program to launch if we can't connect to it on
@@ -120,13 +123,14 @@ sub new {
     
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
-            $tabname = qr/\Q$tabname/;
+            $args{ tab } = $class->selectedTab($args{ repl });
+        } else {
+            ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ repl });
+            if (! $args{ tab }) {
+                die "Couldn't find a tab matching /$tabname/";
+            }
+            $args{ tab } = $args{ tab }->{tab};
         };
-        ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ repl });
-        if (! $args{ tab }) {
-            die "Couldn't find a tab matching /$tabname/";
-        }
-        $args{ tab } = $args{ tab }->{tab};
     } else {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
         $args{ tab } = $class->addTab( repl => $args{ repl }, @autoclose );
@@ -420,6 +424,20 @@ JS
 
 # This should maybe become MozRepl::Firefox::Util?
 # or MozRepl::Firefox::UI ?
+sub selectedTab {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    my $selected_tab = $repl->declare(<<'JS');
+function() {
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                       .getService(Components.interfaces.nsIWindowMediator);
+    var win = wm.getMostRecentWindow('navigator:browser');
+    return win.getBrowser().selectedTab
+}
+JS
+    return $selected_tab->();
+}
+
 sub openTabs {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
@@ -2235,7 +2253,7 @@ for more tab info
 =head1 REPOSITORY
 
 The public repository of this module is 
-L<http://github.com/Corion/www-mechanize-Firefox>.
+L<http://github.com/Corion/www-mechanize-firefox>.
 
 =head1 AUTHOR
 
