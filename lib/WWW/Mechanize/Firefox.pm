@@ -297,7 +297,7 @@ sub clear_js_errors {
 
 };
 
-=head2 C<< $mech->eval_in_page( STR [, ENV] ) >>
+=head2 C<< $mech->eval_in_page STR [, ENV] [, DOCUMENT] >>
 
 Evaluates the given Javascript fragment in the
 context of the web page.
@@ -338,9 +338,10 @@ can execute malicious code in the context of the Firefox application.
 =cut
 
 sub eval_in_page {
-    my ($self,$str,$env) = @_;
+    my ($self,$str,$env,$doc,$window) = @_;
     $env ||= {};
     my $js_env = {};
+    $doc ||= $self->document;
     
     # do a manual transfer of keys, to circumvent our stupid
     # transformation routine:
@@ -359,7 +360,7 @@ JS
         var safeWin = XPCNativeWrapper(unsafeWin);
         var sandbox = Components.utils.Sandbox(safeWin);
         sandbox.window = safeWin;
-        sandbox.document = sandbox.window.document;
+        sandbox.document = d; // sandbox.window.document;
         // Transfer the environment
         for (var e in env) {
             sandbox[e] = env[e]
@@ -370,9 +371,9 @@ JS
         return [res,typeof(res)];
     };
 JS
-    my $window = $self->tab->{linkedBrowser}->{contentWindow};
-    my $d = $self->document;
-    return @{ $eval_in_sandbox->($window,$d,$str,$js_env) };
+    $window ||= $self->tab->{linkedBrowser}->{contentWindow};
+    #my $window = $doc->{window}; # $self->tab->{linkedBrowser}->{contentWindow};
+    return @{ $eval_in_sandbox->($window,$doc,$str,$js_env) };
 };
 
 =head2 C<< $mech->unsafe_page_property_access( ELEMENT ) >>
