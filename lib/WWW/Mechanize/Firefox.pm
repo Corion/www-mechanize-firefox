@@ -152,6 +152,10 @@ sub new {
     if (delete $args{ autoclose }) {
         $class->autoclose_tab($args{ tab });
     };
+    
+    if (my $bufsize = delete $args{ bufsize }) {
+        $args{ repl }->repl->client->telnet->max_buffer_length($bufsize);
+    };
 
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ pre_value } ||= ['focus'];

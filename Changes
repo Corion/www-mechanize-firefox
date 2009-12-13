@@ -1,7 +1,9 @@
-0.13 2009120x
+0.13 20091213
     . Added way to use the "current" tab instead of a new/known tab
     . Fixed a bug regarding reusing tabs
     . Added eg/ directory with examples
+    . Added way to specify maximum buffer size at startup
+      in response to http://perlmonks.org/?node_id=811436
 
 0.12 20091130
     ! Renamed to ::Firefox
