@@ -12,6 +12,7 @@ t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/49-mech-reuse.t
+t/50-mech-bufsize.t
 t/50-mech-ct.t
 t/50-mech-event.t
 t/50-mech-get.t
