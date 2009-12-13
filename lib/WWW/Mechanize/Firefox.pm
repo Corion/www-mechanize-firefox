@@ -249,7 +249,7 @@ sub allow  {
     };
 };
 
-=head2 C<< $mech->js_errors( [PAGE] )>>
+=head2 C<< $mech->js_errors( [PAGE] ) >>
 
 An interface to the Javascript Error Console
 
@@ -622,7 +622,7 @@ sub cookies {
     )
 }
 
-=head2 C<< $mech->highlight_node( NODES )>>
+=head2 C<< $mech->highlight_node( NODES ) >>
 
 Convenience method that marks all nodes in the arguments
 with
@@ -1073,7 +1073,7 @@ sub update_html {
     });
 };
 
-=head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] )>>
+=head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] ) >>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1161,7 +1161,7 @@ JS
     );
 }
 
-=head2 C<< $mech->save_url( $url, $localname, [%OPTIONS] )>>
+=head2 C<< $mech->save_url( $url, $localname, [%OPTIONS] ) >>
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
