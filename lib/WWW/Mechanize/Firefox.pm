@@ -17,7 +17,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 =head1 NAME
 
@@ -81,6 +81,10 @@ the first try.
 =item * 
 
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
+
+=item *
+
+C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
 
 =item * 
 

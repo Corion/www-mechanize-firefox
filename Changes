@@ -1,3 +1,6 @@
+0.14 200912xx
+    . Added documentation about bufsize parameter
+
 0.13 20091213
     . Added way to use the "current" tab instead of a new/known tab
     . Fixed a bug regarding reusing tabs
