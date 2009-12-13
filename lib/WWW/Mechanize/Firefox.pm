@@ -877,6 +877,7 @@ sub response {
     # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
         my $ouri = $js_res->{originalURI};
+        warn $ouri;
         my $scheme;
         if ($ouri) {
             $scheme = $ouri->{scheme};
@@ -885,6 +886,7 @@ sub response {
             return $self->_extract_response( $js_res );
         } else {
             # make up a response, below
+            #warn "Making up response";
         };
     };
     
