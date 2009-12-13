@@ -861,9 +861,9 @@ sub _headerVisitor {
 
 sub _extract_response {
     my ($self,$request) = @_;
-    
     my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
-    warn "Before status";
+    
+    #warn "Before status";
     if (my $status = $request->{responseStatus}) {
         my @headers;
         my $v = $self->_headerVisitor(sub{push @headers, @_});
@@ -885,7 +885,6 @@ sub response {
     # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
         my $ouri = $js_res->{originalURI};
-        warn $ouri;
         my $scheme;
         if ($ouri) {
             $scheme = $ouri->{scheme};
