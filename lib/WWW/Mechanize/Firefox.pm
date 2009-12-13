@@ -128,7 +128,11 @@ sub new {
     
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
-            $args{ tab } = $class->selectedTab($args{ repl });
+            if ($tabname eq 'current') {
+                $args{ tab } = $class->selectedTab($args{ repl });
+            } else {
+                croak "Don't know what to do with tab '$tabname'. Did you mean qr{$tabname}?";
+            };
         } else {
             ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ repl });
             if (! $args{ tab }) {
