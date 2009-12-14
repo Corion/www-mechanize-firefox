@@ -39,7 +39,7 @@ sub source_file_ok {
     if ( !is( scalar @x, 0, "Looking for XXXes in $file" ) ) {
         diag( $_ ) for @x;
     }
-    my @x = grep /<<<|>>>/, @lines;
+    @x = grep /<<<|>>>/, @lines;
 
     if ( !is( scalar @x, 0, "Looking for <<<<|>>>> in $file" ) ) {
         diag( $_ ) for @x;
