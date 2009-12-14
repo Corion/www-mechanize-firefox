@@ -1088,7 +1088,7 @@ All CSS, subframes and images
 will be saved into that directory, while the page HTML itself will
 still be saved in the file pointed to by C<$localname>.
 
-Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
+Returns a C<nsIWebBrowserPersist> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
@@ -1171,7 +1171,7 @@ Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
 traffic.
 
-Returns a C<<nsIWebBrowserPersist>> object through which you can cancel the
+Returns a C<nsIWebBrowserPersist> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
@@ -1799,7 +1799,7 @@ not the C<id> attribute.
 
 By passing the array reference C<PRE EVENTS>, you can indicate which
 Javascript events you want to be triggered before setting the value.
-C<POST EVENTS> contains the evens you want to be triggered
+C<POST EVENTS> contains the events you want to be triggered
 after setting the value.
 
 By default, the events set in the
