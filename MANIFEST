@@ -23,10 +23,14 @@ t/51-mech-links.t
 t/51-mech-sandbox.html
 t/51-mech-sandbox.t
 t/51-mech-set-content.t
+t/52-frameset.html
+t/52-iframeset.html
 t/52-mech-api-find_link-frames.t
 t/52-mech-api-find_link.html
 t/52-mech-api-find_link.t
 t/52-mech-xpath.t
+t/52-selector-frames.t
+t/52-subframe.html
 t/53-mech-capture-js-error.html
 t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html

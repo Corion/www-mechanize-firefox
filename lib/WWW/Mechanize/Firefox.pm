@@ -1901,12 +1901,17 @@ The options allow the following keys:
 
 =item *
 
-C<< document >> - document in which the code is to be executed. Use this to
-search a node within a subframe of C<< $mech->document >>.
+C<< document >> - document in which the query is to be executed. Use this to
+search a node within a specific subframe of C<< $mech->document >>.
 
 =item *
 
-C<< node >> - node relative to which the code is to be executed
+C<< frames >> - if true, search all documents in all frames and iframes.
+This may or may not conflict with C<node>.
+
+=item *
+
+C<< node >> - node relative to which the query is to be executed
 
 =item *
 
@@ -1937,6 +1942,17 @@ sub xpath {
     my $single = delete $options{ single };
     my $one = delete $options{ one } || $single;
     my @res = $options{ document }->__xpath($query, $options{ node });
+    
+    # recursively join the results of sub(i)frames if wanted
+    if ($options{frames}) {
+        my @frames = $options{ document }->__xpath('//frame | //iframe');
+        for my $frame (@frames) {
+            $options{ document } = $frame->{contentDocument};
+            $options{ node } = $options{ document };
+            push @res, $self->xpath($query, %options);
+        };
+    };
+    
     if ($one) {
         if (@res == 0) {
             $self->signal_condition( "No elements found for $options{ user_info }" );

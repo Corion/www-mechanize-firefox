@@ -1,5 +1,6 @@
 0.14 200912xx
     . Added documentation about bufsize parameter
+    . Option to recursively search frames
 
 0.13 20091213
     . Added way to use the "current" tab instead of a new/known tab
