@@ -11,8 +11,9 @@ WriteMakefile1(
             repository => 'http://github.com/Corion/www-mechanize-firefox',
         },
     },
-    #BUILD_REQUIRES => {
-    #},
+    BUILD_REQUIRES => {
+                        'Task::Weaken' => 0, #to be sure that weaken is present
+    },
     'NAME'          => 'WWW::Mechanize::Firefox',
     'LICENSE'       => 'perl',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/Firefox.pm', # finds $VERSION
@@ -25,6 +26,7 @@ WriteMakefile1(
                         'MIME::Base64' => 0,
                         'Shell::Command' => 0, # just for cleanup of a test
                         'parent' => 0,
+                        'Scalar::Util' => 1.14,
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/Firefox.pm', # retrieve abstract from module
     AUTHOR          => 'Max Maischein <corion@cpan.org>',
