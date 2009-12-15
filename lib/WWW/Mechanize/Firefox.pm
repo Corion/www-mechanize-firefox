@@ -1,4 +1,5 @@
 package WWW::Mechanize::Firefox;
+use 5.006; #weaken
 use strict;
 use Time::HiRes;
 

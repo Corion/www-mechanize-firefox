@@ -1,3 +1,6 @@
+# -*- mode: perl; c-basic-offset: 4; indent-tabs-mode: nil; -*-
+
+use 5.006; #weaken
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
