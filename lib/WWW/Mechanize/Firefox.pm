@@ -2272,10 +2272,6 @@ Make C<< ->click >> use C<< ->click_with_options >>
 
 =item *
 
-Make C<< ->selector >> and C<< ->xpath >> work across subframes.
-
-=item *
-
 Write a unified C<find_element> handler that handles
 the C<single>, C<one> etc. options, instead of (badly)
 reimplementing it in C<xpath>, C<selector>, C<links>
