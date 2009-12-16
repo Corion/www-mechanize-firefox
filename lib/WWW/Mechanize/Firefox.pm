@@ -267,7 +267,7 @@ sub js_console {
     my $getConsoleService = $self->repl->declare(<<'JS');
     function() {
         return  Components.classes["@mozilla.org/consoleservice;1"]
-                .getService(Ci.nsIConsoleService);
+                .getService(Components.interfaces.nsIConsoleService);
     }
 JS
     $getConsoleService->()
@@ -2033,8 +2033,8 @@ sub content_as_png {
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     my $screenshot = $self->repl->declare(<<'JS');
     function (tab,rect) {
-        var browserWindow = Cc['@mozilla.org/appshell/window-mediator;1']
-            .getService(Ci.nsIWindowMediator)
+        var browserWindow = Components.classes['@mozilla.org/appshell/window-mediator;1']
+            .getService(Components.interfaces.nsIWindowMediator)
             .getMostRecentWindow('navigator:browser');
         var canvas = browserWindow
                .document
