@@ -39,17 +39,6 @@ in your Firefox.
 
 =head1 METHODS
 
-=cut
-
-sub execute {
-    my ($package,$repl,$js) = @_;
-    if (2 == @_) {
-        $js = $repl;
-        $repl = $package->repl;
-    };
-    $repl->execute($js)
-}
-
 =head2 C<< $mech->new( ARGS ) >>
 
 Creates a new instance and connects it to Firefox.

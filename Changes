@@ -1,3 +1,7 @@
+0.15 200912xx
+    . Better Makefile.PL and Prereq patch by chorny
+    . Removed some dead code
+
 0.14 20091215
     . Added documentation about bufsize parameter
     . Option to recursively search frames
