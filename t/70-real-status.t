@@ -20,7 +20,7 @@ isn't $response, undef, "We identified a response";
 is $response->code, 200, 'We got a good response';
 
 $mech->get('http://doesnotexist.example');
-my $response = $mech->response;
+$response = $mech->response;
 
 isn't $response, undef, "We identified a response";
 is $response->code, 500, 'We got a good response for a nonexistent domain';
