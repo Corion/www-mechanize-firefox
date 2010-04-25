@@ -774,7 +774,6 @@ sub _install_response_header_listener {
     my $STATE_STOP = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
     my $STATE_IS_WINDOW = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
-    #my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
 
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
@@ -860,15 +859,14 @@ sub _extract_response {
     #warn $request->{name};
     my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
-
     
-    if (my $status = $request->{requestSucceeded}) {
+    if (my $status = $httpChannel->{requestSucceeded}) {
         my @headers;
         my $v = $self->_headerVisitor(sub{push @headers, @_});
-        $request->visitResponseHeaders($v);
+        $httpChannel->visitResponseHeaders($v);
         my $res = HTTP::Response->new(
-            $request->{responseStatus},
-            $request->{responseStatusText},
+            $httpChannel->{responseStatus},
+            $httpChannel->{responseStatusText},
             \@headers,
             undef, # no body so far
         );
