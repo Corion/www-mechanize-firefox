@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Hello Firefox!</title>
+<script>
+var myevents = {};
+function myaction() {
+    myevents['action']++
+}
+function mysubmit() {
+    myevents['submit']++
+}
+function myclick() {
+    myevents['click']++;
+}
+function resetEvents() {
+    myevents = {
+        'action' : 0,
+        'submit' : 0,
+        'click'  : 0
+    };
+}
+resetEvents();
+</script>
+</head>
+<body>
+<form id="testform"
+    method="GET"
+    action="javascript:myaction()"
+    onsubmit="javascript:mysubmit()">
+<input name="q" value="Hello World" />
+<input type="submit" onclick="javascript:myclick()" name="s" value="Submit" />
+</form>
+<form id="testform2"
+    method="GET"
+    action="javascript:myaction()"
+    onsubmit="javascript:mysubmit()">
+<input name="q" value="Hello World" />
+<input name="r" value="Hello World2" />
+<input type="submit" onclick="javascript:myclick()" name="s" value="Submit" />
+</form>
+</body>
+</html>

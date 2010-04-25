@@ -1,0 +1,55 @@
+#!perl -w
+use strict;
+use Test::More;
+use WWW::Mechanize::Firefox;
+
+my $mech = eval { WWW::Mechanize::Firefox->new( 
+    autodie => 0,
+    #log => [qw[debug]],
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 10;
+};
+
+isa_ok $mech, 'WWW::Mechanize::Firefox';
+
+$mech->get_local('51-mech-submit.html');
+$mech->allow('javascript' => 1);
+$mech->form_id('testform');
+
+$mech->value('q','1');
+$mech->submit();
+my ($triggered,$type) = $mech->eval_in_page('myevents');
+
+if (! $triggered) {
+    SKIP: { skip "Couldn't get at 'myevents'. Do you have a Javascript blocker?", 9; };
+    exit;
+};
+
+ok $triggered, "We found 'myevents'";
+
+is $triggered->{action}, 1, 'Action   was triggered';
+is $triggered->{submit}, 0, 'OnSubmit was not triggered';
+is $triggered->{click},  0, 'Click    was not triggered';
+
+$mech->get_local('51-mech-submit.html');
+$mech->allow('javascript' => 1);
+$mech->submit_form(
+    with_fields => [
+        r => 'Hello Firefox',
+    ],
+);
+($triggered,$type) = $mech->eval_in_page('myevents');
+ok $triggered, "We found 'myevents'";
+
+is $triggered->{action}, 1, 'Action   was triggered';
+is $triggered->{submit}, 0, 'OnSubmit was not triggered';
+is $triggered->{click},  0, 'Click    was not triggered';
+
+my $r = $mech->xpath('//input[@name="r"]', single => 1 );
+is $r->{value}, 'Hello Firefox', "We set the new value";

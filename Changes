@@ -1,6 +1,11 @@
-0.15 200912xx
-    . Better Makefile.PL and Prereq patch by chorny
+0.16 20100425
+    . Added ->submit
+    . Added ->submit_form with_fields => [...]
+
+0.15 20091216
+    . Better Makefile.PL and Prereq patch by Alexandr Ciornii (chorny)
     . Removed some dead code
+    . Fixed some incompatible Javascript
 
 0.14 20091215
     . Added documentation about bufsize parameter
@@ -29,7 +34,7 @@
     . Now needs MozRepl::RemoteObject 0.10 for the API to deregister
       callbacks.
 
-0.10 200911xx
+0.10 20091121
     . implemented ->form_name, ->form_id, ->form_number
     . unified API between ->find_link, ->selector, ->xpath
     . Needs MozRepl::RemoteObject 0.09 to ensure that

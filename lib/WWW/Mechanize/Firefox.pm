@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 =head1 NAME
 
@@ -43,8 +43,8 @@ in your Firefox.
 
 Creates a new instance and connects it to Firefox.
 
-Note that Firefox already must be running and must have the C<mozrepl>
-extension installed.
+Note that Firefox must have the C<mozrepl>
+extension installed and enabled.
 
 The following options are recognized:
 
@@ -1752,11 +1752,12 @@ sub form_with_fields {
     if (ref $fields[0] eq 'HASH') {
         $options = shift @fields;
     };
-    my @clauses = map { sprintf '[@name="%s"]', quote_xpath($_) } @fields;
-    my $q = "//form" . join "", @clauses;
+    my @clauses = map { sprintf 'input[@name="%s"]', quote_xpath($_) } @fields;
+    my $q = "//form[" . join( "", @clauses)."]";
+    #warn $q;
     $self->{current_form} = $self->xpath($q,
         single => 1,
-        user_info => "form fields [@fields]",
+        user_info => "form with fields [@fields]",
         %$options
     );
 };
@@ -1804,36 +1805,186 @@ are triggered.
 
 sub value {
     my ($self,$name,$value,$pre,$post) = @_;
+    $self->get_set_value(
+        name => $name,
+        value => $value,
+        pre => $pre,
+        post => $post,
+        document => $self->document,
+        node => $self->current_form || $self->document,
+    );
+}
+
+=head2 C<< $mech->get_set_value( OPTIONS ) >>
+
+Allows fine-grained access to getting/setting a value
+with a different API. Supported keys are:
+
+  pre
+  post
+  name
+  value
+
+in addition to all keys that C<< $mech->xpath >> supports.
+
+=cut
+
+sub get_set_value {
+    my ($self,%options) = @_;
     my @fields;
+    my $name  = delete $options{ name };
+    my $value = delete $options{ value };
+    my $pre   = delete $options{pre}  || $self->{pre_value};
+    my $post  = delete $options{post} || $self->{post_value};
     if (blessed $name) {
         @fields = $name;
     } else {
-        @fields = $self->xpath(sprintf q{//input[@name="%s"] | //select[@name="%s"] | //textarea[@name="%s"]}, 
-                                          $name,              $name,                 $name);
+        @fields = $self->xpath(
+            sprintf( q{.//input[@name="%s"] | .//select[@name="%s"] | .//textarea[@name="%s"]}, 
+                                   $name,              $name,                 $name),
+            %options,
+        );
     };
-    $pre ||= $self->{pre_value};
     $pre = [$pre]
         if (! ref $pre);
-    $post ||= $self->{post_value};
     $post = [$post]
         if (! ref $pre);
     $self->signal_condition( "No field found for '$name'" )
         if (! @fields);
     $self->signal_condition( "Too many fields found for '$name'" )
         if (@fields > 1);
-    if (@_ >= 3) {
-        for my $ev (@$pre) {
-            $fields[0]->__event($ev);
-        };
+        
+    if ($fields[0]) {
+        if (@_ >= 3) {
+            for my $ev (@$pre) {
+                $fields[0]->__event($ev);
+            };
 
-        $fields[0]->{value} = $value;
+            $fields[0]->{value} = $value;
 
-        for my $ev (@$post) {
-            $fields[0]->__event($ev);
-        };
+            for my $ev (@$post) {
+                $fields[0]->__event($ev);
+            };
+        }
+        return $fields[0]->{value}
+    } else {
+        return
     }
-    $fields[0]->{value}
 }
+
+=head2 C<< $mech->submit >>
+
+Submits the current form. Note that this does B<not> fire the C<onClick>
+event and thus also does not fire eventual Javascript handlers.
+Maybe you want to use C<< $mech->click >> instead.
+
+=cut
+
+sub submit {
+    my ($self,$dom_form) = @_;
+    $dom_form ||= $self->current_form;
+    if ($dom_form) {
+        $dom_form->submit();
+    } else {
+        croak "I don't know which form to submit, sorry.";
+    }
+};
+
+=head2 C<< $mech->submit_form( ... ) >>
+
+This method lets you select a form from the previously fetched page,
+fill in its fields, and submit it. It combines the form_number/form_name,
+set_fields and click methods into one higher level call. Its arguments are
+a list of key/value pairs, all of which are optional.
+
+=over 4
+
+=item *
+
+C<< fields => \%fields >>
+
+Specifies the fields to be filled in the current form
+
+=item *
+
+C<< with_fields => \%fields >>
+
+Probably all you need for the common case. It combines a smart form selector
+and data setting in one operation. It selects the first form that contains
+all fields mentioned in \%fields. This is nice because you don't need to
+know the name or number of the form to do this.
+
+(calls C<<form_with_fields()>> and C<<set_fields()>>).
+
+If you choose this, the form_number, form_name, form_id and fields options
+will be ignored.
+
+=back
+
+=cut
+
+sub submit_form {
+    my ($self,%options) = @_;
+    
+    my $form = delete $options{ form };
+    my $fields;
+    if (! $form) {
+        if ($fields = delete $options{ with_fields }) {
+            my @names = map { $_ & 1 ? () : $fields->[$_] } 0..$#$fields;
+            $form = $self->form_with_fields( \%options, @names );
+            if (! $form) {
+                $self->signal_condition("Couldn't find a matching form for @names.");
+                return
+            };
+        } elsif ($fields = delete $options{ fields }) {
+            $form = $self->current_form;
+        } else {
+            croak "No form given to submit.";
+        };
+    };
+    
+    if (! $form) {
+        $self->signal_condition("No form found to submit.");
+        return
+    };
+    $self->do_set_fields( form => $form, fields => $fields );
+    $self->submit($form);
+}
+
+=head2 C<< $mech->set_fields( $name => $value, ... ) >>
+
+This method sets multiple fields of the current form. It takes a list of
+field name and value pairs. If there is more than one field with the same
+name, the first one found is set. If you want to select which of the
+duplicate field to set, use a value which is an anonymous array which
+has the field value and its number as the 2 elements.
+
+=cut
+
+sub set_fields {
+    my ($self, @fields) = @_;
+    my $f = $self->current_form;
+    if (! $f) {
+        croak "Can't set fields: No current form set.";
+    };
+    $self->do_set_fields($self, form => $f, fields => \@fields);
+};
+
+sub do_set_fields {
+    my ($self, %options) = @_;
+    my $form = delete $options{ form };
+    my $fields = delete $options{ fields };
+    
+    while (my($n,$v) = splice @$fields, 0,2) {
+        if (ref $v) {
+            ($v,my $num) = @$v;
+            warn "Index larger than 1 not supported"
+                unless $num == 1;
+        };
+        
+        $self->get_set_value( node => $form, name => $n, value => $v, %options );
+    }
+};
 
 =head2 C<< $mech->set_visible @values >>
 
@@ -1931,6 +2082,7 @@ sub xpath {
     $options{ user_info } ||= "'$query'";
     my $single = delete $options{ single };
     my $one = delete $options{ one } || $single;
+    #warn $query;
     my @res = $options{ document }->__xpath($query, $options{ node });
     
     # recursively join the results of sub(i)frames if wanted
@@ -2142,10 +2294,6 @@ can be C<undef>.
 
 =item *
 
-C<< ->form_with_fields >> needs tests
-
-=item *
-
 C<< ->find_all_inputs >>
 
 This function is likely best implemented through C<< $mech->selector >>.
@@ -2184,10 +2332,6 @@ C<< ->select >>
 
 =item *
 
-C<< ->set_fields >>
-
-This is basically a loop over C<< $mech->value >>.
-
 =item *
 
 C<< ->tick >>
@@ -2195,10 +2339,6 @@ C<< ->tick >>
 =item *
 
 C<< ->untick >>
-
-=item *
-
-C<< ->submit >>
 
 =back
 
