@@ -13,15 +13,16 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 4;
+    plan tests => 5;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 my ($site,$estatus) = ('http://search.cpan.org/',200);
 my $res = $mech->get($site);
+isa_ok $res, 'HTTP::Response', "Response";
 
-is $mech->uri, $site, "Navigating to $site";
+is $mech->uri, $site, "Navigated to $site";
 
 is $res->code, $estatus, "GETting $site"
     or diag $mech->content;

@@ -774,7 +774,7 @@ sub _install_response_header_listener {
     my $STATE_STOP = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
     my $STATE_IS_WINDOW = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
-    my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
+    #my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
 
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
@@ -783,6 +783,7 @@ sub _install_response_header_listener {
         
         if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
             if ($status == 0) {
+                #warn "Storing request to response";
                 $self->{ response } = $request;
             } else {
                 undef $self->{ response };
@@ -855,10 +856,13 @@ sub _headerVisitor {
 
 sub _extract_response {
     my ($self,$request) = @_;
-    my $nsIChannel = $self->repl->expr('Components.interfaces.nsIChannel');
     
-    #warn "Before status";
-    if (my $status = $request->{responseStatus}) {
+    #warn $request->{name};
+    my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
+    my $httpChannel = $request->QueryInterface($nsIHttpChannel);
+
+    
+    if (my $status = $request->{requestSucceeded}) {
         my @headers;
         my $v = $self->_headerVisitor(sub{push @headers, @_});
         $request->visitResponseHeaders($v);
@@ -870,6 +874,8 @@ sub _extract_response {
         );
         return $res;
     };
+    #warn "Couldn't extract status from request...";
+    undef
 };
 
 sub response {
@@ -884,10 +890,11 @@ sub response {
             $scheme = $ouri->{scheme};
         };
         if ($scheme and $scheme =~ /^https?/) {
+            # We can only extract from a HTTP Response
             return $self->_extract_response( $js_res );
         } else {
             # make up a response, below
-            #warn "Making up response";
+            warn "Making up response";
         };
     };
     

@@ -1,6 +1,8 @@
 0.16 20100425
     . Added ->submit
     . Added ->submit_form with_fields => [...]
+    . Bugfix: Explicitly ask for the nsiHTTPChannel when trying to
+      create a response
 
 0.15 20091216
     . Better Makefile.PL and Prereq patch by Alexandr Ciornii (chorny)
