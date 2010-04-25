@@ -1,3 +1,7 @@
+To be released:
+    . Don't only request nsiHttpChannel, also use it instead of $request
+    . Fix warnings in test suite
+
 0.16 20100425
     . Added ->submit
     . Added ->submit_form with_fields => [...]
