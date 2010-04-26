@@ -1,13 +1,25 @@
 #!perl -w
 use strict;
 use WWW::Mechanize::Firefox;
-use Test::More tests => 2;
+use Test::More;
 
-my $firefox = WWW::Mechanize::Firefox->new(tab => 'current');
-$firefox->get_local('form2.html');
-$firefox->form_number(1);
-my $the_form_dom_node = $firefox->current_form;
-my $button = $firefox->selector('#btn_ok', single => 1);
+my $mech = eval { WWW::Mechanize::Firefox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 2;
+};
+
+$mech->get_local('50-form2.html');
+$mech->form_number(1);
+my $the_form_dom_node = $mech->current_form;
+my $button = $mech->selector('#btn_ok', single => 1);
 isa_ok $button, 'MozRepl::RemoteObject::Instance', "The button image";
 
-ok $firefox->submit, 'Sent the page';
+ok $mech->submit, 'Sent the page';
