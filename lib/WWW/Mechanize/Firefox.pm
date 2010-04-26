@@ -1893,6 +1893,7 @@ sub submit {
     $dom_form ||= $self->current_form;
     if ($dom_form) {
         $dom_form->submit();
+        1;
     } else {
         croak "I don't know which form to submit, sorry.";
     }
