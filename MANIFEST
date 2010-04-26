@@ -44,7 +44,6 @@ t/70-tag-team.t
 t/70-two-instances.t
 t/70-urlbar-2.html
 t/70-urlbar.html
-t/70-urlbar.pl
 t/70-urlbar.t
 t/99-manifest.t
 t/99-pod.t
