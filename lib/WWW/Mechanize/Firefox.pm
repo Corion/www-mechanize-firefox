@@ -299,7 +299,9 @@ sub clear_js_errors {
 
 };
 
-=head2 C<< $mech->eval_in_page STR [, ENV] [, DOCUMENT] >>
+=head2 C<< $mech->eval_in_page( $STR [, $ENV] [, $DOCUMENT] ) >>
+
+=head2 C<< $mech->eval( $STR [, $ENV] [, $DOCUMENT] ) >>
 
 Evaluates the given Javascript fragment in the
 context of the web page.
@@ -377,6 +379,7 @@ JS
     #my $window = $doc->{window}; # $self->tab->{linkedBrowser}->{contentWindow};
     return @{ $eval_in_sandbox->($window,$doc,$str,$js_env) };
 };
+*eval = \&eval_in_page;
 
 =head2 C<< $mech->unsafe_page_property_access( ELEMENT ) >>
 
@@ -2438,6 +2441,10 @@ The MozRepl Firefox plugin at L<http://wiki.github.com/bard/mozrepl>
 =item *
 
 L<WWW::Mechanize> - the module whose API grandfathered this module
+
+=item *
+
+L<WWW::Scripter> - another WWW::Mechanize-workalike with Javascript support
 
 =item *
 
