@@ -1,6 +1,8 @@
-To be released:
+0.17 20100426
     . Don't only request nsiHttpChannel, also use it instead of $request
     . Fix warnings in test suite
+    . Add ->eval() as synonym for ->eval_in_page()
+    . Fix distribution MANIFEST
 
 0.16 20100425
     . Added ->submit
