@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 =head1 NAME
 
@@ -1760,8 +1760,8 @@ sub form_with_fields {
     if (ref $fields[0] eq 'HASH') {
         $options = shift @fields;
     };
-    my @clauses = map { sprintf 'input[@name="%s"]', quote_xpath($_) } @fields;
-    my $q = "//form[" . join( "", @clauses)."]";
+    my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
+    my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     $self->{current_form} = $self->xpath($q,
         single => 1,

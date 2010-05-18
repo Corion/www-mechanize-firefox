@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 4;
 };
 
 $mech->get_local('50-form2.html');
@@ -23,3 +23,11 @@ my $button = $mech->selector('#btn_ok', single => 1);
 isa_ok $button, 'MozRepl::RemoteObject::Instance', "The button image";
 
 ok $mech->submit, 'Sent the page';
+
+$mech->get_local('50-form2.html');
+$mech->form_id('snd');
+ok $mech->current_form, "We can find a form by its id";
+
+$mech->get_local('50-form2.html');
+$mech->form_with_fields('r1','r2');
+ok $mech->current_form, "We can find a form by its contained input fields";
