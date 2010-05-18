@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 4;
+    plan tests => 5;
 };
 
 $mech->get_local('50-form2.html');
@@ -31,3 +31,8 @@ ok $mech->current_form, "We can find a form by its id";
 $mech->get_local('50-form2.html');
 $mech->form_with_fields('r1','r2');
 ok $mech->current_form, "We can find a form by its contained input fields";
+
+$mech->get_local('50-form2.html');
+$mech->form_name('snd');
+ok $mech->current_form, "We can find a form by its name";
+

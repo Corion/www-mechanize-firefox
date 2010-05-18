@@ -1704,7 +1704,8 @@ Selects the current form by its name.
 
 sub form_name {
     my ($self,$name,%options) = @_;
-    $self->{current_form} = $self->selector("form:$name",
+    $name = quote_xpath $name;
+    $self->{current_form} = $self->selector("form[name='$name']",
         user_info => "form id '$name'",
         single => 1,
         %options

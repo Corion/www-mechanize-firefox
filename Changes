@@ -1,7 +1,8 @@
 To be released
     . ->submit() returns a true value now
     . added another test
-    . Add test and fix bug in ->form_with_fields, which never worked
+    . Add test and fix bug in ->form_with_fields, which never worked properly
+    . Add test and fix bug in ->form_name, which never worked at all
 
 0.17 20100426
     . Don't only request nsiHttpChannel, also use it instead of $request
