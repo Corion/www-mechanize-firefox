@@ -1814,13 +1814,16 @@ are triggered.
 
 sub value {
     my ($self,$name,$value,$pre,$post) = @_;
+    my $doc = $self->current_form 
+            ? $self->current_form->{document}
+            : $self->document;
     $self->get_set_value(
         name => $name,
         value => $value,
         pre => $pre,
         post => $post,
-        document => $self->document,
-        node => $self->current_form || $self->document,
+        document => $doc,
+        node => $self->current_form || $doc,
     );
 }
 
