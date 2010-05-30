@@ -4,6 +4,11 @@ use 5.006; #weaken
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
+
+# I should maybe use something like Shipwright...
+regen_README('lib/WWW/Mechanize/Firefox.pm');
+regen_EXAMPLES();
+
 WriteMakefile1(
     MIN_PERL_VERSION => '5.006',
     META_MERGE => {
@@ -53,7 +58,38 @@ sub WriteMakefile1 {  #Written by Alexandr Ciornii, version 0.21. Added by eumm-
     delete $params{AUTHOR} if $] < 5.005;
     delete $params{ABSTRACT_FROM} if $] < 5.005;
     delete $params{BINARY_LOCATION} if $] < 5.005;
-
+    
     WriteMakefile(%params);
 }
 
+sub regen_README {
+    eval {
+        require Pod::Readme;
+
+        my $parser = Pod::Readme->new();
+
+        # Read POD from Module.pm and write to README
+        $parser->parse_from_file($_[0], 'README');
+    };
+    eval {
+        require Pod::Markdown;
+
+        my $parser = Pod::Markdown->new();
+
+        # Read POD from Module.pm and write to README
+        $parser->parse_from_file($_[0]);
+        open my $fh, '>', 'README.mkdn'
+            or die "Couldn't open 'README.mkdn': $!";
+        print $fh $parser->as_markdown;
+    };
+}
+
+
+sub regen_EXAMPLES {
+    my $perl = $^X;
+    warn "(Re)Creating lib/WWW/Mechanize/Firefox/Examples.pm\n";
+    if ($perl =~/\s/) {
+        $perl = qq{"$perl"};
+    };
+    system("$perl -w examples/gen_examples_pod.pl > lib/WWW/Mechanize/Firefox/Examples.pm");
+};
