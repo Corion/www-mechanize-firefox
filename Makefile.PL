@@ -91,5 +91,12 @@ sub regen_EXAMPLES {
     if ($perl =~/\s/) {
         $perl = qq{"$perl"};
     };
-    system("$perl -w examples/gen_examples_pod.pl > lib/WWW/Mechanize/Firefox/Examples.pm");
+    my $examples = `$perl -w examples/gen_examples_pod.pl`;
+    if ($examples) {
+        $examples =~ s/\r\n/\n/g;
+        if (open my $out, '>', 'lib/WWW/Mechanize/Firefox/Examples.pm') {
+            binmode $out;
+            print $out $examples;
+        };
+    };
 };
