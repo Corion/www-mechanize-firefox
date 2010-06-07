@@ -1404,9 +1404,21 @@ it also C<croak>s when more than one link is found.
 
 =cut
 
+use vars '%xpath_quote';
+%xpath_quote = (
+    '"' => '\"',
+    #"'" => "\\'",
+    #'[' => '&#91;',
+    #']' => '&#93;',
+    #'[' => '[\[]',
+    #'[' => '\[',
+    #']' => '[\]]',
+);
+
 sub quote_xpath($) {
     local $_ = $_[0];
-    s/(['"\[])/\\$1/g;
+    #s/(['"\[\]])/\\$1/g;
+    s/(['"\[\]])/$xpath_quote{$1} || $1/ge;
     $_
 };
 
@@ -1762,8 +1774,9 @@ sub form_with_fields {
         $options = shift @fields;
     };
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
+    #my @clauses = map { sprintf './/input[@name="%s"]', $_ } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
-    #warn $q;
+    warn $q;
     $self->{current_form} = $self->xpath($q,
         single => 1,
         user_info => "form with fields [@fields]",
