@@ -786,6 +786,13 @@ TODO
     *   Spin off XPath queries (`->xpath') and CSS selectors (`->selector')
         into their own Mechanize plugin(s).
 
+INSTALLING
+    *   Install the `mozrepl' add-on into Firefox
+
+    *   Start the `mozrepl' add-on or you will see test failures/skips in
+        the module when calling `->new'. You may want to set `mozrepl' to
+        start when the browser starts.
+
 SEE ALSO
     *   The MozRepl Firefox plugin at http://wiki.github.com/bard/mozrepl
 

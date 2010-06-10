@@ -16,7 +16,7 @@ package WWW::Mechanize::Firefox::Examples;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.19';
+$VERSION = '0.20';
 
 1;
 
@@ -61,26 +61,26 @@ The following is a list of the 7 example programs that are included in the WWW::
 =head2 Example: open-local-file.pl
 
     use strict;
-    use WWW::Mechanize::FireFox;
+    use WWW::Mechanize::Firefox;
     
-    my $mech = WWW::Mechanize::FireFox->new();
+    my $mech = WWW::Mechanize::Firefox->new();
     $mech->get_local('datei.html');
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/open-local-file.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/open-local-file.pl>
 
 =head2 Example: open-url.pl
 
     use strict;
-    use WWW::Mechanize;
+    use WWW::Mechanize::Firefox;
     
-    my $mech = WWW::Mechanize::FireFox->new();
+    my $mech = WWW::Mechanize::Firefox->new();
     $mech->get('http://www.perlworkshop.de');
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/open-url.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/open-url.pl>
 
 =head2 Example: screenshot.pl
 
@@ -151,14 +151,14 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/screenshot.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/screenshot.pl>
 
 =head2 Example: dump-links.pl
 
     use strict;
-    use WWW::Mechanize::FireFox;
+    use WWW::Mechanize::Firefox;
     
-    my $mech = WWW::Mechanize::FireFox->new();
+    my $mech = WWW::Mechanize::Firefox->new();
     $mech->get_local('links.html');
     
     $mech->highlight_node(
@@ -169,14 +169,14 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/dump-links.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/dump-links.pl>
 
 =head2 Example: manipulate-javascript.pl
 
     use strict;
-    use WWW::Mechanize::FireFox;
+    use WWW::Mechanize::Firefox;
     
-    my $mech = WWW::Mechanize::FireFox->new();
+    my $mech = WWW::Mechanize::Firefox->new();
     $mech->get_local('javascript.html');
     
     my ($val,$type) = $mech->eval_in_page(<<'JS');
@@ -192,14 +192,14 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/manipulate-javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/manipulate-javascript.pl>
 
 =head2 Example: javascript.pl
 
     use strict;
-    use WWW::Mechanize::FireFox;
+    use WWW::Mechanize::Firefox;
     
-    my $mech = WWW::Mechanize::FireFox->new();
+    my $mech = WWW::Mechanize::Firefox->new();
     $mech->get_local('links.html');
     
     $mech->eval_in_page(<<'JS');
@@ -208,19 +208,19 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/javascript.pl>
 
 =head2 Example: urlbar.pl
 
     use strict;
     use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
-    use WWW::Mechanize::FireFox;
+    use WWW::Mechanize::Firefox;
     use Time::HiRes;
     
-    my $mech = WWW::Mechanize::FireFox->new(
+    my $mech = WWW::Mechanize::Firefox->new(
         #log => ['debug'],
     );
-    $mech->get_local('datei.html');
+    $mech->get('http://www.cpan.org');
     
     my $mk_listener = $mech->repl->declare(<<'JS');
     function (myListener,source) {
@@ -319,7 +319,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     };
 
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.19/examples/urlbar.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.20/examples/urlbar.pl>
 
 =head1 AUTHOR
 
