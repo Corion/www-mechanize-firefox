@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.19';
+$VERSION = '0.20';
 
 =head1 NAME
 
@@ -2442,6 +2442,22 @@ Preferrably, there should be a common API between the two.
 
 Spin off XPath queries (C<< ->xpath >>) and CSS selectors (C<< ->selector >>)
 into their own Mechanize plugin(s).
+
+=back
+
+=head1 INSTALLING
+
+=over 4
+
+=item *
+
+Install the C<mozrepl> add-on into Firefox
+
+=item *
+
+Start the C<mozrepl> add-on or you will see test failures/skips
+in the module when calling C<< ->new >>. You may want to set
+C<mozrepl> to start when the browser starts.
 
 =back
 
