@@ -1776,7 +1776,7 @@ sub form_with_fields {
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
     #my @clauses = map { sprintf './/input[@name="%s"]', $_ } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
-    warn $q;
+    #warn $q;
     $self->{current_form} = $self->xpath($q,
         single => 1,
         user_info => "form with fields [@fields]",
