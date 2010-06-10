@@ -23,8 +23,10 @@ t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/49-mech-reuse.t
+t/50-form-with-fields.t
 t/50-form2.html
 t/50-form2.t
+t/50-form3.html
 t/50-mech-bufsize.t
 t/50-mech-ct.t
 t/50-mech-event.t
@@ -61,6 +63,7 @@ t/70-two-instances.t
 t/70-urlbar-2.html
 t/70-urlbar.html
 t/70-urlbar.t
+t/99-examples.t
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t
