@@ -1,0 +1,20 @@
+The following is a description of the example files that are provided
+with Spreadsheet::WriteExcel. They are intended to demonstrate the
+different features and options of the module.
+
+
+Getting started
+===============
+open-local-file.pl              Open a local file in Firefox
+open-url.pl                     Open an URL in Firefox
+screenshot.pl                   Take a screenshot of a website
+dump-links.pl                   Dump links on a webpage
+
+Javascript
+==========
+manipulate-javascript.pl        Make changes to Javascript values in a webpage
+javascript.pl                   Execute Javascript in the webpage context
+
+Advanced
+========
+urlbar.pl                       Listen to changes in the location bar

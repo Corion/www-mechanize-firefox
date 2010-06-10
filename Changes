@@ -1,5 +1,9 @@
 To be released
 
+0.19 20100603
+    . Added example programs
+    . Generate example documentation by script from John McNamara
+
 0.18 20100518
     . ->submit() returns a true value now
     . added another test

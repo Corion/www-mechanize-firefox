@@ -1,12 +1,23 @@
 .gitignore
 Changes
-eg/screenshot.pl
+examples/dump-links.pl
+examples/gen_examples_pod.pl
+examples/javascript.pl
+examples/manipulate-javascript.pl
+examples/open-local-file.pl
+examples/open-url.pl
+examples/README
+examples/screenshot.pl
+examples/urlbar.pl
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
+lib/WWW/Mechanize/Firefox/Examples.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
+README
+README.mkdn
 t/01-mech-destroy.t
 t/48-mech-launch.t
 t/49-mech-get-file.html
@@ -20,6 +31,7 @@ t/50-mech-event.t
 t/50-mech-get.t
 t/50-mech-multi-event.t
 t/50-mech-new.t
+t/50-mech-save-dialog.t
 t/50-mech-status.t
 t/51-mech-links.t
 t/51-mech-sandbox.html
