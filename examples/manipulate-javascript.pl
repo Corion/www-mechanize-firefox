@@ -1,7 +1,7 @@
 use strict;
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 
-my $mech = WWW::Mechanize::FireFox->new();
+my $mech = WWW::Mechanize::Firefox->new();
 $mech->get_local('javascript.html');
 
 my ($val,$type) = $mech->eval_in_page(<<'JS');

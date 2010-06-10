@@ -1,12 +1,12 @@
 use strict;
 use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use Time::HiRes;
 
-my $mech = WWW::Mechanize::FireFox->new(
+my $mech = WWW::Mechanize::Firefox->new(
     #log => ['debug'],
 );
-$mech->get_local('datei.html');
+$mech->get('http://www.cpan.org');
 
 my $mk_listener = $mech->repl->declare(<<'JS');
 function (myListener,source) {

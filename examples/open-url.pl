@@ -1,7 +1,7 @@
 use strict;
-use WWW::Mechanize;
+use WWW::Mechanize::Firefox;
 
-my $mech = WWW::Mechanize::FireFox->new();
+my $mech = WWW::Mechanize::Firefox->new();
 $mech->get('http://www.perlworkshop.de');
 
 <>;
