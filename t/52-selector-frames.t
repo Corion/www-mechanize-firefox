@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 11;
+    plan tests => 16;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -39,3 +39,12 @@ is $content[1]->{innerHTML}, '52-subframe.html', "We get the right frame";
 is scalar @content, 2, 'Querying of subframes returns results via CSS selectors too';
 is $content[0]->{innerHTML}, '52-iframeset.html', "We get the right frame";
 is $content[1]->{innerHTML}, '52-subframe.html', "We get the right frame";
+
+@content = $mech->selector('#content');
+is scalar @content, 2, 'Querying of subframes returns results via CSS selectors too, even without frames=>1';
+is $content[0]->{innerHTML}, '52-iframeset.html', "We get the right frame";
+is $content[1]->{innerHTML}, '52-subframe.html', "We get the right frame";
+
+@content = $mech->selector('#content', frames=>0);
+is scalar @content, 1, 'Querying of subframes returns only the surrounding page with frames=>0';
+is $content[0]->{innerHTML}, '52-iframeset.html', "We get the right frame";
