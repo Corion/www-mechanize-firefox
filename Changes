@@ -1,5 +1,14 @@
 To be released
 
+0.21 20100618
+    ! value() method now returns the field value
+    ! Frames are now searched by default for matching elements
+      Use
+          frames => 0
+      to prevent searching through frames or
+          frames => ['content_frame']
+      to whitelist frames to be searched
+
 0.20 20100610
     . Fix links in example documentation
     . Add tests for weirdo names containing square brackets
