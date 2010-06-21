@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.20';
+$VERSION = '0.21';
 
 =head1 NAME
 
@@ -67,6 +67,14 @@ the criteria given in C<tab> can be found.
 
 C<launch> - name of the program to launch if we can't connect to it on
 the first try.
+
+=item *
+
+C<frames> - an array reference of ids of subframes to include when 
+searching for elements on a page.
+
+If you want to always search through all frames, just pass C<1>. This
+is the default.
 
 =item * 
 
@@ -158,6 +166,7 @@ sub new {
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
+    $args{ frames } ||= 1; # we default to searching frames
 
     die "No tab found"
         unless $args{tab};
@@ -2071,7 +2080,8 @@ search a node within a specific subframe of C<< $mech->document >>.
 =item *
 
 C<< frames >> - if true, search all documents in all frames and iframes.
-This may or may not conflict with C<node>.
+This may or may not conflict with C<node>. This will default to the
+C<frames> setting of the WWW::Mechanize::Firefox object.
 
 =item *
 
@@ -2108,9 +2118,14 @@ sub xpath {
     #warn $query;
     my @res = $options{ document }->__xpath($query, $options{ node });
     
+    if (not exists $options{ frames }) {
+        $options{frames} = $self->{frames};
+    };
+    
     # recursively join the results of sub(i)frames if wanted
     if ($options{frames}) {
-        my @frames = $options{ document }->__xpath('//frame | //iframe');
+        my @frames = $self->expand_frames( $options{ frames }, $options{ document } );
+        #my @frames = $options{ document }->__xpath('//frame | //iframe');
         for my $frame (@frames) {
             $options{ document } = $frame->{contentDocument};
             $options{ node } = $options{ document };
@@ -2148,6 +2163,36 @@ sub selector {
     $options{ user_info } ||= "CSS selector '$query'";
     my $q = selector_to_xpath($query);    
     $self->xpath($q, %options);
+};
+
+=head2 C<< $mech->expand_frames SPEC >>
+
+Expands the frame selectors (or C<1> to match all frames)
+into their respective DOM nodes according to the current
+document.
+
+This is mostly an internal method.
+
+=cut
+
+sub expand_frames {
+    my ($self, $spec, $document) = @_;
+    $spec ||= $self->{frames};
+    my @spec = ref $spec ? @$spec : $spec;
+    $document ||= $self->document;
+    
+    if ($spec == 1) {
+        # All frames
+        @spec = qw( frame iframe );
+    };
+    
+    map { warn "Expanding $_"; ref $_
+          ? $_
+          : $self->selector( $_,
+                           document => $document,
+                           frames => 0, # otherwise we'll recurse :)
+          )
+    } @spec;
 };
 
 =head1 IMAGE METHODS
