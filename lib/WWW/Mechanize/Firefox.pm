@@ -76,6 +76,15 @@ searching for elements on a page.
 If you want to always search through all frames, just pass C<1>. This
 is the default.
 
+To prevent searching through frames, pass
+
+          frames => 0
+
+To whitelist frames to be searched, pass the list
+of frame selectors:
+
+          frames => ['#content_frame']
+
 =item * 
 
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
@@ -1811,7 +1820,7 @@ sub forms {
                      : \@res
 };
 
-=head2 C<< $mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS] >>
+=head2 C<< $mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS] >>
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -1830,11 +1839,11 @@ are triggered.
 
 =head3 Set a value without triggering events
 
-  $mech->value( 'myfield', 'myvalue', [], [] );
+  $mech->field( 'myfield', 'myvalue', [], [] );
 
 =cut
 
-sub value {
+sub field {
     my ($self,$name,$value,$pre,$post) = @_;
     $self->get_set_value(
         name => $name,
@@ -1845,6 +1854,33 @@ sub value {
         node => $self->current_form || $self->document,
     );
 }
+
+=head2 C<< $mech->value( NAME_OR_ELEMENT, [%OPTIONS] ) >>
+
+Returns the value of the field named C<NAME> or of the
+DOM element passed in.
+
+The legacy form of
+
+    $mech->value( name => value );
+
+is also still supported but will likely be deprecated
+in favour of the C<< ->field >> method.
+
+=cut
+
+sub value {
+    if (@_ == 3) {
+        my ($self,$name,$value) = @_;
+        return $self->field($name => $value);
+    } else {
+        my ($self,$name,%options) = @_;
+        $self->get_set_value(
+            %options,
+            name => $name,
+        );
+    };
+};
 
 =head2 C<< $mech->get_set_value( OPTIONS ) >>
 
@@ -1864,6 +1900,7 @@ sub get_set_value {
     my ($self,%options) = @_;
     my @fields;
     my $name  = delete $options{ name };
+    my $set_value = exists $options{ value };
     my $value = delete $options{ value };
     my $pre   = delete $options{pre}  || $self->{pre_value};
     my $post  = delete $options{post} || $self->{post_value};
@@ -1886,7 +1923,7 @@ sub get_set_value {
         if (@fields > 1);
         
     if ($fields[0]) {
-        if (@_ >= 3) {
+        if ($set_value) {
             for my $ev (@$pre) {
                 $fields[0]->__event($ev);
             };
@@ -2125,7 +2162,6 @@ sub xpath {
     # recursively join the results of sub(i)frames if wanted
     if ($options{frames}) {
         my @frames = $self->expand_frames( $options{ frames }, $options{ document } );
-        #my @frames = $options{ document }->__xpath('//frame | //iframe');
         for my $frame (@frames) {
             $options{ document } = $frame->{contentDocument};
             $options{ node } = $options{ document };
@@ -2186,7 +2222,8 @@ sub expand_frames {
         @spec = qw( frame iframe );
     };
     
-    map { warn "Expanding $_"; ref $_
+    map { #warn "Expanding $_";
+            ref $_
           ? $_
           : $self->selector( $_,
                            document => $document,
