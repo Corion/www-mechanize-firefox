@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 16;
+    plan tests => 18;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -48,3 +48,9 @@ is $content[1]->{innerHTML}, '52-subframe.html', "We get the right frame";
 @content = $mech->selector('#content', frames=>0);
 is scalar @content, 1, 'Querying of subframes returns only the surrounding page with frames=>0';
 is $content[0]->{innerHTML}, '52-iframeset.html', "We get the right frame";
+
+my $bar;
+my $v = eval { $bar = $mech->value('bar'); 1 };
+sleep 10;
+ok $v, "We find input fields in subframes implicitly";
+is $bar, 'foo', "We retrieve the right value";

@@ -22,7 +22,7 @@ $mech->get_local('51-mech-submit.html');
 $mech->allow('javascript' => 1);
 $mech->form_id('testform');
 
-$mech->value('q','1');
+$mech->field('q','1');
 $mech->submit();
 my ($triggered,$type) = $mech->eval_in_page('myevents');
 
