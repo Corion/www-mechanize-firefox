@@ -34,6 +34,12 @@ METHODS
     *   `launch' - name of the program to launch if we can't connect to it
         on the first try.
 
+    *   `frames' - an array reference of ids of subframes to include when
+        searching for elements on a page.
+
+        If you want to always search through all frames, just pass `1'. This
+        is the default.
+
     *   `log' - array reference to log levels, passed through to
         MozRepl::RemoteObject
 
@@ -515,7 +521,7 @@ FORM METHODS
 
     The returned elements are the DOM `<form>' elements.
 
-  `$mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS]'
+  `$mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS]'
 
     Sets the field with the name to the given value. Returns the value.
 
@@ -531,7 +537,12 @@ FORM METHODS
     `post_events' are triggered.
 
     Set a value without triggering events
-      $mech->value( 'myfield', 'myvalue', [], [] );
+      $mech->field( 'myfield', 'myvalue', [], [] );
+
+  `$mech->value( NAME_OR_ELEMENT, [%OPTIONS] )'
+
+    Returns the value of the field named `NAME' or of the DOM element passed
+    in.
 
   `$mech->get_set_value( OPTIONS )'
 
@@ -616,7 +627,8 @@ FORM METHODS
         to search a node within a specific subframe of `$mech->document'.
 
     *   `frames' - if true, search all documents in all frames and iframes.
-        This may or may not conflict with `node'.
+        This may or may not conflict with `node'. This will default to the
+        `frames' setting of the WWW::Mechanize::Firefox object.
 
     *   `node' - node relative to which the query is to be executed
 
@@ -639,6 +651,13 @@ FORM METHODS
 
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
+
+  `$mech->expand_frames SPEC'
+
+    Expands the frame selectors (or `1' to match all frames) into their
+    respective DOM nodes according to the current document.
+
+    This is mostly an internal method.
 
 IMAGE METHODS
   `$mech->content_as_png [TAB, COORDINATES]'

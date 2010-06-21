@@ -44,6 +44,14 @@ the criteria given in `tab` can be found.
 `launch` - name of the program to launch if we can't connect to it on
 the first try.
 
+- *
+
+`frames` - an array reference of ids of subframes to include when 
+searching for elements on a page.
+
+If you want to always search through all frames, just pass `1`. This
+is the default.
+
 - * 
 
 `log` - array reference to log levels, passed through to [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject)
@@ -574,7 +582,7 @@ an array with those forms.
 
 The returned elements are the DOM `<form>` elements.
 
-## C<< $mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS] >>
+## C<< $mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS] >>
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -593,7 +601,12 @@ are triggered.
 
 ### Set a value without triggering events
 
-  $mech->value( 'myfield', 'myvalue', [], [] );
+  $mech->field( 'myfield', 'myvalue', [], [] );
+
+## C<< $mech->value( NAME_OR_ELEMENT, [%OPTIONS] ) >>
+
+Returns the value of the field named `NAME` or of the
+DOM element passed in.
 
 ## C<< $mech->get_set_value( OPTIONS ) >>
 
@@ -683,7 +696,8 @@ search a node within a specific subframe of `$mech->document`.
 - *
 
 `frames` - if true, search all documents in all frames and iframes.
-This may or may not conflict with `node`.
+This may or may not conflict with `node`. This will default to the
+`frames` setting of the WWW::Mechanize::Firefox object.
 
 - *
 
@@ -712,6 +726,14 @@ Returns all nodes matching the given CSS selector.
 
 In the long run, this should go into a general plugin for
 [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize).
+
+## C<< $mech->expand_frames SPEC >>
+
+Expands the frame selectors (or `1` to match all frames)
+into their respective DOM nodes according to the current
+document.
+
+This is mostly an internal method.
 
 # IMAGE METHODS
 
