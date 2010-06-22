@@ -1616,7 +1616,6 @@ sub click {
     my @buttons;
     if (ref $name and blessed($name) and $name->can('__click')) {
         $options{ dom } = $name;
-        $options{ synchronize } = 1;
     } elsif (ref $name eq 'HASH') { # options
         if (exists $name->{ dom }) {
             @buttons = delete $name->{dom};
@@ -1678,7 +1677,8 @@ sub click {
     };
     
     if ($options{ synchronize }) {
-        my $event = $self->synchronize($self->events, sub { # ,'abort'
+        #my $event =
+        $self->synchronize($self->events, sub { # ,'abort'
             $buttons[0]->__click();
         });
     } else {
