@@ -1,0 +1,841 @@
+NAME
+    WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
+
+SYNOPSIS
+      use WWW::Mechanize::Firefox;
+      my $mech = WWW::Mechanize::Firefox->new();
+      $mech->get('http://google.com');
+
+      $mech->eval_in_page('alert("Hello Firefox")');
+      my $png = $mech->content_as_png();
+
+    This will let you automate Firefox through the Mozrepl plugin, which you
+    need to have installed in your Firefox.
+
+METHODS
+  `$mech->new( ARGS )'
+
+    Creates a new instance and connects it to Firefox.
+
+    Note that Firefox must have the `mozrepl' extension installed and
+    enabled.
+
+    The following options are recognized:
+
+    *   `tab' - regex for the title of the tab to reuse. If no matching tab
+        is found, the constructor dies.
+
+        If you pass in the string `current', the currently active tab will
+        be used instead.
+
+    *   `create' - will create a new tab if no existing tab matching the
+        criteria given in `tab' can be found.
+
+    *   `launch' - name of the program to launch if we can't connect to it
+        on the first try.
+
+    *   `frames' - an array reference of ids of subframes to include when
+        searching for elements on a page.
+
+        If you want to always search through all frames, just pass `1'. This
+        is the default.
+
+    *   `log' - array reference to log levels, passed through to
+        MozRepl::RemoteObject
+
+    *   `bufsize' - Net::Telnet buffer size, if the default of 1MB is not
+        enough
+
+    *   `events' - the set of default Javascript events to listen for while
+        waiting for a reply
+
+    *   `repl' - a premade MozRepl::RemoteObject instance
+
+    *   `pre_events' - the events that are sent to an input field before its
+        value is changed. By default this is `[focus]'.
+
+    *   `post_events' - the events that are sent to an input field after its
+        value is changed. By default this is `[blur, change]'.
+
+    Launch Firefox if `mozrepl' is not running
+    This will launch Firefox if the program can't connect to the `mozrepl'
+    plugin in Firefox. This will also enable `mozrepl' in a Firefox process
+    if it is not already running.
+
+      my $mech = WWW::Mechanize::Firefox->new(
+          launch => 'firefox',
+      );
+
+JAVASCRIPT METHODS
+  `$mech->allow( OPTIONS )'
+
+    Enables or disables browser features for the current tab. The following
+    options are recognized:
+
+    *   `plugins' - Whether to allow plugin execution.
+
+    *   `javascript' - Whether to allow Javascript execution.
+
+    *   `metaredirects' - Attribute stating if refresh based redirects can
+        be allowed.
+
+    *   `frames', `subframes' - Attribute stating if it should allow
+        subframes (framesets/iframes) or not.
+
+    *   `images' - Attribute stating whether or not images should be loaded.
+
+    Options not listed remain unchanged.
+
+    Disable Javascript
+      $mech->allow( javascript => 0 );
+
+  `$mech->js_errors( [PAGE] )'
+
+    An interface to the Javascript Error Console
+
+    Returns the list of errors in the JEC
+
+    Check that your Page has no Javascript compile errors
+      $mech->get('mypage');
+      my @errors = $mech->js_errors();
+      if (@errors) {
+          die "Found errors on page: @errors";
+      };
+
+    Maybbe this should be called `js_messages' or `js_console_messages'
+    instead.
+
+  `$mech->clear_js_errors'
+
+    Clears all Javascript messages from the console
+
+  `$mech->eval_in_page( $STR [, $ENV] [, $DOCUMENT] )'
+
+  `$mech->eval( $STR [, $ENV] [, $DOCUMENT] )'
+
+    Evaluates the given Javascript fragment in the context of the web page.
+    Returns a pair of value and Javascript type.
+
+    This allows access to variables and functions declared "globally" on the
+    web page.
+
+    The returned result needs to be treated with extreme care because it
+    might lead to Javascript execution in the context of your application
+    instead of the context of the webpage. This should be evident for
+    functions and complex data structures like objects. When working with
+    results from untrusted sources, you can only safely use simple types
+    like `string'.
+
+    If you want to modify the environment the code is run under, pass in a
+    hash reference as the second parameter. All keys will be inserted into
+    the `this' object as well as `this.window'. Also, complex data
+    structures are only supported if they contain no objects. If you need
+    finer control, you'll have to write the Javascript yourself.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+    Also, using this method opens a potential security risk as the returned
+    values can be objects and using these objects can execute malicious code
+    in the context of the Firefox application.
+
+    Override the Javascript `alert()' function
+      $mech->eval_in_page('alert("Hello");',
+          { alert => sub { print "Captured alert: '@_'\n" } }
+      );
+
+  `$mech->unsafe_page_property_access( ELEMENT )'
+
+    Allows you unsafe access to properties of the current page. Using such
+    properties is an incredibly bad idea.
+
+    This is why the function `die's. If you really want to use this
+    function, edit the source code.
+
+UI METHODS
+  `$mech->addTab( OPTIONS )'
+
+    Creates a new tab. The tab will be automatically closed upon program
+    exit.
+
+    If you want the tab to remain open, pass a false value to the the `
+    autoclose ' option.
+
+  `$mech->tab'
+
+    Gets the object that represents the Firefox tab used by
+    WWW::Mechanize::Firefox.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+  `$mech->progress_listener( SOURCE, CALLBACKS )'
+
+    Sets up the callbacks for the `nsIWebProgressListener' interface to be
+    the Perl subroutines you pass in.
+
+    Returns a handle. Once the handle gets released, all callbacks will get
+    stopped. Also, all Perl callbacks will get deregistered from the
+    Javascript bridge, so make sure not to use the same callback in
+    different progress listeners at the same time.
+
+    Get notified when the current tab changes
+        my $browser = $mech->repl->expr('window.getBrowser()');
+
+        my $eventlistener = progress_listener(
+            $browser,
+            onLocationChange => \&onLocationChange,
+        );
+
+        while (1) {
+            $mech->repl->poll();
+            sleep 1;
+        };
+
+  `$mech->repl'
+
+    Gets the MozRepl::RemoteObject instance that is used.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+  `$mech->events'
+
+    Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
+    will wait for after requesting a new page. Returns an array reference.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+  `$mech->cookies'
+
+    Returns a HTTP::Cookies object that was initialized from the live
+    Firefox instance.
+
+    Note: `->set_cookie' is not yet implemented, as is saving the cookie
+    jar.
+
+  `$mech->highlight_node( NODES )'
+
+    Convenience method that marks all nodes in the arguments with
+
+      background: red;
+      border: solid black 1px;
+      display: block; /* if the element was display: none before */
+
+    This is convenient if you need visual verification that you've got the
+    right nodes.
+
+    There currently is no way to restore the nodes to their original visual
+    state except reloading the page.
+
+NAVIGATION METHODS
+  `$mech->get( URL )'
+
+    Retrieves the URL `URL' into the tab.
+
+    It returns a faked HTTP::Response object for interface compatibility
+    with WWW::Mechanize. It does not yet support the additional parameters
+    that WWW::Mechanize supports for saving a file etc.
+
+  `$mech->get_local( $filename )'
+
+    Shorthand method to construct the appropriate `file://' URI and load it
+    into Firefox.
+
+    This method is special to WWW::Mechanize::Firefox but could also exist
+    in WWW::Mechanize through a plugin.
+
+  `$mech->synchronize( $event, $callback )'
+
+    Wraps a synchronization semaphore around the callback and waits until
+    the event `$event' fires on the browser. If you want to wait for one of
+    multiple events to occur, pass an array reference as the first
+    parameter.
+
+    Usually, you want to use it like this:
+
+      my $l = $mech->xpath('//a[@onclick]', single => 1);
+      $mech->synchronize('DOMFrameContentLoaded', sub {
+          $l->__click()
+      });
+
+    It is necessary to synchronize with the browser whenever a click
+    performs an action that takes longer and fires an event on the browser
+    object.
+
+    The `DOMFrameContentLoaded' event is fired by Firefox when the whole DOM
+    and all `iframe's have been loaded. If your document doesn't have
+    frames, use the `DOMContentLoaded' event instead.
+
+    If you leave out `$event', the value of `->events()' will be used
+    instead.
+
+  `$mech->res' / `$mech->response'
+
+    Returns the current response as a HTTP::Response object.
+
+  `$mech->success'
+
+    Returns a boolean telling whether the last request was successful. If
+    there hasn't been an operation yet, returns false.
+
+    This is a convenience function that wraps `$mech->res->is_success'.
+
+  `$mech->status'
+
+    Returns the HTTP status code of the response. This is a 3-digit number
+    like 200 for OK, 404 for not found, and so on.
+
+  `$mech->reload( [BYPASS_CACHE] )'
+
+    Reloads the current page. If `BYPASS_CACHE' is a true value, the browser
+    is not allowed to use a cached page. This is the difference between
+    pressing `F5' (cached) and `shift-F5' (uncached).
+
+    Returns the (new) response.
+
+  `$mech->back'
+
+    Goes one page back in the page history.
+
+    Returns the (new) response.
+
+  `$mech->forward'
+
+    Goes one page back in the page history.
+
+    Returns the (new) response.
+
+  `$mech->uri'
+
+    Returns the current document URI.
+
+CONTENT METHODS
+  `$mech->document'
+
+    Returns the DOM document object.
+
+    This is WWW::Mechanize::Firefox specific.
+
+  `$mech->docshell'
+
+    Returns the `docShell' Javascript object.
+
+    This is WWW::Mechanize::Firefox specific.
+
+  `$mech->content'
+
+    Returns the current content of the tab as a scalar.
+
+    This is likely not binary-safe.
+
+    It also currently only works for HTML pages.
+
+  `$mech->update_html( $html )'
+
+    Writes `$html' into the current document. This is mostly implemented as
+    a convenience method for HTML::Display::MozRepl.
+
+  `$mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] )'
+
+    Saves the given URL to the given filename. The URL will be fetched from
+    the cache if possible, avoiding unnecessary network traffic.
+
+    If `$resource_directory' is given, the whole page will be saved. All
+    CSS, subframes and images will be saved into that directory, while the
+    page HTML itself will still be saved in the file pointed to by
+    `$localname'.
+
+    Returns a `nsIWebBrowserPersist' object through which you can cancel the
+    download by calling its `->cancelSave' method. Also, you can poll the
+    download status through the `->{currentState}' property.
+
+    If you are interested in the intermediate download progress, create a
+    ProgressListener through `$mech->progress_listener' and pass it in the
+    `progress' option.
+
+    The download will continue in the background. It will not show up in the
+    Download Manager.
+
+  `$mech->save_url( $url, $localname, [%OPTIONS] )'
+
+    Saves the given URL to the given filename. The URL will be fetched from
+    the cache if possible, avoiding unnecessary network traffic.
+
+    Returns a `nsIWebBrowserPersist' object through which you can cancel the
+    download by calling its `->cancelSave' method. Also, you can poll the
+    download status through the `->{currentState}' property.
+
+    If you are interested in the intermediate download progress, create a
+    ProgressListener through `$mech->progress_listener' and pass it in the
+    `progress' option.
+
+    The download will continue in the background. It will also not show up
+    in the Download Manager.
+
+    Upload a file to an `ftp' server
+    You can use `->save_url' to *transfer* files. `$localname' can be a
+    local filename, a `file://' URL or any other URL that allows uploads,
+    like `ftp://'.
+
+      $mech->save_url('file://path/to/my/file.txt'
+          => 'ftp://myserver.example/my/file.txt');
+
+     Not implemented - this requires instantiating and passing a ` nsIURI '
+    object instead of a ` nsILocalFile '.
+
+  `$mech->base'
+
+    Returns the URL base for the current page.
+
+    The base is either specified through a `base' tag or is the current URL.
+
+    This method is specific to WWW::Mechanize::Firefox
+
+  `$mech->content_type'
+
+    Returns the content type of the currently loaded document
+
+  `$mech->is_html()'
+
+    Returns true/false on whether our content is HTML, according to the HTTP
+    headers.
+
+  `$mech->title'
+
+    Returns the current document title.
+
+EXTRACTION METHODS
+  `$mech->links'
+
+    Returns all links in the document.
+
+    Currently accepts no parameters.
+
+  `$mech->find_link_dom( OPTIONS )'
+
+    A method to find links, like WWW::Mechanize's `->find_links' method.
+
+    Returns the DOM object as MozRepl::RemoteObject::Instance.
+
+    The supported options are:
+
+    `text' - the text of the link
+
+    `id' - the `id' attribute of the link
+
+    `name' - the `name' attribute of the link
+
+    `url' - the URL attribute of the link (`href', `src' or `content').
+
+    `class' - the `class' attribute of the link
+
+    `n' - the (1-based) index. Defaults to returning the first link.
+
+    `single' - If true, ensure that only one element is found. Otherwise
+    croak or carp, depending on the `autodie' parameter.
+
+    `one' - If true, ensure that at least one element is found. Otherwise
+    croak or carp, depending on the `autodie' parameter.
+
+    The method `croak's if no link is found. If the `single' option is true,
+    it also `croak's when more than one link is found.
+
+  `$mech->find_link( OPTIONS )'
+
+    A method quite similar to WWW::Mechanize's method.
+
+    Returns a WWW::Mechanize::Link object.
+
+  `$mech->find_all_links( OPTIONS )'
+
+    Finds all links in the document.
+
+    Returns them as list or an array reference, depending on context.
+
+  `$mech->find_all_links_dom OPTIONS'
+
+    Finds all matching linky DOM nodes in the document.
+
+    Returns them as list or an array reference, depending on context.
+
+  `$mech->click NAME [,X,Y]'
+
+    Has the effect of clicking a button on the current form. The first
+    argument is the `name' of the button to be clicked. The second and third
+    arguments (optional) allow you to specify the (x,y) coordinates of the
+    click.
+
+    If there is only one button on the form, $mech->click() with no
+    arguments simply clicks that one button.
+
+    If you pass in a hash reference instead of a name, the following keys
+    are recognized:
+
+    * `selector' - Find the element to click by the CSS selector
+    * `xpath' - Find the element to click by the XPath query
+    * `synchronize' - Synchronize the click (default is 1)
+    Returns a HTTP::Response object.
+
+    As a deviation from the WWW::Mechanize API, you can also pass a hash
+    reference as the first parameter. In it, you can specify the parameters
+    to search much like for the `find_link' calls.
+
+  `$mech->follow_link'
+
+    Follows the given link. Takes the same parameters that `find_link' uses.
+
+FORM METHODS
+  `$mech->current_form'
+
+    Returns the current form.
+
+    This method is incompatible with WWW::Mechanize. It returns the DOM
+    `<form>' object and not a HTML::Form instance.
+
+  `$mech->form_name NAME [, OPTIONS]'
+
+    Selects the current form by its name.
+
+  `$mech->form_id ID [, OPTIONS]'
+
+    Selects the current form by its `id' attribute.
+
+    This is equivalent to calling
+
+        $mech->selector("#$name",single => 1,%options)
+
+  `$mech->form_number NUMBER [, OPTIONS]'
+
+    Selects the *number*th form.
+
+  `$mech->form_with_fields [$OPTIONS], FIELDS'
+
+    Find the form which has the listed fields.
+
+    If the first argument is a hash reference, it's taken as options to
+    `->xpath'
+
+  `$mech->forms OPTIONS'
+
+    When called in a list context, returns a list of the forms found in the
+    last fetched page. In a scalar context, returns a reference to an array
+    with those forms.
+
+    The returned elements are the DOM `<form>' elements.
+
+  `$mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS]'
+
+    Sets the field with the name to the given value. Returns the value.
+
+    Note that this uses the `name' attribute of the HTML, not the `id'
+    attribute.
+
+    By passing the array reference `PRE EVENTS', you can indicate which
+    Javascript events you want to be triggered before setting the value.
+    `POST EVENTS' contains the events you want to be triggered after setting
+    the value.
+
+    By default, the events set in the constructor for `pre_events' and
+    `post_events' are triggered.
+
+    Set a value without triggering events
+      $mech->field( 'myfield', 'myvalue', [], [] );
+
+  `$mech->value( NAME_OR_ELEMENT, [%OPTIONS] )'
+
+    Returns the value of the field named `NAME' or of the DOM element passed
+    in.
+
+  `$mech->get_set_value( OPTIONS )'
+
+    Allows fine-grained access to getting/setting a value with a different
+    API. Supported keys are:
+
+      pre
+      post
+      name
+      value
+
+    in addition to all keys that `$mech->xpath' supports.
+
+  `$mech->submit'
+
+    Submits the current form. Note that this does not fire the `onClick'
+    event and thus also does not fire eventual Javascript handlers. Maybe
+    you want to use `$mech->click' instead.
+
+  `$mech->submit_form( ... )'
+
+    This method lets you select a form from the previously fetched page,
+    fill in its fields, and submit it. It combines the
+    form_number/form_name, set_fields and click methods into one higher
+    level call. Its arguments are a list of key/value pairs, all of which
+    are optional.
+
+    *   `fields => \%fields'
+
+        Specifies the fields to be filled in the current form
+
+    *   `with_fields => \%fields'
+
+        Probably all you need for the common case. It combines a smart form
+        selector and data setting in one operation. It selects the first
+        form that contains all fields mentioned in \%fields. This is nice
+        because you don't need to know the name or number of the form to do
+        this.
+
+        (calls `<form_with_fields()'> and `<set_fields()'>).
+
+        If you choose this, the form_number, form_name, form_id and fields
+        options will be ignored.
+
+  `$mech->set_fields( $name => $value, ... )'
+
+    This method sets multiple fields of the current form. It takes a list of
+    field name and value pairs. If there is more than one field with the
+    same name, the first one found is set. If you want to select which of
+    the duplicate field to set, use a value which is an anonymous array
+    which has the field value and its number as the 2 elements.
+
+  `$mech->set_visible @values'
+
+    This method sets fields of the current form without having to know their
+    names. So if you have a login screen that wants a username and password,
+    you do not have to fetch the form and inspect the source (or use the
+    `mech-dump' utility, installed with WWW::Mechanize) to see what the
+    field names are; you can just say
+
+      $mech->set_visible( $username, $password );
+
+    and the first and second fields will be set accordingly. The method is
+    called set_visible because it acts only on visible fields; hidden form
+    inputs are not considered.
+
+    The specifiers that are possible in WWW::Mechanize are not yet
+    supported.
+
+  `$mech->clickables'
+
+    Returns all clickable elements, that is, all elements with an `onclick'
+    attribute.
+
+  `$mech->xpath QUERY, %options'
+
+    Runs an XPath query in Firefox against the current document.
+
+    The options allow the following keys:
+
+    *   `document' - document in which the query is to be executed. Use this
+        to search a node within a specific subframe of `$mech->document'.
+
+    *   `frames' - if true, search all documents in all frames and iframes.
+        This may or may not conflict with `node'. This will default to the
+        `frames' setting of the WWW::Mechanize::Firefox object.
+
+    *   `node' - node relative to which the query is to be executed
+
+    *   `single' - If true, ensure that only one element is found. Otherwise
+        croak or carp, depending on the `autodie' parameter.
+
+    *   `one' - If true, ensure that at least one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
+
+    Returns the matched nodes.
+
+    This is a method that is not implemented in WWW::Mechanize.
+
+    In the long run, this should go into a general plugin for
+    WWW::Mechanize.
+
+  `$mech->selector css_selector, %options'
+
+    Returns all nodes matching the given CSS selector.
+
+    In the long run, this should go into a general plugin for
+    WWW::Mechanize.
+
+  `$mech->expand_frames SPEC'
+
+    Expands the frame selectors (or `1' to match all frames) into their
+    respective DOM nodes according to the current document.
+
+    This is mostly an internal method.
+
+IMAGE METHODS
+  `$mech->content_as_png [TAB, COORDINATES]'
+
+    Returns the given tab or the current page rendered as PNG image.
+
+    All parameters are optional.
+
+    TAB defaults to current TAB.
+
+    If the coordinates are given, that rectangle will be cut out. The
+    coordinates should be a hash with the four usual entries,
+    `left',`top',`width',`height'.
+
+    This is specific to WWW::Mechanize::Firefox.
+
+    Currently, the data transfer between Firefox and Perl is done
+    Base64-encoded. It would be beneficial to find what's necessary to make
+    JSON handle binary data more gracefully.
+
+    Save the current page as PNG
+      my $png = $mech->content_as_png();
+      open my $fh, '>', 'page.png'
+          or die "Couldn't save to 'page.png': $!";
+      binmode $fh;
+      print {$fh} $png;
+      close $fh;
+
+    Also see the file `screenshot.pl' included in the distribution.
+
+    Save top left corner of the current page as PNG
+      my $rect = {
+        left  =>    0,
+        top   =>    0,
+        width  => 200,
+        height => 200,
+      };
+      my $png = $mech->content_as_png(undef, $rect);
+      open my $fh, '>', 'page.png'
+          or die "Couldn't save to 'page.png': $!";
+      binmode $fh;
+      print {$fh} $png;
+      close $fh;
+
+  `$mech->element_as_png $element'
+
+    Returns PNG image data for a single element
+
+  `$mech->element_coordinates $element'
+
+    Returns the page-coordinates of the `$element' in pixels as a hash with
+    four entries, `left', `top', `width' and `height'.
+
+    This function might get moved into another module more geared towards
+    rendering HTML.
+
+COOKIE HANDLING
+    Firefox cookies will be read through HTTP::Cookies::MozRepl. This is
+    relatively slow currently.
+
+INCOMPATIBILITIES WITH WWW::Mechanize
+    As this module is in a very early stage of development, there are many
+    incompatibilities. The main thing is that only the most needed
+    WWW::Mechanize methods have been implemented by me so far.
+
+  Link attributes
+
+    In Firefox, the `name' attribute of links seems always to be present on
+    links, even if it's empty. This is in difference to WWW::Mechanize,
+    where the `name' attribute can be `undef'.
+
+  Unsupported Methods
+
+    *   `->find_all_inputs'
+
+        This function is likely best implemented through `$mech->selector'.
+
+    *   `->find_all_submits'
+
+        This function is likely best implemented through `$mech->selector'.
+
+    *   `->images'
+
+        This function is likely best implemented through `$mech->selector'.
+
+    *   `->find_image'
+
+        This function is likely best implemented through `$mech->selector'.
+
+    *   `->find_all_images'
+
+        This function is likely best implemented through `$mech->selector'.
+
+    *   `->field'
+
+    *   `->select'
+
+    *
+    *   `->tick'
+
+    *   `->untick'
+
+  Functions that will likely never be implemented
+
+    These functions are unlikely to be implemented because they make little
+    sense in the context of Firefox.
+
+    *   `->add_header'
+
+    *   `->delete_header'
+
+    *   `->clone'
+
+    *   `->credentials( $username, $password )'
+
+    *   `->get_basic_credentials( $realm, $uri, $isproxy )'
+
+    *   `->clear_credentials()'
+
+    *   `->put'
+
+        I have no use for it
+
+    *   `->post'
+
+        I have no use for it
+
+TODO
+    *   Implement download progress via
+        `nsIWebBrowserPersist.progressListener' and our own
+        `nsIWebProgressListener'.
+
+    *   Make `->click' use `->click_with_options'
+
+    *   Write a unified `find_element' handler that handles the `single',
+        `one' etc. options, instead of (badly) reimplementing it in `xpath',
+        `selector', `links' and `click'.
+
+    *   Rip out parts of Test::HTML::Content and graft them onto the
+        `links()' and `find_link()' methods here. Firefox is a conveniently
+        unified XPath engine.
+
+        Preferrably, there should be a common API between the two.
+
+    *   Spin off XPath queries (`->xpath') and CSS selectors (`->selector')
+        into their own Mechanize plugin(s).
+
+INSTALLING
+    *   Install the `mozrepl' add-on into Firefox
+
+    *   Start the `mozrepl' add-on or you will see test failures/skips in
+        the module when calling `->new'. You may want to set `mozrepl' to
+        start when the browser starts.
+
+SEE ALSO
+    *   The MozRepl Firefox plugin at http://wiki.github.com/bard/mozrepl
+
+    *   WWW::Mechanize - the module whose API grandfathered this module
+
+    *   WWW::Scripter - another WWW::Mechanize-workalike with Javascript
+        support
+
+    *   https://developer.mozilla.org/En/FUEL/Window for JS events relating
+        to tabs
+
+    *   https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusin
+        g_tabs for more tab info
+
+REPOSITORY
+    The public repository of this module is
+    http://github.com/Corion/www-mechanize-firefox.
+
+AUTHOR
+    Max Maischein `corion@cpan.org'
+
+COPYRIGHT (c)
+    Copyright 2009 by Max Maischein `corion@cpan.org'.
+
+LICENSE
+    This module is released under the same terms as Perl itself.
+

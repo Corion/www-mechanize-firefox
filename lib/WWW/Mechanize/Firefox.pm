@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.18';
+$VERSION = '0.21';
 
 =head1 NAME
 
@@ -67,6 +67,23 @@ the criteria given in C<tab> can be found.
 
 C<launch> - name of the program to launch if we can't connect to it on
 the first try.
+
+=item *
+
+C<frames> - an array reference of ids of subframes to include when 
+searching for elements on a page.
+
+If you want to always search through all frames, just pass C<1>. This
+is the default.
+
+To prevent searching through frames, pass
+
+          frames => 0
+
+To whitelist frames to be searched, pass the list
+of frame selectors:
+
+          frames => ['#content_frame']
 
 =item * 
 
@@ -158,6 +175,7 @@ sub new {
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
+    $args{ frames } ||= 1; # we default to searching frames
 
     die "No tab found"
         unless $args{tab};
@@ -1404,9 +1422,21 @@ it also C<croak>s when more than one link is found.
 
 =cut
 
+use vars '%xpath_quote';
+%xpath_quote = (
+    '"' => '\"',
+    #"'" => "\\'",
+    #'[' => '&#91;',
+    #']' => '&#93;',
+    #'[' => '[\[]',
+    #'[' => '\[',
+    #']' => '[\]]',
+);
+
 sub quote_xpath($) {
     local $_ = $_[0];
-    s/(['"\[])/\\$1/g;
+    #s/(['"\[\]])/\\$1/g;
+    s/(['"\[\]])/$xpath_quote{$1} || $1/ge;
     $_
 };
 
@@ -1762,6 +1792,7 @@ sub form_with_fields {
         $options = shift @fields;
     };
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
+    #my @clauses = map { sprintf './/input[@name="%s"]', $_ } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     $self->{current_form} = $self->xpath($q,
@@ -1789,7 +1820,7 @@ sub forms {
                      : \@res
 };
 
-=head2 C<< $mech->value NAME [, VALUE] [,PRE EVENTS] [,POST EVENTS] >>
+=head2 C<< $mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS] >>
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -1808,11 +1839,11 @@ are triggered.
 
 =head3 Set a value without triggering events
 
-  $mech->value( 'myfield', 'myvalue', [], [] );
+  $mech->field( 'myfield', 'myvalue', [], [] );
 
 =cut
 
-sub value {
+sub field {
     my ($self,$name,$value,$pre,$post) = @_;
     my $doc = $self->current_form 
             ? $self->current_form->{document}
@@ -1826,6 +1857,33 @@ sub value {
         node => $self->current_form || $doc,
     );
 }
+
+=head2 C<< $mech->value( NAME_OR_ELEMENT, [%OPTIONS] ) >>
+
+Returns the value of the field named C<NAME> or of the
+DOM element passed in.
+
+The legacy form of
+
+    $mech->value( name => value );
+
+is also still supported but will likely be deprecated
+in favour of the C<< ->field >> method.
+
+=cut
+
+sub value {
+    if (@_ == 3) {
+        my ($self,$name,$value) = @_;
+        return $self->field($name => $value);
+    } else {
+        my ($self,$name,%options) = @_;
+        $self->get_set_value(
+            %options,
+            name => $name,
+        );
+    };
+};
 
 =head2 C<< $mech->get_set_value( OPTIONS ) >>
 
@@ -1845,6 +1903,7 @@ sub get_set_value {
     my ($self,%options) = @_;
     my @fields;
     my $name  = delete $options{ name };
+    my $set_value = exists $options{ value };
     my $value = delete $options{ value };
     my $pre   = delete $options{pre}  || $self->{pre_value};
     my $post  = delete $options{post} || $self->{post_value};
@@ -1867,7 +1926,7 @@ sub get_set_value {
         if (@fields > 1);
         
     if ($fields[0]) {
-        if (@_ >= 3) {
+        if ($set_value) {
             for my $ev (@$pre) {
                 $fields[0]->__event($ev);
             };
@@ -2061,7 +2120,8 @@ search a node within a specific subframe of C<< $mech->document >>.
 =item *
 
 C<< frames >> - if true, search all documents in all frames and iframes.
-This may or may not conflict with C<node>.
+This may or may not conflict with C<node>. This will default to the
+C<frames> setting of the WWW::Mechanize::Firefox object.
 
 =item *
 
@@ -2098,9 +2158,13 @@ sub xpath {
     #warn $query;
     my @res = $options{ document }->__xpath($query, $options{ node });
     
+    if (not exists $options{ frames }) {
+        $options{frames} = $self->{frames};
+    };
+    
     # recursively join the results of sub(i)frames if wanted
     if ($options{frames}) {
-        my @frames = $options{ document }->__xpath('//frame | //iframe');
+        my @frames = $self->expand_frames( $options{ frames }, $options{ document } );
         for my $frame (@frames) {
             $options{ document } = $frame->{contentDocument};
             $options{ node } = $options{ document };
@@ -2138,6 +2202,37 @@ sub selector {
     $options{ user_info } ||= "CSS selector '$query'";
     my $q = selector_to_xpath($query);    
     $self->xpath($q, %options);
+};
+
+=head2 C<< $mech->expand_frames SPEC >>
+
+Expands the frame selectors (or C<1> to match all frames)
+into their respective DOM nodes according to the current
+document.
+
+This is mostly an internal method.
+
+=cut
+
+sub expand_frames {
+    my ($self, $spec, $document) = @_;
+    $spec ||= $self->{frames};
+    my @spec = ref $spec ? @$spec : $spec;
+    $document ||= $self->document;
+    
+    if ($spec == 1) {
+        # All frames
+        @spec = qw( frame iframe );
+    };
+    
+    map { #warn "Expanding $_";
+            ref $_
+          ? $_
+          : $self->selector( $_,
+                           document => $document,
+                           frames => 0, # otherwise we'll recurse :)
+          )
+    } @spec;
 };
 
 =head1 IMAGE METHODS
@@ -2432,6 +2527,22 @@ Preferrably, there should be a common API between the two.
 
 Spin off XPath queries (C<< ->xpath >>) and CSS selectors (C<< ->selector >>)
 into their own Mechanize plugin(s).
+
+=back
+
+=head1 INSTALLING
+
+=over 4
+
+=item *
+
+Install the C<mozrepl> add-on into Firefox
+
+=item *
+
+Start the C<mozrepl> add-on or you will see test failures/skips
+in the module when calling C<< ->new >>. You may want to set
+C<mozrepl> to start when the browser starts.
 
 =back
 
