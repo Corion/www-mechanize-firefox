@@ -1620,45 +1620,14 @@ the parameters to search much like for the C<find_link> calls.
 sub click {
     my ($self,$name,$x,$y) = @_;
     my %options;
-    my $q;
     my @buttons;
+    
     if (ref $name and blessed($name) and $name->can('__click')) {
         $options{ dom } = $name;
     } elsif (ref $name eq 'HASH') { # options
-        if (exists $name->{ dom }) {
-            @buttons = delete $name->{dom};
-        } else {
-            my ($method,$q);
-            for my $meth (qw(selector xpath)) {
-                if (exists $name->{ $meth }) {
-                    $q = delete $name->{ $meth };
-                    $method = $meth;
-                }
-            };
-            croak "Need either a selector or an xpath key!"
-                if not $method;
-            @buttons = $self->$method( $q => %$name );
-        };
-        %options = (%options, %$name);
+        %options = %$name
     } else {
-        $options{ name } = $name;
-    };
-    if (! exists $options{ synchronize }) {
-        $options{ synchronize } = 1;
-    };
-    
-    if ($options{ dom }) {
-        @buttons = $options{ dom };
-        $q = "DOM element";
-    } elsif (exists $options{ selector }) {
-        @buttons = $self->selector( $options{ selector } );
-        $q = "selector = '$options{ selector }'";
-    } elsif (exists $options{ xpath }) {
-        @buttons = $self->xpath( $options{ xpath } );
-        $q = "xpath = '$options{ xpath }'";
-    } elsif (exists $options{ name }) {
-        my $name = delete $options{ $name };
-        $q = "name = '$name'";
+        #$options{ name } = $name;
         $name = quotemeta($name || '');
         @buttons = (
                        $self->xpath(sprintf q{//button[@name="%s"]}, $name),
@@ -1666,21 +1635,27 @@ sub click {
                        $self->xpath(q{//button}),
                        $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
                       );
+        $options{ user_info } = "Button with name '$name'";
     };
-    if ($options{ one }) {
-        if (0 == @buttons) {
-            $self->signal_condition(
-                "No button matching '$name' found"
-            );
+    
+    if (! exists $options{ synchronize }) {
+        $options{ synchronize } = 1;
+    };
+    
+    if ($options{ dom }) {
+        @buttons = $options{ dom };
+        $q = "DOM element";
+    } else {
+        my ($method,$q);
+        for my $meth (qw(selector xpath)) {
+            if (exists $name->{ $meth }) {
+                $q = delete $name->{ $meth };
+                $method = $meth;
+            }
         };
-        if ($options{ single }) {
-            if (1 <  @buttons) {
-                $self->highlight_node(@buttons);
-                $self->signal_condition(
-                    sprintf "%d buttons found found matching '%s'", scalar @buttons, $q
-                );
-            };
-        };
+        croak "Need either a selector or an xpath key!"
+            if not $method;
+        @buttons = $self->$method( $q, %options );
     };
     
     if ($options{ synchronize }) {
