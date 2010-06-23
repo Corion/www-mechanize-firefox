@@ -2130,6 +2130,11 @@ or carp, depending on the C<autodie> parameter.
 C<< one >> - If true, ensure that at least one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
 
+=item *
+
+C<< maybe >> - If true, ensure that at most one element is found. Otherwise
+croak or carp, depending on the C<autodie> parameter.
+
 =back
 
 Returns the matched nodes.
@@ -2153,6 +2158,13 @@ sub xpath {
     $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
     my $single = delete $options{ single };
     my $one = delete $options{ one } || $single;
+    my $maybe = delete $options{ maybe };
+    
+    # Construct some helper variables
+    my $zero_allowed = not ($single or $one);
+    my $two_allowed = not( $one or $maybe );
+    my $return_first = ($single or $one or $maybe);
+    
     my @res = map { $options{ document }->__xpath($_, $options{ node }) } @$query;
     
     if (not exists $options{ frames }) {
@@ -2161,28 +2173,32 @@ sub xpath {
     
     # recursively join the results of sub(i)frames if wanted
     if ($options{frames}) {
+        # A small optimization to return if we already have enough elements
+        # We can't do this on $return_first as there might be more elements
+        last if @res and $one;
+        
         my @frames = $self->expand_frames( $options{ frames }, $options{ document } );
         for my $frame (@frames) {
             $options{ document } = $frame->{contentDocument};
             $options{ node } = $options{ document };
             push @res, $self->xpath($query, %options);
+            
+            # A small optimization to return if we already have enough elements
+            # We can't do this on $return_first as there might be more elements
+            last if @res and $one;
         };
     };
     
-    if ($one) {
-        if (@res == 0) {
-            $self->signal_condition( "No elements found for $options{ user_info }" );
-        };
-        if ($single) {
-            if (@res > 1) {
-                $self->highlight_node(@res);
-                $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
-            }
-        };
-        return @res ? $res[0] : ();
-    } else {
-        return @res
+    if (! $zero_allowed and @res == 0) {
+        $self->signal_condition( "No elements found for $options{ user_info }" );
     };
+    
+    if (! $two_allowed and @res > 1) {
+        $self->highlight_node(@res);
+        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
+    };
+    
+    return $return_first ? $res[0] : @res;
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
