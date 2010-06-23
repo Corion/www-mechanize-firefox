@@ -530,6 +530,14 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub tab { $_[0]->{tab} };
 
+=head2 C<< $mech->autodie >>
+
+Accessor to get/set whether warnings become fatal.
+
+=cut
+
+sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
+
 =head2 C<< $mech->progress_listener( SOURCE, CALLBACKS ) >>
 
 Sets up the callbacks for the C<< nsIWebProgressListener >> interface
@@ -1625,15 +1633,19 @@ sub click {
     if (ref $name and blessed($name) and $name->can('__click')) {
         $options{ dom } = $name;
     } elsif (ref $name eq 'HASH') { # options
-        %options = %$name
+        %options = %$name;
     } else {
-        $name = quotemeta($name || '');
-        @buttons = (
-                       $self->xpath(sprintf q{//button[@name="%s"]}, $name),
-                       $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
-                       $self->xpath(q{//button}),
-                       $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
-                      );
+        $options{ name } = $name;
+    };
+    
+    if (exists $options{ name }) {
+        $name = quotemeta($options{ name }|| '');
+        $options{ xpath } = [
+                       sprintf( q{//button[@name="%s"]}, $name),
+                       sprintf( q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                       q{//button},
+                       q{//input[(@type="button" or @type="submit")]},
+        ];
         $options{ user_info } = "Button with name '$name'";
     };
     
@@ -1646,15 +1658,20 @@ sub click {
     } else {
         my ($method,$q);
         for my $meth (qw(selector xpath)) {
-            if (exists $name->{ $meth }) {
-                $q = delete $name->{ $meth };
+            if (exists $options{ $meth }) {
+                $q = delete $options{ $meth };
                 $method = $meth;
             }
+        };
+        if (! exists $options{ one }) {
+            $options{ one } = 1;
         };
         croak "Need either a name, a selector or an xpath key!"
             if not $method;
         @buttons = $self->$method( $q, %options );
     };
+    
+    #warn "Clicking id $buttons[0]->{id}";
     
     if ($options{ synchronize }) {
         $self->synchronize($self->events, sub { # ,'abort'
@@ -2126,13 +2143,15 @@ L<WWW::Mechanize>.
 
 sub xpath {
     my ($self,$query,%options) = @_;
+    if ('ARRAY' ne (ref $query||'')) {
+        $query = [$query];
+    };
     $options{ document } ||= $self->document;
     $options{ node } ||= $options{ document };
-    $options{ user_info } ||= "'$query'";
+    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
     my $single = delete $options{ single };
     my $one = delete $options{ one } || $single;
-    #warn $query;
-    my @res = $options{ document }->__xpath($query, $options{ node });
+    my @res = map { $options{ document }->__xpath($_, $options{ node }) } @$query;
     
     if (not exists $options{ frames }) {
         $options{frames} = $self->{frames};
