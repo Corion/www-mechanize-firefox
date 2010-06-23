@@ -2182,9 +2182,9 @@ sub xpath {
     # my $item = $mech->xpath("//foo");
     if (! exists $options{ all }) {
         $self->signal_condition(join "\n",
-            "You asked for many elements in scalar context.",
+            "You asked for many elements but seem to only want a single item.",
             "Did you forget to pass the 'single' option with a true value?",
-            "Pass 'all => 1' to suppress this message.",
+            "Pass 'all => 1' to suppress this message and receive the count of items.",
         );
             if defined wantarray and !wantarray;
     };
