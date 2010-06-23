@@ -1,5 +1,10 @@
 To be released
 
+0.22 to be released
+    . Performance optimization:
+      ->click() does not need a response
+    . Add link to WWW::Mechanize::Firefox::Examples
+
 0.21 20100618
     ! value() method now returns the field value
     ! Frames are now searched by default for matching elements

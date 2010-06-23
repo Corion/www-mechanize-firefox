@@ -33,9 +33,11 @@ WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
   $mech->eval_in_page('alert("Hello Firefox")');
   my $png = $mech->content_as_png();
 
-This will let you automate Firefox through the
-Mozrepl plugin, which you need to have installed
-in your Firefox.
+This module will let you automate Firefox through the
+Mozrepl plugin. You you need to have installed
+that plugin in your Firefox.
+
+For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
 =head1 METHODS
 
@@ -913,7 +915,7 @@ sub response {
             return $self->_extract_response( $js_res );
         } else {
             # make up a response, below
-            warn "Making up response";
+            warn "Making up response for unknown scheme '$scheme'";
         };
     };
     
@@ -1678,7 +1680,7 @@ sub click {
     };
     
     if ($options{ synchronize }) {
-        my $event = $self->synchronize($self->events, sub { # ,'abort'
+        $self->synchronize($self->events, sub { # ,'abort'
             $buttons[0]->__click();
         });
     } else {
