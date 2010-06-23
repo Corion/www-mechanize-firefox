@@ -72,11 +72,12 @@ like $mech->uri, qr/\bGo=/, "->click() the 'Go' button works";
 
 # Name via options
 $mech->get_local('50-click.html');
-$mech->click({ name => '' }); # click the "Go" button
+$mech->click({ name => '' }); # click the unnamed button
 like $mech->uri, qr/\b51-mech-submit.html$/i, "->click() the unnamed button works";
 
 # Name
 $mech->get_local('50-click.html');
-$mech->click(''); # click the empty button, this weirdly raises no events in FF hangs
+$mech->click(''); # click the empty button
+# this weirdly raises no events in FF if it points to the same page
 like $mech->uri, qr/\b51-mech-submit.html$/i, "->click() the unnamed button works";
 

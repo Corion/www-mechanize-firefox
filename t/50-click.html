@@ -7,6 +7,8 @@ var clicked="<nothing>";
 </head>
 <body>
 <form name="foo" id="foo" action="51-mech-submit.html">
+<!-- If the form action points to the same page, clicking the unnamed button
+     raises no events in FF? -->
 <input type="submit" id="unnamed">
 <input type="submit" name="Go" id="Go">
 </form>
