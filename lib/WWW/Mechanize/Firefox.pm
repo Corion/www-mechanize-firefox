@@ -2101,6 +2101,12 @@ sub clickables {
 
 Runs an XPath query in Firefox against the current document.
 
+    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+    # croaks if there is no link or more than one link found
+
+    my @para = $mech->xpath('//p');
+    # Collects all paragraphs
+
 The options allow the following keys:
 
 =over 4
@@ -2135,6 +2141,13 @@ or carp, depending on the C<autodie> parameter.
 C<< maybe >> - If true, ensure that at most one element is found. Otherwise
 croak or carp, depending on the C<autodie> parameter.
 
+=item *
+
+C<< all >> - If true, return all elements found. This is the default.
+You can use this option if you want to use C<< ->xpath >> in scalar context
+to count the number of matched elements, as it will otherwise emit a warning
+for each usage in scalar context without any of the above restricting options.
+
 =back
 
 Returns the matched nodes.
@@ -2164,6 +2177,17 @@ sub xpath {
     my $zero_allowed = not ($single or $one);
     my $two_allowed = not( $one or $maybe );
     my $return_first = ($single or $one or $maybe);
+    
+    # Sanity check for the common error of
+    # my $item = $mech->xpath("//foo");
+    if (! exists $options{ all }) {
+        $self->signal_condition(join "\n",
+            "->xpath called for many elements in scalar context.",
+            "Did you forget to pass the 'single' option with a true value?",
+            "Pass 'all => 1' to suppress this message.",
+        );
+            if defined wantarray and !wantarray;
+    };
     
     my @res = map { $options{ document }->__xpath($_, $options{ node }) } @$query;
     
@@ -2197,6 +2221,8 @@ sub xpath {
         $self->highlight_node(@res);
         $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
     };
+    
+    if (! wantarray
     
     return $return_first ? $res[0] : @res;
 };
