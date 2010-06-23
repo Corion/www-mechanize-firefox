@@ -40,6 +40,11 @@ sub display_html {
 
 L<WWW::Mechanize::Firefox>
 
+=head1 REPOSITORY
+
+The public repository of this module is 
+L<http://github.com/Corion/www-mechanize-firefox>.
+
 =head1 AUTHOR
 
 Copyright (c) 2009-2010 Max Maischein C<< <corion@cpan.org> >>
