@@ -2222,8 +2222,6 @@ sub xpath {
         $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
     };
     
-    if (! wantarray
-    
     return $return_first ? $res[0] : @res;
 };
 
