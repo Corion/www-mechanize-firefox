@@ -2134,6 +2134,8 @@ or carp, depending on the C<autodie> parameter.
 
 Returns the matched nodes.
 
+You can pass in a list of queries as an array reference for the first parameter.
+
 This is a method that is not implemented in WWW::Mechanize.
 
 In the long run, this should go into a general plugin for
@@ -2187,6 +2189,8 @@ sub xpath {
 
 Returns all nodes matching the given CSS selector.
 
+This takes the same options that C<< ->xpath >> does.
+
 In the long run, this should go into a general plugin for
 L<WWW::Mechanize>.
 
@@ -2195,8 +2199,11 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     $options{ user_info } ||= "CSS selector '$query'";
-    my $q = selector_to_xpath($query);    
-    $self->xpath($q, %options);
+    if ('ARRAY' ne (ref $query || '')) {
+        $query = [$query];
+    };
+    my @q = map { selector_to_xpath($_); } @$query;
+    $self->xpath(\@q, %options);
 };
 
 =head2 C<< $mech->expand_frames SPEC >>

@@ -6,6 +6,7 @@ To be released
     . Add link to WWW::Mechanize::Firefox::Examples
     . Don't force C<synchronize> in ->click()
     . ->xpath also takes an arrayref of queries
+    . Added INSTALL file
 
 0.21 20100618
     ! value() method now returns the field value
