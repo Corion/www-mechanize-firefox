@@ -5,7 +5,7 @@ use parent 'HTTP::Cookies';
 use Carp qw[croak];
 
 use vars qw[$VERSION];
-$VERSION = '0.21';
+$VERSION = '0.22';
 
 =head1 NAME
 
@@ -95,7 +95,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 

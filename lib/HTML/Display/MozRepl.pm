@@ -4,7 +4,7 @@ use Carp qw(carp);
 use WWW::Mechanize::FireFox;
 use parent 'HTML::Display::Common';
 use vars qw($VERSION);
-$VERSION = '0.21';
+$VERSION = '0.22';
 
 =head1 NAME
 
@@ -36,9 +36,13 @@ sub display_html {
   };
 };
 
+=head1 SEE ALSO
+
+L<WWW::Mechanize::Firefox>
+
 =head1 AUTHOR
 
-Copyright (c) 2004-2009 Max Maischein C<< <corion@cpan.org> >>
+Copyright (c) 2009-2010 Max Maischein C<< <corion@cpan.org> >>
 
 =head1 LICENSE
 
