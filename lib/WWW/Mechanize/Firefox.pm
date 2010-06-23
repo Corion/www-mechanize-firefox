@@ -2182,7 +2182,7 @@ sub xpath {
     # my $item = $mech->xpath("//foo");
     if (! exists $options{ all }) {
         $self->signal_condition(join "\n",
-            "->xpath called for many elements in scalar context.",
+            "You asked for many elements in scalar context.",
             "Did you forget to pass the 'single' option with a true value?",
             "Pass 'all => 1' to suppress this message.",
         );
