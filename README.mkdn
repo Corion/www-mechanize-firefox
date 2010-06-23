@@ -11,9 +11,11 @@ WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
   $mech->eval_in_page('alert("Hello Firefox")');
   my $png = $mech->content_as_png();
 
-This will let you automate Firefox through the
-Mozrepl plugin, which you need to have installed
-in your Firefox.
+This module will let you automate Firefox through the
+Mozrepl plugin. You you need to have installed
+that plugin in your Firefox.
+
+For more examples see [WWW::Mechanize::Firefox::Examples](http://search.cpan.org/search?mode=module&query=WWW::Mechanize::Firefox::Examples).
 
 # METHODS
 
@@ -51,6 +53,15 @@ searching for elements on a page.
 
 If you want to always search through all frames, just pass `1`. This
 is the default.
+
+To prevent searching through frames, pass
+
+          frames => 0
+
+To whitelist frames to be searched, pass the list
+of frame selectors:
+
+          frames => ['#content_frame']
 
 - * 
 
@@ -523,11 +534,17 @@ simply clicks that one button.
 If you pass in a hash reference instead of a name,
 the following keys are recognized:
 
-- * `selector` - Find the element to click by the CSS selector
+- *
 
-- * `xpath` - Find the element to click by the XPath query
+`selector` - Find the element to click by the CSS selector
 
-- * `synchronize` - Synchronize the click (default is 1)
+- *
+
+`xpath` - Find the element to click by the XPath query
+
+- *
+
+`synchronize` - Synchronize the click (default is 1)
 
 Returns a [HTTP::Response](http://search.cpan.org/search?mode=module&query=HTTP::Response) object.
 
@@ -607,6 +624,13 @@ are triggered.
 
 Returns the value of the field named `NAME` or of the
 DOM element passed in.
+
+The legacy form of
+
+    $mech->value( name => value );
+
+is also still supported but will likely be deprecated
+in favour of the `->field` method.
 
 ## C<< $mech->get_set_value( OPTIONS ) >>
 
@@ -982,7 +1006,7 @@ Max Maischein `corion@cpan.org`
 
 # COPYRIGHT (c)
 
-Copyright 2009 by Max Maischein `corion@cpan.org`.
+Copyright 2009-2010 by Max Maischein `corion@cpan.org`.
 
 # LICENSE
 
