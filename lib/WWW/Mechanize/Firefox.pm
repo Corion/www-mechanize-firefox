@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.21';
+$VERSION = '0.22';
 
 =head1 NAME
 
@@ -1627,7 +1627,6 @@ sub click {
     } elsif (ref $name eq 'HASH') { # options
         %options = %$name
     } else {
-        #$options{ name } = $name;
         $name = quotemeta($name || '');
         @buttons = (
                        $self->xpath(sprintf q{//button[@name="%s"]}, $name),
@@ -1644,7 +1643,6 @@ sub click {
     
     if ($options{ dom }) {
         @buttons = $options{ dom };
-        $q = "DOM element";
     } else {
         my ($method,$q);
         for my $meth (qw(selector xpath)) {
@@ -1653,7 +1651,7 @@ sub click {
                 $method = $meth;
             }
         };
-        croak "Need either a selector or an xpath key!"
+        croak "Need either a name, a selector or an xpath key!"
             if not $method;
         @buttons = $self->$method( $q, %options );
     };
