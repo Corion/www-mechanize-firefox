@@ -1595,11 +1595,17 @@ the following keys are recognized:
 
 =over 4
 
-=item * C<selector> - Find the element to click by the CSS selector
+=item *
 
-=item * C<xpath> - Find the element to click by the XPath query
+C<selector> - Find the element to click by the CSS selector
 
-=item * C<synchronize> - Synchronize the click (default is 1)
+=item *
+
+C<xpath> - Find the element to click by the XPath query
+
+=item *
+
+C<synchronize> - Synchronize the click (default is 1)
 
 =back
 
@@ -2583,7 +2589,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
