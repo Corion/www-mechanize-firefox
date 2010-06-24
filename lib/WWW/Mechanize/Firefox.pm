@@ -1472,8 +1472,13 @@ sub quote_xpath($) {
 sub find_link_dom {
     my ($self,%opts) = @_;
     my %xpath_options;
-    my $document = delete $opts{ document } || $self->document;
-    my $node = delete $opts{ node } || $document;
+    
+    for (qw(node document)) {
+        if ($opts{ $_ }) {
+            $xpath_options{ $_ } = delete $opts{ $_ };
+        };
+    };
+    
     my $single = delete $opts{ single };
     my $one = delete $opts{ one } || $single;
     if ($single and exists $opts{ n }) {
@@ -1521,7 +1526,7 @@ sub find_link_dom {
             }  (@tags);
     #warn $q;
     
-    my @res = $document->__xpath($q, $node);
+    my @res = $self->xpath($q, %xpath_options );
     
     if (keys %opts) {
         # post-filter the remaining links through WWW::Mechanize
@@ -1558,12 +1563,14 @@ A method quite similar to L<WWW::Mechanize>'s method.
 
 Returns a L<WWW::Mechanize::Link> object.
 
+This defaults to not look through child frames.
+
 =cut
 
 sub find_link {
     my ($self,%opts) = @_;
     my $base = $self->base;
-    if (my $link = $self->find_link_dom(%opts)) {
+    if (my $link = $self->find_link_dom(frames => 0, %opts)) {
         return $self->make_link($link, $base)
     } else {
         return
@@ -1577,10 +1584,12 @@ Finds all links in the document.
 Returns them as list or an array reference, depending
 on context.
 
+This defaults to not look through child frames.
+
 =cut
 
 sub find_all_links {
-    my ($self,%opts) = @_;
+    my ($self,frames => 0, %opts) = @_;
     $opts{ n } = 'all';
     my $base = $self->base;
     my @matches = map {
@@ -1597,12 +1606,14 @@ Finds all matching linky DOM nodes in the document.
 Returns them as list or an array reference, depending
 on context.
 
+This defaults to not look through child frames.
+
 =cut
 
 sub find_all_links_dom {
     my ($self,%opts) = @_;
     $opts{ n } = 'all';
-    my @matches = $self->find_link_dom( %opts );
+    my @matches = $self->find_link_dom( frames => 0, %opts );
     return @matches if wantarray;
     return \@matches;
 };
