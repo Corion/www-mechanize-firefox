@@ -35,3 +35,15 @@ to configure Firefox:
 3. Start mozrepl in Firefox by going to the menu:
    "Tools" -> "MozRepl" -> "Start"
    You may want to tick the "Activate on startup" item.
+   
+   
+If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
+this might be because you use the NoScript Mozilla extension
+and have it blocking Javascript for file:// URLs. While this is good,
+the tests need Javascript enabled.
+
+Solution:
+    1. Open t/50-click.html in Firefox
+    2. Allow Javascript for all file:// URLs
+    3. Re-run tests
+    4. No test should fail
