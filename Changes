@@ -1,6 +1,6 @@
 To be released
 
-0.23 to be released
+0.23 20100624
     . Add "maybe" option to ->xpath (and ->selector)
     . Add "all" option to ->xpath (and ->selector)
     . Add a sanity check that prevents calling ->xpath in scalar
