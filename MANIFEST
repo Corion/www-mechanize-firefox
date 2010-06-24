@@ -1,6 +1,7 @@
 .gitignore
 Changes
 examples/dump-links.pl
+examples/fullscreen.pl
 examples/gen_examples_pod.pl
 examples/javascript.pl
 examples/manipulate-javascript.pl
