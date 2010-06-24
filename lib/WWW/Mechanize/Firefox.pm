@@ -1408,26 +1408,46 @@ Returns the DOM object as L<MozRepl::RemoteObject>::Instance.
 
 The supported options are:
 
+=over 4
+
+=item *
+
 C<< text >> - the text of the link
+
+=item *
 
 C<< id >> - the C<id> attribute of the link
 
+=item *
+
 C<< name >> - the C<name> attribute of the link
+
+=item *
 
 C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
 
+=item *
+
 C<< class >> - the C<class> attribute of the link
+
+=item *
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
 
+=item *
+
 C<< single >> - If true, ensure that only one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
+
+=item *
 
 C<< one >> - If true, ensure that at least one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
 
 The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
+
+=back
 
 =cut
 
