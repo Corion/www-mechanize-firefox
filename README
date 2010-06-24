@@ -178,6 +178,10 @@ UI METHODS
 
     This method is special to WWW::Mechanize::Firefox.
 
+  `$mech->autodie'
+
+    Accessor to get/set whether warnings become fatal.
+
   `$mech->progress_listener( SOURCE, CALLBACKS )'
 
     Sets up the callbacks for the `nsIWebProgressListener' interface to be
@@ -642,6 +646,12 @@ FORM METHODS
 
     Runs an XPath query in Firefox against the current document.
 
+        my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+        # croaks if there is no link or more than one link found
+
+        my @para = $mech->xpath('//p');
+        # Collects all paragraphs
+
     The options allow the following keys:
 
     *   `document' - document in which the query is to be executed. Use this
@@ -659,7 +669,19 @@ FORM METHODS
     *   `one' - If true, ensure that at least one element is found.
         Otherwise croak or carp, depending on the `autodie' parameter.
 
+    *   `maybe' - If true, ensure that at most one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
+
+    *   `all' - If true, return all elements found. This is the default. You
+        can use this option if you want to use `->xpath' in scalar context
+        to count the number of matched elements, as it will otherwise emit a
+        warning for each usage in scalar context without any of the above
+        restricting options.
+
     Returns the matched nodes.
+
+    You can pass in a list of queries as an array reference for the first
+    parameter.
 
     This is a method that is not implemented in WWW::Mechanize.
 
@@ -670,13 +692,18 @@ FORM METHODS
 
     Returns all nodes matching the given CSS selector.
 
+    This takes the same options that `->xpath' does.
+
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
 
   `$mech->expand_frames SPEC'
 
     Expands the frame selectors (or `1' to match all frames) into their
-    respective DOM nodes according to the current document.
+    respective DOM document nodes according to the current document.
+
+    This method currently does not properly recurse downwards and will only
+    expand one level of frames.
 
     This is mostly an internal method.
 
