@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.22';
+$VERSION = '0.23';
 
 =head1 NAME
 
