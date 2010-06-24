@@ -1,11 +1,20 @@
 To be released
 
-0.22 to be released
+0.23 to be released
+    . Add "maybe" option to ->xpath (and ->selector)
+    . Add "all" option to ->xpath (and ->selector)
+    . Add a sanity check that prevents calling ->xpath in scalar
+      context if no item-count option is specified.
+    . Unified code paths for frame expansion and document query
+
+0.22 20100623
     . Performance optimization:
       ->click() does not need a response
+    . ->click() now uses ->xpath() to find elements
     . Add link to WWW::Mechanize::Firefox::Examples
     . Don't force C<synchronize> in ->click()
     . ->xpath also takes an arrayref of queries
+    . ->selector also takes an arrayref of queries
     . Added INSTALL file
 
 0.21 20100618
