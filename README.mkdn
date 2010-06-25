@@ -485,20 +485,36 @@ Returns the DOM object as [MozRepl::RemoteObject](http://search.cpan.org/search?
 
 The supported options are:
 
+- *
+
 `text` - the text of the link
+
+- *
 
 `id` - the `id` attribute of the link
 
+- *
+
 `name` - the `name` attribute of the link
+
+- *
 
 `url` - the URL attribute of the link (`href`, `src` or `content`).
 
+- *
+
 `class` - the `class` attribute of the link
+
+- *
 
 `n` - the (1-based) index. Defaults to returning the first link.
 
+- *
+
 `single` - If true, ensure that only one element is found. Otherwise croak
 or carp, depending on the `autodie` parameter.
+
+- *
 
 `one` - If true, ensure that at least one element is found. Otherwise croak
 or carp, depending on the `autodie` parameter.
@@ -512,6 +528,8 @@ A method quite similar to [WWW::Mechanize](http://search.cpan.org/search?mode=mo
 
 Returns a [WWW::Mechanize::Link](http://search.cpan.org/search?mode=module&query=WWW::Mechanize::Link) object.
 
+This defaults to not look through child frames.
+
 ## C<< $mech->find_all_links( OPTIONS ) >>
 
 Finds all links in the document.
@@ -519,12 +537,16 @@ Finds all links in the document.
 Returns them as list or an array reference, depending
 on context.
 
+This defaults to not look through child frames.
+
 ## C<< $mech->find_all_links_dom OPTIONS >>
 
 Finds all matching linky DOM nodes in the document.
 
 Returns them as list or an array reference, depending
 on context.
+
+This defaults to not look through child frames.
 
 ## C<< $mech->click NAME [,X,Y] >>
 
@@ -592,7 +614,9 @@ Selects the _number_th form.
 Find the form which has the listed fields.
 
 If the first argument is a hash reference, it's taken
-as options to `->xpath`
+as options to `->xpath`.
+
+See also `$mech->submit_form`.
 
 ## C<< $mech->forms OPTIONS >>
 
@@ -676,10 +700,19 @@ and data setting in one operation. It selects the first form that contains
 all fields mentioned in \%fields. This is nice because you don't need to
 know the name or number of the form to do this.
 
-(calls `<form_with_fields()`> and `<set_fields()`>).
+(calls `form_with_fields()` and `set_fields()`).
 
 If you choose this, the form_number, form_name, form_id and fields options
 will be ignored.
+
+Example:
+
+  $mech->get('http://google.com/');
+  $mech->submit_form(
+      with_fields => {
+          q => 'WWW::Mechanize::Firefox examples',
+      },
+  );
 
 ## C<< $mech->set_fields( $name => $value, ... ) >>
 

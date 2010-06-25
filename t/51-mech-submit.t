@@ -40,9 +40,9 @@ is $triggered->{click},  0, 'Click    was not triggered';
 $mech->get_local('51-mech-submit.html');
 $mech->allow('javascript' => 1);
 $mech->submit_form(
-    with_fields => [
+    with_fields => {
         r => 'Hello Firefox',
-    ],
+    },
 );
 ($triggered,$type) = $mech->eval_in_page('myevents');
 ok $triggered, "We found 'myevents'";
