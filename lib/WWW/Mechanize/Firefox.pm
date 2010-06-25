@@ -2036,7 +2036,7 @@ sub submit_form {
     my $fields;
     if (! $form) {
         if ($fields = delete $options{ with_fields }) {
-            my @names = map { $_ & 1 ? () : $fields->[$_] } 0..$#$fields;
+            my @names = keys %$fields;
             $form = $self->form_with_fields( \%options, @names );
             if (! $form) {
                 $self->signal_condition("Couldn't find a matching form for @names.");
@@ -2068,12 +2068,12 @@ has the field value and its number as the 2 elements.
 =cut
 
 sub set_fields {
-    my ($self, @fields) = @_;
+    my ($self, %fields) = @_;
     my $f = $self->current_form;
     if (! $f) {
         croak "Can't set fields: No current form set.";
     };
-    $self->do_set_fields($self, form => $f, fields => \@fields);
+    $self->do_set_fields($self, form => $f, fields => \%fields);
 };
 
 sub do_set_fields {
@@ -2081,7 +2081,7 @@ sub do_set_fields {
     my $form = delete $options{ form };
     my $fields = delete $options{ fields };
     
-    while (my($n,$v) = splice @$fields, 0,2) {
+    while (my($n,$v) = each %$fields) {
         if (ref $v) {
             ($v,my $num) = @$v;
             warn "Index larger than 1 not supported"
