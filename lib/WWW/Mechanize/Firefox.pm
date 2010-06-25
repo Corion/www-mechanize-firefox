@@ -2210,7 +2210,7 @@ sub xpath {
     
     if ($options{ node }) {
         $options{ document } ||= $options{ node }->{ownerDocument};
-        warn "Have node, searching below node";
+        #warn "Have node, searching below node";
     } else {
         $options{ document } ||= $self->document;
         #$options{ node } = $options{ document };
