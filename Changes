@@ -1,7 +1,10 @@
 To be released
 
-0.24 to be released
+0.24 20100624
     ! ->find_link_dom now uses ->xpath and searches through frames
+    ! Actually conform to WWW::Mechanize API by requiring a hashref
+      in ->submit_form( with_fields => {} ). This might break your
+      code, but it's a small change and makes the code fit the documentation.
 
 0.23 20100624
     . Add "maybe" option to ->xpath (and ->selector)
