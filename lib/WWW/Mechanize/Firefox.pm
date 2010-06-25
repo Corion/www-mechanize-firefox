@@ -1560,6 +1560,7 @@ sub find_link_dom {
 =head2 C<< $mech->find_link( OPTIONS ) >>
 
 A method quite similar to L<WWW::Mechanize>'s method.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns a L<WWW::Mechanize::Link> object.
 
@@ -1580,6 +1581,7 @@ sub find_link {
 =head2 C<< $mech->find_all_links( OPTIONS ) >>
 
 Finds all links in the document.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns them as list or an array reference, depending
 on context.
@@ -1602,6 +1604,7 @@ sub find_all_links {
 =head2 C<< $mech->find_all_links_dom OPTIONS >>
 
 Finds all matching linky DOM nodes in the document.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns them as list or an array reference, depending
 on context.
@@ -1618,6 +1621,28 @@ sub find_all_links_dom {
     return \@matches;
 };
 
+
+=head2 C<< $mech->follow_link LINK >>
+
+=head2 C<< $mech->follow_link OPTIONS >>
+
+Follows the given link. Takes the same parameters that C<find_link_dom>
+uses.
+
+=cut
+
+sub follow_link {
+    my ($self,$link,%opts);
+    if (@_ == 2) { # assume only a link parameter
+        ($self,$link) = @_
+    } else {
+        ($self,%opts) = @_;
+        $link = $self->find_link_dom(one => 1, %opts);
+    }
+    $self->synchronize( sub {
+        $link->__click();
+    });
+}
 
 =head2 C<< $mech->click NAME [,X,Y] >>
 
@@ -1719,26 +1744,6 @@ sub click {
     if (defined wantarray) {
         return $self->response
     };
-}
-
-=head2 C<< $mech->follow_link >>
-
-Follows the given link. Takes the same parameters that C<find_link>
-uses.
-
-=cut
-
-sub follow_link {
-    my ($self,$link,%opts);
-    if (@_ == 2) { # assume only a link parameter
-        ($self,$link) = @_
-    } else {
-        ($self,%opts) = @_;
-        $link = $self->find_link_dom(one => 1, %opts);
-    }
-    $self->synchronize( sub {
-        $link->__click();
-    });
 }
 
 =head1 FORM METHODS
