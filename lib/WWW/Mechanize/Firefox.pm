@@ -2008,6 +2008,12 @@ a list of key/value pairs, all of which are optional.
 
 =item *
 
+C<< form => $mech->current_form() >>
+
+Specifies the form to be filled and submitted. Defaults to the current form.
+
+=item *
+
 C<< fields => \%fields >>
 
 Specifies the fields to be filled in the current form
@@ -2052,10 +2058,9 @@ sub submit_form {
                 $self->signal_condition("Couldn't find a matching form for @names.");
                 return
             };
-        } elsif ($fields = delete $options{ fields }) {
-            $form = $self->current_form;
         } else {
-            croak "No form given to submit.";
+            $fields = delete $options{ fields } || {};
+            $form = $self->current_form;
         };
     };
     

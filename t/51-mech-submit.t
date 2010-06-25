@@ -53,3 +53,9 @@ is $triggered->{click},  0, 'Click    was not triggered';
 
 my $r = $mech->xpath('//input[@name="r"]', single => 1 );
 is $r->{value}, 'Hello Firefox', "We set the new value";
+
+$mech->get_local('51-mech-submit.html');
+$mech->allow('javascript' => 1);
+$mech->submit_form();
+($triggered,$type) = $mech->eval_in_page('myevents');
+ok $triggered, "We can submit an empty form";
