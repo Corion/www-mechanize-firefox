@@ -1645,6 +1645,11 @@ C<xpath> - Find the element to click by the XPath query
 
 C<synchronize> - Synchronize the click (default is 1)
 
+Synchronizing means that WWW::Mechanize::Firefox will wait until
+one of the events listed in C<events> is fired. You want to switch
+it off when there will be no HTTP response or DOM event fired, for
+example for clicks that only modify the DOM.
+
 =back
 
 Returns a L<HTTP::Response> object.
