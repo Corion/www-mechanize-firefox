@@ -1807,7 +1807,9 @@ sub form_number {
 Find the form which has the listed fields.
 
 If the first argument is a hash reference, it's taken
-as options to C<< ->xpath >>
+as options to C<< ->xpath >>.
+
+See also C<< $mech->submit_form >>.
 
 =cut
 
@@ -2009,10 +2011,19 @@ and data setting in one operation. It selects the first form that contains
 all fields mentioned in \%fields. This is nice because you don't need to
 know the name or number of the form to do this.
 
-(calls C<<form_with_fields()>> and C<<set_fields()>>).
+(calls C<< form_with_fields() >> and C<< set_fields() >>).
 
 If you choose this, the form_number, form_name, form_id and fields options
 will be ignored.
+
+Example:
+
+  $mech->get('http://google.com/');
+  $mech->submit_form(
+      with_fields => {
+          q => 'WWW::Mechanize::Firefox examples',
+      },
+  );
 
 =back
 
