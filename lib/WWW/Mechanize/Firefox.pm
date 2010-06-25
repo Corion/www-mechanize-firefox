@@ -684,6 +684,10 @@ It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
+Example:
+
+  $mech->get('http://google.com');
+
 =cut
 
 sub get {
@@ -698,10 +702,15 @@ sub get {
 =head2 C<< $mech->get_local( $filename ) >>
 
 Shorthand method to construct the appropriate
-C<< file:// >> URI and load it into Firefox.
+C<< file:// >> URI and load it into Firefox. Relative
+paths will be interpreted as relative to C<$0>.
 
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
+
+Example:
+
+  $mech->get_local('test.html');
 
 =cut
 
@@ -792,6 +801,7 @@ event instead.
 
 If you leave out C<$event>, the value of C<< ->events() >> will
 be used instead.
+
 
 =cut
 
@@ -1125,6 +1135,11 @@ The download will
 continue in the background. It will not show up in the
 Download Manager.
 
+Example:
+
+  $mech->get('http://google.com');
+  $mech->save_content('google search page','google search page files');
+
 =cut
 
 sub save_content {
@@ -1210,15 +1225,15 @@ Download Manager.
 
 =head3 Upload a file to an C<ftp> server
 
+B< Not implemented > - this requires instantiating and passing
+a C< nsIURI > object instead of a C< nsILocalFile >.
+
 You can use C<< ->save_url >> to I<transfer> files. C<$localname>
 can be a local filename, a C<file://> URL or any other URL that allows
 uploads, like C<ftp://>.
 
   $mech->save_url('file://path/to/my/file.txt'
       => 'ftp://myserver.example/my/file.txt');
-
-B< Not implemented > - this requires instantiating and passing
-a C< nsIURI > object instead of a C< nsILocalFile >.
 
 =cut
 
