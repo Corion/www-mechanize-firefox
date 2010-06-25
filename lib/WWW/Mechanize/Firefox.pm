@@ -1589,12 +1589,12 @@ This defaults to not look through child frames.
 =cut
 
 sub find_all_links {
-    my ($self,frames => 0, %opts) = @_;
+    my ($self, %opts) = @_;
     $opts{ n } = 'all';
     my $base = $self->base;
     my @matches = map {
         $self->make_link($_, $base);
-    } $self->find_all_links_dom( %opts );
+    } $self->find_all_links_dom( frames => 0, %opts );
     return @matches if wantarray;
     return \@matches;
 };
