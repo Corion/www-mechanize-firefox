@@ -1328,7 +1328,8 @@ sub title {
 
 Returns all links in the document.
 
-Currently accepts no parameters.
+Currently accepts no parameters. See C<< ->xpath >>
+or C<< ->selector >> when you want more control.
 
 =cut
 
