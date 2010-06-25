@@ -572,6 +572,11 @@ the following keys are recognized:
 
 `synchronize` - Synchronize the click (default is 1)
 
+Synchronizing means that WWW::Mechanize::Firefox will wait until
+one of the events listed in `events` is fired. You want to switch
+it off when there will be no HTTP response or DOM event fired, for
+example for clicks that only modify the DOM.
+
 Returns a [HTTP::Response](http://search.cpan.org/search?mode=module&query=HTTP::Response) object.
 
 As a deviation from the WWW::Mechanize API, you can also pass a 
