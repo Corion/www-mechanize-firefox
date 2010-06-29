@@ -19,7 +19,10 @@ HTML::Display::MozRepl - use a mozrepl enabled FireFox to display HTML
 sub new {
   my ($class,%options) = @_;
   my $self = $class->SUPER::new();
-  my $ff = WWW::Mechanize::Firefox->new( autoclose => 0 );
+  my $ff = WWW::Mechanize::Firefox->new(
+      autoclose => 0,
+      %options,
+ );
   $self->{ff} = $ff;
   $self;
 };
@@ -30,7 +33,7 @@ sub display_html {
   my ($self,$html) = @_;
   if ($html) {
     my $browser = $self->ff;
-    my $document = $browser->update_html($html);
+    $browser->update_html($html);
   } else {
     carp "No HTML given" unless $html;
   };
