@@ -102,7 +102,8 @@ waiting for a reply
 
 =item * 
 
-C<repl> - a premade L<MozRepl::RemoteObject> instance
+C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
+suitable for initializing one.
 
 =item * 
 
@@ -131,9 +132,10 @@ in a Firefox process if it is not already running.
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
-    if (! $args{ repl }) {
+    if (! ref $args{ repl }) {
         my $ff = delete $args{ launch };
         $args{ repl } = MozRepl::RemoteObject->install_bridge(
+            repl   => $args{ repl } || undef,
             launch => $ff,
             log => $loglevel,
         );
