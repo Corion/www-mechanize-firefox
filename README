@@ -249,13 +249,21 @@ NAVIGATION METHODS
     with WWW::Mechanize. It does not yet support the additional parameters
     that WWW::Mechanize supports for saving a file etc.
 
+    Example:
+
+      $mech->get('http://google.com');
+
   `$mech->get_local( $filename )'
 
     Shorthand method to construct the appropriate `file://' URI and load it
-    into Firefox.
+    into Firefox. Relative paths will be interpreted as relative to `$0'.
 
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
+
+    Example:
+
+      $mech->get_local('test.html');
 
   `$mech->synchronize( $event, $callback )'
 
@@ -369,6 +377,11 @@ CONTENT METHODS
     The download will continue in the background. It will not show up in the
     Download Manager.
 
+    Example:
+
+      $mech->get('http://google.com');
+      $mech->save_content('google search page','google search page files');
+
   `$mech->save_url( $url, $localname, [%OPTIONS] )'
 
     Saves the given URL to the given filename. The URL will be fetched from
@@ -386,15 +399,15 @@ CONTENT METHODS
     in the Download Manager.
 
     Upload a file to an `ftp' server
+     Not implemented - this requires instantiating and passing a ` nsIURI '
+    object instead of a ` nsILocalFile '.
+
     You can use `->save_url' to *transfer* files. `$localname' can be a
     local filename, a `file://' URL or any other URL that allows uploads,
     like `ftp://'.
 
       $mech->save_url('file://path/to/my/file.txt'
           => 'ftp://myserver.example/my/file.txt');
-
-     Not implemented - this requires instantiating and passing a ` nsIURI '
-    object instead of a ` nsILocalFile '.
 
   `$mech->base'
 
@@ -422,7 +435,8 @@ EXTRACTION METHODS
 
     Returns all links in the document.
 
-    Currently accepts no parameters.
+    Currently accepts no parameters. See `->xpath' or `->selector' when you
+    want more control.
 
   `$mech->find_link_dom( OPTIONS )'
 
@@ -455,7 +469,8 @@ EXTRACTION METHODS
 
   `$mech->find_link( OPTIONS )'
 
-    A method quite similar to WWW::Mechanize's method.
+    A method quite similar to WWW::Mechanize's method. The options are
+    documented in `->find_link_dom'.
 
     Returns a WWW::Mechanize::Link object.
 
@@ -463,7 +478,8 @@ EXTRACTION METHODS
 
   `$mech->find_all_links( OPTIONS )'
 
-    Finds all links in the document.
+    Finds all links in the document. The options are documented in
+    `->find_link_dom'.
 
     Returns them as list or an array reference, depending on context.
 
@@ -471,11 +487,19 @@ EXTRACTION METHODS
 
   `$mech->find_all_links_dom OPTIONS'
 
-    Finds all matching linky DOM nodes in the document.
+    Finds all matching linky DOM nodes in the document. The options are
+    documented in `->find_link_dom'.
 
     Returns them as list or an array reference, depending on context.
 
     This defaults to not look through child frames.
+
+  `$mech->follow_link LINK'
+
+  `$mech->follow_link OPTIONS'
+
+    Follows the given link. Takes the same parameters that `find_link_dom'
+    uses.
 
   `$mech->click NAME [,X,Y]'
 
@@ -506,10 +530,6 @@ EXTRACTION METHODS
     As a deviation from the WWW::Mechanize API, you can also pass a hash
     reference as the first parameter. In it, you can specify the parameters
     to search much like for the `find_link' calls.
-
-  `$mech->follow_link'
-
-    Follows the given link. Takes the same parameters that `find_link' uses.
 
 FORM METHODS
   `$mech->current_form'
@@ -607,6 +627,11 @@ FORM METHODS
     form_number/form_name, set_fields and click methods into one higher
     level call. Its arguments are a list of key/value pairs, all of which
     are optional.
+
+    *   `form => $mech->current_form()'
+
+        Specifies the form to be filled and submitted. Defaults to the
+        current form.
 
     *   `fields => \%fields'
 

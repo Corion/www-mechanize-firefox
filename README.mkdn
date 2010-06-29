@@ -291,13 +291,22 @@ It returns a faked [HTTP::Response](http://search.cpan.org/search?mode=module&qu
 with [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize). It does not yet support the additional parameters
 that [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize) supports for saving a file etc.
 
+Example:
+
+  $mech->get('http://google.com');
+
 ## C<< $mech->get_local( $filename ) >>
 
 Shorthand method to construct the appropriate
-`file://` URI and load it into Firefox.
+`file://` URI and load it into Firefox. Relative
+paths will be interpreted as relative to `$0`.
 
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
+
+Example:
+
+  $mech->get_local('test.html');
 
 ## C<< $mech->synchronize( $event, $callback ) >>
 
@@ -324,6 +333,8 @@ event instead.
 
 If you leave out `$event`, the value of `->events()` will
 be used instead.
+
+
 
 ## C<< $mech->res >> / C<< $mech->response >>
 
@@ -416,6 +427,11 @@ The download will
 continue in the background. It will not show up in the
 Download Manager.
 
+Example:
+
+  $mech->get('http://google.com');
+  $mech->save_content('google search page','google search page files');
+
 ## C<< $mech->save_url( $url, $localname, [%OPTIONS] ) >>
 
 Saves the given URL to the given filename. The URL will be
@@ -436,15 +452,15 @@ Download Manager.
 
 ### Upload a file to an C<ftp> server
 
+__ Not implemented __ - this requires instantiating and passing
+a ` nsIURI ` object instead of a ` nsILocalFile `.
+
 You can use `->save_url` to _transfer_ files. `$localname`
 can be a local filename, a `file://` URL or any other URL that allows
 uploads, like `ftp://`.
 
   $mech->save_url('file://path/to/my/file.txt'
       => 'ftp://myserver.example/my/file.txt');
-
-__ Not implemented __ - this requires instantiating and passing
-a ` nsIURI ` object instead of a ` nsILocalFile `.
 
 ## C<< $mech->base >>
 
@@ -474,7 +490,8 @@ Returns the current document title.
 
 Returns all links in the document.
 
-Currently accepts no parameters.
+Currently accepts no parameters. See `->xpath`
+or `->selector` when you want more control.
 
 ## C<< $mech->find_link_dom( OPTIONS ) >>
 
@@ -525,6 +542,7 @@ it also `croak`s when more than one link is found.
 ## C<< $mech->find_link( OPTIONS ) >>
 
 A method quite similar to [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize)'s method.
+The options are documented in `->find_link_dom`.
 
 Returns a [WWW::Mechanize::Link](http://search.cpan.org/search?mode=module&query=WWW::Mechanize::Link) object.
 
@@ -533,6 +551,7 @@ This defaults to not look through child frames.
 ## C<< $mech->find_all_links( OPTIONS ) >>
 
 Finds all links in the document.
+The options are documented in `->find_link_dom`.
 
 Returns them as list or an array reference, depending
 on context.
@@ -542,11 +561,19 @@ This defaults to not look through child frames.
 ## C<< $mech->find_all_links_dom OPTIONS >>
 
 Finds all matching linky DOM nodes in the document.
+The options are documented in `->find_link_dom`.
 
 Returns them as list or an array reference, depending
 on context.
 
 This defaults to not look through child frames.
+
+## C<< $mech->follow_link LINK >>
+
+## C<< $mech->follow_link OPTIONS >>
+
+Follows the given link. Takes the same parameters that `find_link_dom`
+uses.
 
 ## C<< $mech->click NAME [,X,Y] >>
 
@@ -582,11 +609,6 @@ Returns a [HTTP::Response](http://search.cpan.org/search?mode=module&query=HTTP:
 As a deviation from the WWW::Mechanize API, you can also pass a 
 hash reference as the first parameter. In it, you can specify
 the parameters to search much like for the `find_link` calls.
-
-## C<< $mech->follow_link >>
-
-Follows the given link. Takes the same parameters that `find_link`
-uses.
 
 # FORM METHODS
 
@@ -689,6 +711,12 @@ This method lets you select a form from the previously fetched page,
 fill in its fields, and submit it. It combines the form_number/form_name,
 set_fields and click methods into one higher level call. Its arguments are
 a list of key/value pairs, all of which are optional.
+
+- *
+
+`form => $mech->current_form()`
+
+Specifies the form to be filled and submitted. Defaults to the current form.
 
 - *
 
