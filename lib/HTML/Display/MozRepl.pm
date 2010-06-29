@@ -1,7 +1,7 @@
 package HTML::Display::MozRepl;
 use strict;
 use Carp qw(carp);
-use WWW::Mechanize::FireFox;
+use WWW::Mechanize::Firefox;
 use parent 'HTML::Display::Common';
 use vars qw($VERSION);
 $VERSION = '0.24';
@@ -19,7 +19,7 @@ HTML::Display::MozRepl - use a mozrepl enabled FireFox to display HTML
 sub new {
   my ($class,%options) = @_;
   my $self = $class->SUPER::new();
-  my $ff = WWW::Mechanize::FireFox->new( autoclose => 0 );
+  my $ff = WWW::Mechanize::Firefox->new( autoclose => 0 );
   $self->{ff} = $ff;
   $self;
 };
