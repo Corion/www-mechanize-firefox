@@ -7,13 +7,17 @@ use HTML::Display::MozRepl;
 
 GetOptions(
     'mozrepl|m:s' => \my $mozrepl,
-    'tab|t:s' => \my $tabname,
-    'close|c' => \my $close,
+    'tab|t:s' => \my $tab,
+    'current|c' => \my $use_current_tab,
+    'close|q' => \my $close,
     #'focus|f' => \my $focus,
 ) or pod2usage();
 
+$tab = $use_current_tab ? 'current'
+       $tab ? qr/$tab/;
+
 my $d = HTML::Display::MozRepl->new(
-    tabname => $tabname,
+    tab     => $tab,
     repl    => $mozrepl,
     create  => 1,
     autoclose => $close,

@@ -9,6 +9,7 @@ To be released
     . ->update_html() does not return anything anymore, just like
       WWW::Mechanize does.
     . C<repl> constructor now also accepts host:port
+    . Added `bcat.pl` example script to cat HTML to the browser.
 
 0.24 20100624
     ! ->find_link_dom now uses ->xpath and searches through frames
