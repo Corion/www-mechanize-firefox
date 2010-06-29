@@ -78,7 +78,8 @@ waiting for a reply
 
 - * 
 
-`repl` - a premade [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject) instance
+`repl` - a premade [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject) instance or a connection string
+suitable for initializing one.
 
 - * 
 
