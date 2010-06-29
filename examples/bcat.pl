@@ -14,7 +14,9 @@ GetOptions(
 ) or pod2usage();
 
 $tab = $use_current_tab ? 'current'
-       $tab ? qr/$tab/;
+       : $tab ? qr/$tab/
+       : undef
+       ;
 
 my $d = HTML::Display::MozRepl->new(
     tab     => $tab,
