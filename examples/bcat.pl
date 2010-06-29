@@ -4,12 +4,15 @@ use WWW::Mechanize::Firefox;
 use Getopt::Long;
 use Pod::Usage;
 use HTML::Display::MozRepl;
+use Cwd qw(getcwd);
 
 GetOptions(
     'mozrepl|m:s' => \my $mozrepl,
-    'tab|t:s' => \my $tab,
+    'tab' => \my $tab,
     'current|c' => \my $use_current_tab,
     'close|q' => \my $close,
+    'title|t:s' => \my $title,
+    'type:s' => \my $encode_type,
     #'focus|f' => \my $focus,
 ) or pod2usage();
 
@@ -17,6 +20,8 @@ $tab = $use_current_tab ? 'current'
        : $tab ? qr/$tab/
        : undef
        ;
+
+$title ||= getcwd;
 
 my $d = HTML::Display::MozRepl->new(
     tab     => $tab,
@@ -27,6 +32,27 @@ my $d = HTML::Display::MozRepl->new(
 local $/;
 binmode STDIN;
 my $html = <>;
+
+# Find out whether we have HTML:
+if (! $encode_type) {
+    if ($html =~ /^\s*</sm) {
+        $encode_type = 'html'
+    } else {
+        $encode_type = 'text',
+    };
+};
+
+if ('text' eq $encode_type) {
+    my %map = (
+    '<' => '&lt;',
+    '>' => '&gt;',
+    '&' => '&amp;',
+    );
+    $html =~ s/([<>&])/$map{$1} || $1/ge;
+    $html =~ s/\r?\n/<br>/g;
+    $html = "<html><head><title>$title</title><body><pre>$html</pre></body></html>";
+};
+
 $d->display($html);
 
 =head1 NAME
@@ -41,6 +67,7 @@ Options:
    --tabname        title of tab to reuse
    --mozrepl        connection string to Firefox
    --close          automatically close the tab at the end of input
+   --type TYPE      Fix the type to 'html' or 'text'
 
 =head1 OPTIONS
 
@@ -55,6 +82,11 @@ Name of the tab to (re)use. A substring is enough.
 Automatically close the tab when the input closes. This is good
 for displaying intermediate information.
 
+=item B<--type TYPE>
+
+Force the type to be either C<html> or C<text>. If the type is
+C<text>, line wrapping will be added.
+
 =item B<--mozrepl>
 
 Connection information for the mozrepl instance to use.
@@ -65,5 +97,10 @@ Connection information for the mozrepl instance to use.
 
 B<This program> will display HTML read from STDIN
 in a browser tab.
+
+=head1 SEE ALSO
+
+The original C<bcat> utility which inspired this program
+at L<http://rtomayko.github.com/bcat/>.
 
 =cut
