@@ -443,7 +443,10 @@ sub addTab {
           // No browser windows are open, so open a new one.
           win = window.open('about:blank');
         };
-        return win.getBrowser().addTab()
+        var b = win.getBrowser();
+        var t = b.addTab();
+        t.parentTabBox = b;
+        return t
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -455,15 +458,11 @@ JS
 
 sub autoclose_tab {
     my ($self,$tab) = @_;
-    #warn "Installing autoclose";
     my $release = join "",
-    q{var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]},
-    q{                   .getService(Components.interfaces.nsIWindowMediator);},
-    q{var win = wm.getMostRecentWindow('navigator:browser');},
-    q{if (!win){win = window};},
-    q{win.getBrowser().removeTab(self)},
+        q{var b=self.parentTabBox;},
+        q{self.parentTabBox=undefined;},
+        q{b.removeTab(self);},
     ;
-    #warn $release;
     $tab->__release_action($release);
 };
 
