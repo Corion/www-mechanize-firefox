@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 10;
+    plan tests => 11;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
