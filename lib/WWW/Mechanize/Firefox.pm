@@ -463,7 +463,7 @@ sub autoclose_tab {
     my $release = join "",
         q{var b=self.parentTabBox;},
         q{self.parentTabBox=undefined;},
-        q{b.removeTab(self);},
+        q{if(b){b.removeTab(self)};},
     ;
     $tab->__release_action($release);
 };
