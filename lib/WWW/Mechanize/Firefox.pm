@@ -1109,6 +1109,7 @@ sub update_html {
     $self->synchronize($self->events, sub {
         $self->tab->{linkedBrowser}->loadURI($url);
     });
+    return
 };
 
 =head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] ) >>

@@ -6,6 +6,8 @@ To be released
     . The Javascript code for closing a tab is now much shorter and likely
       also more reliable as it does not rely on the most recent window
       opened anymore.
+    . ->update_html() does not return anything anymore, just like
+      WWW::Mechanize does.
 
 0.24 20100624
     ! ->find_link_dom now uses ->xpath and searches through frames
