@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 38;
+    plan tests => 49;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -57,7 +57,6 @@ is $bar, 'foo', "We retrieve the right value";
 diag "Testing deep framesets";
 $mech->get_local('52-frameset-deep.html');
 
-# Should do both, xpath and selector queries here
 @content = $mech->xpath('//*[@id="content"]', frames => 0, one => 1);
 is scalar @content, 1, 'Querying one element of subframes returns results';
 is $content[0]->{innerHTML}, '52-frameset-deep.html', "We get the topmost frame if we only ask for one without diving into (deep) frames";
@@ -93,3 +92,26 @@ my $bar;
 my $v = eval { $bar = $mech->value('bar'); 1 };
 ok $v, "We find input fields in subframes implicitly";
 is $bar, 'foo', "We retrieve the right value";
+
+diag "Testing recursive framesets";
+$mech->get_local('52-frameset-recursive.html');
+
+@content = $mech->xpath('//*[@id="content"]', frames => 0, one => 1);
+is scalar @content, 1, 'Querying one element of subframes returns results';
+is $content[0]->{innerHTML}, '52-frameset-recursive.html', "We get the topmost frame if we only ask for one without diving into (recursive) frames";
+
+@content = $mech->xpath('//*[@id="content"]', one => 1);
+is scalar @content, 1, 'Querying one element of subframes returns results';
+is $content[0]->{innerHTML}, '52-frameset-recursive.html', "We get the topmost frame if we only ask for one";
+
+@content = $mech->xpath('//*[@id="content"]', frames => 1);
+ok scalar @content >= 4, 'Querying of subframes returns results';
+diag $content[0]->{innerHTML};
+is $content[0]->{innerHTML}, '52-frameset-recursive.html', "We get the right frame";
+is $content[1]->{innerHTML}, '52-frameset-deep.html', "We get the right frame";
+is $content[2]->{innerHTML}, '52-iframeset.html', "We get the right frame";
+is $content[3]->{innerHTML}, '52-subframe.html', "We get the right frame";
+
+@content = $mech->selector('#content', frames=>0);
+is scalar @content, 1, 'Querying of subframes returns only the surrounding page with frames=>0';
+is $content[0]->{innerHTML}, '52-frameset-recursive.html', "We get the right frame";
