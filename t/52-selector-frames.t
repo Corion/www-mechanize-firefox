@@ -88,8 +88,8 @@ is $content[2]->{innerHTML}, '52-subframe.html', "We get the right frame";
 is scalar @content, 1, 'Querying of subframes returns only the surrounding page with frames=>0';
 is $content[0]->{innerHTML}, '52-frameset-deep.html', "We get the right frame";
 
-my $bar;
-my $v = eval { $bar = $mech->value('bar'); 1 };
+undef $bar;
+$v = eval { $bar = $mech->value('bar'); 1 };
 ok $v, "We find input fields in subframes implicitly";
 is $bar, 'foo', "We retrieve the right value";
 
