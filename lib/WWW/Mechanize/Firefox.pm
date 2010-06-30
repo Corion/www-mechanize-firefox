@@ -2642,6 +2642,11 @@ I have no use for it
 
 =item *
 
+Add C<< limit >> parameter to C<< ->xpath() >> to allow an early exit-case
+when searching through frames.
+
+=item *
+
 Implement download progress via C<nsIWebBrowserPersist.progressListener>
 and our own C<nsIWebProgressListener>.
 
