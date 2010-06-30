@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 1+2*2;
+    plan tests => 1+4*2;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -28,4 +28,13 @@ for my $i (['direct','51-mech-submit.html'],['frame','51-mech-field-frameset.htm
     };
     ok $lived, "We can set field 'r' ($info)";
     is $mech->value('r'), 'r', "We retrieve our value";
+    
+    $mech->form_id('testform2');
+    my $lived = eval {
+       $mech->field( r => 'r' );
+       $mech->field( q => 'q' );
+       1
+    };
+    is $mech->value('r'), 'r', "We retrieve our value";
+    is $mech->value('q'), 'q', "We retrieve our value";
 };
