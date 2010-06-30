@@ -2235,6 +2235,8 @@ L<WWW::Mechanize>.
 
 =cut
 
+#use vars '$nesting';
+#$nesting = '';
 sub xpath {
     my ($self,$query,%options) = @_;
     if ('ARRAY' ne (ref $query||'')) {
@@ -2282,20 +2284,26 @@ sub xpath {
         # recursively join the results of sub(i)frames if wanted
         # This should maybe go into the loop to expand every frame as we descend
         # into the available subframes
-        if ($options{ frames } and not $options{ node }) {
-            push @documents, $self->expand_frames( $options{ frames }, $options{ document } );
-        };
 
         while (@documents) {
             my $doc = shift @documents;
             #warn "Invalid document" unless $doc;
 
             my $n = $options{ node } || $doc;
+            #warn "$nesting>Searching @$query in $doc->{title}";
             push @res, map { $doc->__xpath($_, $n) } @$query;
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
             last DOCUMENTS if @res and $one;        
+            
+            if ($options{ frames } and not $options{ node }) {
+                #warn "$nesting>Expanding below " . $doc->{title};
+                #local $nesting .= "--";
+                my @d = $self->expand_frames( $options{ frames }, $doc );
+                #warn "Found $_->{title}" for @d;
+                push @documents, @d;
+            };
         };
     };
     
