@@ -882,6 +882,9 @@ INCOMPATIBILITIES WITH WWW::Mechanize
         I have no use for it
 
 TODO
+    *   Add `limit' parameter to `->xpath()' to allow an early exit-case
+        when searching through frames.
+
     *   Implement download progress via
         `nsIWebBrowserPersist.progressListener' and our own
         `nsIWebProgressListener'.
