@@ -1906,8 +1906,7 @@ sub field {
         value => $value,
         pre => $pre,
         post => $post,
-        document => $self->document,
-        node => $self->current_form || $self->document,
+        node => $self->current_form,
     );
 }
 
@@ -1932,6 +1931,7 @@ sub value {
     } else {
         my ($self,$name,%options) = @_;
         $self->get_set_value(
+            node => $self->current_form,
             %options,
             name => $name,
         );
