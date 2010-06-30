@@ -1595,6 +1595,8 @@ This defaults to not look through child frames.
 sub find_link {
     my ($self,%opts) = @_;
     my $base = $self->base;
+    croak "Option 'all' not available for ->find_link. Did you mean to call ->find_all_links()?"
+        if 'all' eq ($opts{n} || '');
     if (my $link = $self->find_link_dom(frames => 0, %opts)) {
         return $self->make_link($link, $base)
     } else {
