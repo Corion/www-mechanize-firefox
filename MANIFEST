@@ -49,6 +49,8 @@ t/51-mech-sandbox.t
 t/51-mech-set-content.t
 t/51-mech-submit.html
 t/51-mech-submit.t
+t/52-frameset-deep.html
+t/52-frameset-recursive.html
 t/52-frameset.html
 t/52-iframeset.html
 t/52-mech-api-find_link-frames.t
