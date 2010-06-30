@@ -1,5 +1,6 @@
 .gitignore
 Changes
+examples/bcat.pl
 examples/dump-links.pl
 examples/fullscreen.pl
 examples/gen_examples_pod.pl
