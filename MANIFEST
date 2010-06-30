@@ -40,6 +40,8 @@ t/50-mech-multi-event.t
 t/50-mech-new.t
 t/50-mech-save-dialog.t
 t/50-mech-status.t
+t/51-mech-field-frameset.html
+t/51-mech-field.t
 t/51-mech-form-with-fields.t
 t/51-mech-links.t
 t/51-mech-sandbox.html
