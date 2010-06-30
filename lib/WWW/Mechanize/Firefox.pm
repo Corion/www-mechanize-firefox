@@ -1422,6 +1422,12 @@ sub signal_condition {
 A method to find links, like L<WWW::Mechanize>'s
 C<< ->find_links >> method.
 
+Note that Firefox
+might have reordered the links or frame links in the document
+so the absolute numbers passed via C<n>
+might not be the same between
+L<WWW::Mechanize> and L<WWW::Mechanize::Firefox>.
+
 Returns the DOM object as L<MozRepl::RemoteObject>::Instance.
 
 The supported options are:
