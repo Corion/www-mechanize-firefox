@@ -1,6 +1,7 @@
 .gitignore
 Changes
 examples/dump-links.pl
+examples/fullscreen.pl
 examples/gen_examples_pod.pl
 examples/javascript.pl
 examples/manipulate-javascript.pl
@@ -9,6 +10,7 @@ examples/open-url.pl
 examples/README
 examples/screenshot.pl
 examples/urlbar.pl
+INSTALL
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
@@ -23,6 +25,8 @@ t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/49-mech-reuse.t
+t/50-click.html
+t/50-click.t
 t/50-form-with-fields.t
 t/50-form2.html
 t/50-form2.t

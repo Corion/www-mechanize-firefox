@@ -16,7 +16,7 @@ package WWW::Mechanize::Firefox::Examples;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.21';
+$VERSION = '0.25';
 
 1;
 
@@ -68,7 +68,7 @@ The following is a list of the 7 example programs that are included in the WWW::
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/open-local-file.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/open-local-file.pl>
 
 =head2 Example: open-url.pl
 
@@ -80,7 +80,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/open-url.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/open-url.pl>
 
 =head2 Example: screenshot.pl
 
@@ -151,7 +151,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/screenshot.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/screenshot.pl>
 
 =head2 Example: dump-links.pl
 
@@ -168,8 +168,25 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
       for $mech->selector('a.download');
     
     <>;
+    
+    =head1 NAME
+    
+    dump-links.pl - Dump links on a webpage
+    
+    =head1 SYNOPSIS
+    
+    dump-links.pl
+    
+    =head1 DESCRIPTION
+    
+    This program demonstrates how to read elements out of the Firefox
+    DOM and how to get at text within nodes.
+    
+    It also demonstrates how you can modify elements in a webpage.
+    
+    =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/dump-links.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/dump-links.pl>
 
 =head2 Example: manipulate-javascript.pl
 
@@ -191,8 +208,23 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     $mech->value('pass',$val);
     
     <>;
+    
+    =head1 NAME
+    
+    manipulate-javascript.pl - demonstrate how to manipulate Javascript in a page
+    
+    =head1 SYNOPSIS
+    
+    manipulate-javascript.pl
+    
+    =head1 DESCRIPTION
+    
+    This program demonstrates that you have write access to Javascript
+    variables in Firefox and in webpages displayed through Firefox.
+    
+    =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/manipulate-javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/manipulate-javascript.pl>
 
 =head2 Example: javascript.pl
 
@@ -207,8 +239,23 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     JS
     
     <>;
+    
+    =head1 NAME
+    
+    javascript.pl - execute Javascript in a page
+    
+    =head1 SYNOPSIS
+    
+    javascript.pl
+    
+    =head1 DESCRIPTION
+    
+    B<This program> demonstrates how to execute simple
+    Javascript in a page.
+    
+    =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/javascript.pl>
 
 =head2 Example: urlbar.pl
 
@@ -319,7 +366,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     };
 
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.21/examples/urlbar.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.25/examples/urlbar.pl>
 
 =head1 AUTHOR
 

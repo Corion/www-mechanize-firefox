@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 10;
+    plan tests => 11;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -40,9 +40,9 @@ is $triggered->{click},  0, 'Click    was not triggered';
 $mech->get_local('51-mech-submit.html');
 $mech->allow('javascript' => 1);
 $mech->submit_form(
-    with_fields => [
+    with_fields => {
         r => 'Hello Firefox',
-    ],
+    },
 );
 ($triggered,$type) = $mech->eval_in_page('myevents');
 ok $triggered, "We found 'myevents'";
@@ -53,3 +53,9 @@ is $triggered->{click},  0, 'Click    was not triggered';
 
 my $r = $mech->xpath('//input[@name="r"]', single => 1 );
 is $r->{value}, 'Hello Firefox', "We set the new value";
+
+$mech->get_local('51-mech-submit.html');
+$mech->allow('javascript' => 1);
+$mech->submit_form();
+($triggered,$type) = $mech->eval_in_page('myevents');
+ok $triggered, "We can submit an empty form";

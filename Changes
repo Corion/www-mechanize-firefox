@@ -1,5 +1,39 @@
 To be released
 
+0.25 to be released
+    . ->submit_form now can submit the current form without any fields
+      specified. This was a fatal error before.
+    . The Javascript code for closing a tab is now much shorter and likely
+      also more reliable as it does not rely on the most recent window
+      opened anymore.
+    . ->update_html() does not return anything anymore, just like
+      WWW::Mechanize does.
+    . C<repl> constructor now also accepts host:port
+    . Added `bcat.pl` example script to cat HTML to the browser.
+
+0.24 20100624
+    ! ->find_link_dom now uses ->xpath and searches through frames
+    ! Actually conform to WWW::Mechanize API by requiring a hashref
+      in ->submit_form( with_fields => {} ). This might break your
+      code, but it's a small change and makes the code fit the documentation.
+
+0.23 20100624
+    . Add "maybe" option to ->xpath (and ->selector)
+    . Add "all" option to ->xpath (and ->selector)
+    . Add a sanity check that prevents calling ->xpath in scalar
+      context if no item-count option is specified.
+    . Unified code paths for frame expansion and document query
+
+0.22 20100623
+    . Performance optimization:
+      ->click() does not need a response
+    . ->click() now uses ->xpath() to find elements
+    . Add link to WWW::Mechanize::Firefox::Examples
+    . Don't force C<synchronize> in ->click()
+    . ->xpath also takes an arrayref of queries
+    . ->selector also takes an arrayref of queries
+    . Added INSTALL file
+
 0.21 20100618
     ! value() method now returns the field value
     ! Frames are now searched by default for matching elements

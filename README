@@ -9,8 +9,10 @@ SYNOPSIS
       $mech->eval_in_page('alert("Hello Firefox")');
       my $png = $mech->content_as_png();
 
-    This will let you automate Firefox through the Mozrepl plugin, which you
-    need to have installed in your Firefox.
+    This module will let you automate Firefox through the Mozrepl plugin.
+    You you need to have installed that plugin in your Firefox.
+
+    For more examples see WWW::Mechanize::Firefox::Examples.
 
 METHODS
   `$mech->new( ARGS )'
@@ -40,6 +42,15 @@ METHODS
         If you want to always search through all frames, just pass `1'. This
         is the default.
 
+        To prevent searching through frames, pass
+
+                  frames => 0
+
+        To whitelist frames to be searched, pass the list of frame
+        selectors:
+
+                  frames => ['#content_frame']
+
     *   `log' - array reference to log levels, passed through to
         MozRepl::RemoteObject
 
@@ -49,7 +60,8 @@ METHODS
     *   `events' - the set of default Javascript events to listen for while
         waiting for a reply
 
-    *   `repl' - a premade MozRepl::RemoteObject instance
+    *   `repl' - a premade MozRepl::RemoteObject instance or a connection
+        string suitable for initializing one.
 
     *   `pre_events' - the events that are sent to an input field before its
         value is changed. By default this is `[focus]'.
@@ -167,6 +179,10 @@ UI METHODS
 
     This method is special to WWW::Mechanize::Firefox.
 
+  `$mech->autodie'
+
+    Accessor to get/set whether warnings become fatal.
+
   `$mech->progress_listener( SOURCE, CALLBACKS )'
 
     Sets up the callbacks for the `nsIWebProgressListener' interface to be
@@ -234,13 +250,21 @@ NAVIGATION METHODS
     with WWW::Mechanize. It does not yet support the additional parameters
     that WWW::Mechanize supports for saving a file etc.
 
+    Example:
+
+      $mech->get('http://google.com');
+
   `$mech->get_local( $filename )'
 
     Shorthand method to construct the appropriate `file://' URI and load it
-    into Firefox.
+    into Firefox. Relative paths will be interpreted as relative to `$0'.
 
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
+
+    Example:
+
+      $mech->get_local('test.html');
 
   `$mech->synchronize( $event, $callback )'
 
@@ -354,6 +378,11 @@ CONTENT METHODS
     The download will continue in the background. It will not show up in the
     Download Manager.
 
+    Example:
+
+      $mech->get('http://google.com');
+      $mech->save_content('google search page','google search page files');
+
   `$mech->save_url( $url, $localname, [%OPTIONS] )'
 
     Saves the given URL to the given filename. The URL will be fetched from
@@ -371,15 +400,15 @@ CONTENT METHODS
     in the Download Manager.
 
     Upload a file to an `ftp' server
+     Not implemented - this requires instantiating and passing a ` nsIURI '
+    object instead of a ` nsILocalFile '.
+
     You can use `->save_url' to *transfer* files. `$localname' can be a
     local filename, a `file://' URL or any other URL that allows uploads,
     like `ftp://'.
 
       $mech->save_url('file://path/to/my/file.txt'
           => 'ftp://myserver.example/my/file.txt');
-
-     Not implemented - this requires instantiating and passing a ` nsIURI '
-    object instead of a ` nsILocalFile '.
 
   `$mech->base'
 
@@ -407,7 +436,8 @@ EXTRACTION METHODS
 
     Returns all links in the document.
 
-    Currently accepts no parameters.
+    Currently accepts no parameters. See `->xpath' or `->selector' when you
+    want more control.
 
   `$mech->find_link_dom( OPTIONS )'
 
@@ -417,44 +447,60 @@ EXTRACTION METHODS
 
     The supported options are:
 
-    `text' - the text of the link
+    *   `text' - the text of the link
 
-    `id' - the `id' attribute of the link
+    *   `id' - the `id' attribute of the link
 
-    `name' - the `name' attribute of the link
+    *   `name' - the `name' attribute of the link
 
-    `url' - the URL attribute of the link (`href', `src' or `content').
+    *   `url' - the URL attribute of the link (`href', `src' or `content').
 
-    `class' - the `class' attribute of the link
+    *   `class' - the `class' attribute of the link
 
-    `n' - the (1-based) index. Defaults to returning the first link.
+    *   `n' - the (1-based) index. Defaults to returning the first link.
 
-    `single' - If true, ensure that only one element is found. Otherwise
-    croak or carp, depending on the `autodie' parameter.
+    *   `single' - If true, ensure that only one element is found. Otherwise
+        croak or carp, depending on the `autodie' parameter.
 
-    `one' - If true, ensure that at least one element is found. Otherwise
-    croak or carp, depending on the `autodie' parameter.
+    *   `one' - If true, ensure that at least one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
 
-    The method `croak's if no link is found. If the `single' option is true,
-    it also `croak's when more than one link is found.
+        The method `croak's if no link is found. If the `single' option is
+        true, it also `croak's when more than one link is found.
 
   `$mech->find_link( OPTIONS )'
 
-    A method quite similar to WWW::Mechanize's method.
+    A method quite similar to WWW::Mechanize's method. The options are
+    documented in `->find_link_dom'.
 
     Returns a WWW::Mechanize::Link object.
 
+    This defaults to not look through child frames.
+
   `$mech->find_all_links( OPTIONS )'
 
-    Finds all links in the document.
+    Finds all links in the document. The options are documented in
+    `->find_link_dom'.
 
     Returns them as list or an array reference, depending on context.
+
+    This defaults to not look through child frames.
 
   `$mech->find_all_links_dom OPTIONS'
 
-    Finds all matching linky DOM nodes in the document.
+    Finds all matching linky DOM nodes in the document. The options are
+    documented in `->find_link_dom'.
 
     Returns them as list or an array reference, depending on context.
+
+    This defaults to not look through child frames.
+
+  `$mech->follow_link LINK'
+
+  `$mech->follow_link OPTIONS'
+
+    Follows the given link. Takes the same parameters that `find_link_dom'
+    uses.
 
   `$mech->click NAME [,X,Y]'
 
@@ -469,18 +515,22 @@ EXTRACTION METHODS
     If you pass in a hash reference instead of a name, the following keys
     are recognized:
 
-    * `selector' - Find the element to click by the CSS selector
-    * `xpath' - Find the element to click by the XPath query
-    * `synchronize' - Synchronize the click (default is 1)
+    *   `selector' - Find the element to click by the CSS selector
+
+    *   `xpath' - Find the element to click by the XPath query
+
+    *   `synchronize' - Synchronize the click (default is 1)
+
+        Synchronizing means that WWW::Mechanize::Firefox will wait until one
+        of the events listed in `events' is fired. You want to switch it off
+        when there will be no HTTP response or DOM event fired, for example
+        for clicks that only modify the DOM.
+
     Returns a HTTP::Response object.
 
     As a deviation from the WWW::Mechanize API, you can also pass a hash
     reference as the first parameter. In it, you can specify the parameters
     to search much like for the `find_link' calls.
-
-  `$mech->follow_link'
-
-    Follows the given link. Takes the same parameters that `find_link' uses.
 
 FORM METHODS
   `$mech->current_form'
@@ -511,7 +561,9 @@ FORM METHODS
     Find the form which has the listed fields.
 
     If the first argument is a hash reference, it's taken as options to
-    `->xpath'
+    `->xpath'.
+
+    See also `$mech->submit_form'.
 
   `$mech->forms OPTIONS'
 
@@ -544,6 +596,13 @@ FORM METHODS
     Returns the value of the field named `NAME' or of the DOM element passed
     in.
 
+    The legacy form of
+
+        $mech->value( name => value );
+
+    is also still supported but will likely be deprecated in favour of the
+    `->field' method.
+
   `$mech->get_set_value( OPTIONS )'
 
     Allows fine-grained access to getting/setting a value with a different
@@ -570,6 +629,11 @@ FORM METHODS
     level call. Its arguments are a list of key/value pairs, all of which
     are optional.
 
+    *   `form => $mech->current_form()'
+
+        Specifies the form to be filled and submitted. Defaults to the
+        current form.
+
     *   `fields => \%fields'
 
         Specifies the fields to be filled in the current form
@@ -582,10 +646,19 @@ FORM METHODS
         because you don't need to know the name or number of the form to do
         this.
 
-        (calls `<form_with_fields()'> and `<set_fields()'>).
+        (calls `form_with_fields()' and `set_fields()').
 
         If you choose this, the form_number, form_name, form_id and fields
         options will be ignored.
+
+        Example:
+
+          $mech->get('http://google.com/');
+          $mech->submit_form(
+              with_fields => {
+                  q => 'WWW::Mechanize::Firefox examples',
+              },
+          );
 
   `$mech->set_fields( $name => $value, ... )'
 
@@ -621,6 +694,12 @@ FORM METHODS
 
     Runs an XPath query in Firefox against the current document.
 
+        my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+        # croaks if there is no link or more than one link found
+
+        my @para = $mech->xpath('//p');
+        # Collects all paragraphs
+
     The options allow the following keys:
 
     *   `document' - document in which the query is to be executed. Use this
@@ -638,7 +717,19 @@ FORM METHODS
     *   `one' - If true, ensure that at least one element is found.
         Otherwise croak or carp, depending on the `autodie' parameter.
 
+    *   `maybe' - If true, ensure that at most one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
+
+    *   `all' - If true, return all elements found. This is the default. You
+        can use this option if you want to use `->xpath' in scalar context
+        to count the number of matched elements, as it will otherwise emit a
+        warning for each usage in scalar context without any of the above
+        restricting options.
+
     Returns the matched nodes.
+
+    You can pass in a list of queries as an array reference for the first
+    parameter.
 
     This is a method that is not implemented in WWW::Mechanize.
 
@@ -649,13 +740,18 @@ FORM METHODS
 
     Returns all nodes matching the given CSS selector.
 
+    This takes the same options that `->xpath' does.
+
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
 
   `$mech->expand_frames SPEC'
 
     Expands the frame selectors (or `1' to match all frames) into their
-    respective DOM nodes according to the current document.
+    respective DOM document nodes according to the current document.
+
+    This method currently does not properly recurse downwards and will only
+    expand one level of frames.
 
     This is mostly an internal method.
 
@@ -834,7 +930,7 @@ AUTHOR
     Max Maischein `corion@cpan.org'
 
 COPYRIGHT (c)
-    Copyright 2009 by Max Maischein `corion@cpan.org'.
+    Copyright 2009-2010 by Max Maischein `corion@cpan.org'.
 
 LICENSE
     This module is released under the same terms as Perl itself.

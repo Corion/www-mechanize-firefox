@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.21';
+$VERSION = '0.25';
 
 =head1 NAME
 
@@ -33,9 +33,11 @@ WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
   $mech->eval_in_page('alert("Hello Firefox")');
   my $png = $mech->content_as_png();
 
-This will let you automate Firefox through the
-Mozrepl plugin, which you need to have installed
-in your Firefox.
+This module will let you automate Firefox through the
+Mozrepl plugin. You you need to have installed
+that plugin in your Firefox.
+
+For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
 =head1 METHODS
 
@@ -100,7 +102,8 @@ waiting for a reply
 
 =item * 
 
-C<repl> - a premade L<MozRepl::RemoteObject> instance
+C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
+suitable for initializing one.
 
 =item * 
 
@@ -129,9 +132,10 @@ in a Firefox process if it is not already running.
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
-    if (! $args{ repl }) {
+    if (! ref $args{ repl }) {
         my $ff = delete $args{ launch };
         $args{ repl } = MozRepl::RemoteObject->install_bridge(
+            repl   => $args{ repl } || undef,
             launch => $ff,
             log => $loglevel,
         );
@@ -394,7 +398,6 @@ JS
     };
 JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
-    #my $window = $doc->{window}; # $self->tab->{linkedBrowser}->{contentWindow};
     return @{ $eval_in_sandbox->($window,$doc,$str,$js_env) };
 };
 *eval = \&eval_in_page;
@@ -442,7 +445,10 @@ sub addTab {
           // No browser windows are open, so open a new one.
           win = window.open('about:blank');
         };
-        return win.getBrowser().addTab()
+        var b = win.getBrowser();
+        var t = b.addTab();
+        t.parentTabBox = b;
+        return t
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -454,15 +460,11 @@ JS
 
 sub autoclose_tab {
     my ($self,$tab) = @_;
-    #warn "Installing autoclose";
     my $release = join "",
-    q{var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]},
-    q{                   .getService(Components.interfaces.nsIWindowMediator);},
-    q{var win = wm.getMostRecentWindow('navigator:browser');},
-    q{if (!win){win = window};},
-    q{win.getBrowser().removeTab(self)},
+        q{var b=self.parentTabBox;},
+        q{self.parentTabBox=undefined;},
+        q{if(b){b.removeTab(self)};},
     ;
-    #warn $release;
     $tab->__release_action($release);
 };
 
@@ -527,6 +529,14 @@ This method is special to WWW::Mechanize::Firefox.
 =cut
 
 sub tab { $_[0]->{tab} };
+
+=head2 C<< $mech->autodie >>
+
+Accessor to get/set whether warnings become fatal.
+
+=cut
+
+sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
 =head2 C<< $mech->progress_listener( SOURCE, CALLBACKS ) >>
 
@@ -675,6 +685,10 @@ It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
 
+Example:
+
+  $mech->get('http://google.com');
+
 =cut
 
 sub get {
@@ -689,10 +703,15 @@ sub get {
 =head2 C<< $mech->get_local( $filename ) >>
 
 Shorthand method to construct the appropriate
-C<< file:// >> URI and load it into Firefox.
+C<< file:// >> URI and load it into Firefox. Relative
+paths will be interpreted as relative to C<$0>.
 
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
+
+Example:
+
+  $mech->get_local('test.html');
 
 =cut
 
@@ -783,6 +802,7 @@ event instead.
 
 If you leave out C<$event>, the value of C<< ->events() >> will
 be used instead.
+
 
 =cut
 
@@ -913,7 +933,7 @@ sub response {
             return $self->_extract_response( $js_res );
         } else {
             # make up a response, below
-            warn "Making up response";
+            warn "Making up response for unknown scheme '$scheme'";
         };
     };
     
@@ -1091,6 +1111,7 @@ sub update_html {
     $self->synchronize($self->events, sub {
         $self->tab->{linkedBrowser}->loadURI($url);
     });
+    return
 };
 
 =head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] ) >>
@@ -1115,6 +1136,11 @@ and pass it in the C<progress> option.
 The download will
 continue in the background. It will not show up in the
 Download Manager.
+
+Example:
+
+  $mech->get('http://google.com');
+  $mech->save_content('google search page','google search page files');
 
 =cut
 
@@ -1201,15 +1227,15 @@ Download Manager.
 
 =head3 Upload a file to an C<ftp> server
 
+B< Not implemented > - this requires instantiating and passing
+a C< nsIURI > object instead of a C< nsILocalFile >.
+
 You can use C<< ->save_url >> to I<transfer> files. C<$localname>
 can be a local filename, a C<file://> URL or any other URL that allows
 uploads, like C<ftp://>.
 
   $mech->save_url('file://path/to/my/file.txt'
       => 'ftp://myserver.example/my/file.txt');
-
-B< Not implemented > - this requires instantiating and passing
-a C< nsIURI > object instead of a C< nsILocalFile >.
 
 =cut
 
@@ -1319,7 +1345,8 @@ sub title {
 
 Returns all links in the document.
 
-Currently accepts no parameters.
+Currently accepts no parameters. See C<< ->xpath >>
+or C<< ->selector >> when you want more control.
 
 =cut
 
@@ -1399,26 +1426,46 @@ Returns the DOM object as L<MozRepl::RemoteObject>::Instance.
 
 The supported options are:
 
+=over 4
+
+=item *
+
 C<< text >> - the text of the link
+
+=item *
 
 C<< id >> - the C<id> attribute of the link
 
+=item *
+
 C<< name >> - the C<name> attribute of the link
+
+=item *
 
 C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
 
+=item *
+
 C<< class >> - the C<class> attribute of the link
+
+=item *
 
 C<< n >> - the (1-based) index. Defaults to returning the first link.
 
+=item *
+
 C<< single >> - If true, ensure that only one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
+
+=item *
 
 C<< one >> - If true, ensure that at least one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
 
 The method C<croak>s if no link is found. If the C<single> option is true,
 it also C<croak>s when more than one link is found.
+
+=back
 
 =cut
 
@@ -1443,8 +1490,13 @@ sub quote_xpath($) {
 sub find_link_dom {
     my ($self,%opts) = @_;
     my %xpath_options;
-    my $document = delete $opts{ document } || $self->document;
-    my $node = delete $opts{ node } || $document;
+    
+    for (qw(node document)) {
+        if ($opts{ $_ }) {
+            $xpath_options{ $_ } = delete $opts{ $_ };
+        };
+    };
+    
     my $single = delete $opts{ single };
     my $one = delete $opts{ one } || $single;
     if ($single and exists $opts{ n }) {
@@ -1492,7 +1544,7 @@ sub find_link_dom {
             }  (@tags);
     #warn $q;
     
-    my @res = $document->__xpath($q, $node);
+    my @res = $self->xpath($q, %xpath_options );
     
     if (keys %opts) {
         # post-filter the remaining links through WWW::Mechanize
@@ -1526,15 +1578,18 @@ sub find_link_dom {
 =head2 C<< $mech->find_link( OPTIONS ) >>
 
 A method quite similar to L<WWW::Mechanize>'s method.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns a L<WWW::Mechanize::Link> object.
+
+This defaults to not look through child frames.
 
 =cut
 
 sub find_link {
     my ($self,%opts) = @_;
     my $base = $self->base;
-    if (my $link = $self->find_link_dom(%opts)) {
+    if (my $link = $self->find_link_dom(frames => 0, %opts)) {
         return $self->make_link($link, $base)
     } else {
         return
@@ -1544,19 +1599,22 @@ sub find_link {
 =head2 C<< $mech->find_all_links( OPTIONS ) >>
 
 Finds all links in the document.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns them as list or an array reference, depending
 on context.
 
+This defaults to not look through child frames.
+
 =cut
 
 sub find_all_links {
-    my ($self,%opts) = @_;
+    my ($self, %opts) = @_;
     $opts{ n } = 'all';
     my $base = $self->base;
     my @matches = map {
         $self->make_link($_, $base);
-    } $self->find_all_links_dom( %opts );
+    } $self->find_all_links_dom( frames => 0, %opts );
     return @matches if wantarray;
     return \@matches;
 };
@@ -1564,135 +1622,29 @@ sub find_all_links {
 =head2 C<< $mech->find_all_links_dom OPTIONS >>
 
 Finds all matching linky DOM nodes in the document.
+The options are documented in C<< ->find_link_dom >>.
 
 Returns them as list or an array reference, depending
 on context.
+
+This defaults to not look through child frames.
 
 =cut
 
 sub find_all_links_dom {
     my ($self,%opts) = @_;
     $opts{ n } = 'all';
-    my @matches = $self->find_link_dom( %opts );
+    my @matches = $self->find_link_dom( frames => 0, %opts );
     return @matches if wantarray;
     return \@matches;
 };
 
 
-=head2 C<< $mech->click NAME [,X,Y] >>
+=head2 C<< $mech->follow_link LINK >>
 
-Has the effect of clicking a button on the current form. The first argument
-is the C<name> of the button to be clicked. The second and third arguments
-(optional) allow you to specify the (x,y) coordinates of the click.
+=head2 C<< $mech->follow_link OPTIONS >>
 
-If there is only one button on the form, $mech->click() with no arguments
-simply clicks that one button.
-
-If you pass in a hash reference instead of a name,
-the following keys are recognized:
-
-=over 4
-
-=item * C<selector> - Find the element to click by the CSS selector
-
-=item * C<xpath> - Find the element to click by the XPath query
-
-=item * C<synchronize> - Synchronize the click (default is 1)
-
-=back
-
-Returns a L<HTTP::Response> object.
-
-As a deviation from the WWW::Mechanize API, you can also pass a 
-hash reference as the first parameter. In it, you can specify
-the parameters to search much like for the C<find_link> calls.
-
-=cut
-
-sub click {
-    my ($self,$name,$x,$y) = @_;
-    my %options;
-    my $q;
-    my @buttons;
-    if (ref $name and blessed($name) and $name->can('__click')) {
-        $options{ dom } = $name;
-    } elsif (ref $name eq 'HASH') { # options
-        if (exists $name->{ dom }) {
-            @buttons = delete $name->{dom};
-        } else {
-            my ($method,$q);
-            for my $meth (qw(selector xpath)) {
-                if (exists $name->{ $meth }) {
-                    $q = delete $name->{ $meth };
-                    $method = $meth;
-                }
-            };
-            croak "Need either a selector or an xpath key!"
-                if not $method;
-            @buttons = $self->$method( $q => %$name );
-        };
-        %options = (%options, %$name);
-    } else {
-        $options{ name } = $name;
-        $options{ synchronize } = 1;
-    };
-    if (! exists $options{ synchronize }) {
-        $options{ synchronize } = 1;
-    };
-    
-    if ($options{ dom }) {
-        @buttons = $options{ dom };
-        $q = "DOM element";
-    } elsif (exists $options{ selector }) {
-        @buttons = $self->selector( $options{ selector } );
-        $q = "selector = '$options{ selector }'";
-    } elsif (exists $options{ xpath }) {
-        @buttons = $self->xpath( $options{ xpath } );
-        $q = "xpath = '$options{ xpath }'";
-    } elsif (exists $options{ name }) {
-        my $name = delete $options{ $name };
-        $q = "name = '$name'";
-        $name = quotemeta($name || '');
-        @buttons = (
-                       $self->xpath(sprintf q{//button[@name="%s"]}, $name),
-                       $self->xpath(sprintf q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
-                       $self->xpath(q{//button}),
-                       $self->xpath(q{//input[(@type="button" or @type="submit")]}), 
-                      );
-    };
-    if ($options{ one }) {
-        if (0 == @buttons) {
-            $self->signal_condition(
-                "No button matching '$name' found"
-            );
-        };
-        if ($options{ single }) {
-            if (1 <  @buttons) {
-                $self->highlight_node(@buttons);
-                $self->signal_condition(
-                    sprintf "%d buttons found found matching '%s'", scalar @buttons, $q
-                );
-            };
-        };
-    };
-    
-    if ($options{ synchronize }) {
-        #my $event =
-        $self->synchronize($self->events, sub { # ,'abort'
-            $buttons[0]->__click();
-        });
-    } else {
-        $buttons[0]->__click();
-    }
-
-    if (defined wantarray) {
-        return $self->response
-    };
-}
-
-=head2 C<< $mech->follow_link >>
-
-Follows the given link. Takes the same parameters that C<find_link>
+Follows the given link. Takes the same parameters that C<find_link_dom>
 uses.
 
 =cut
@@ -1708,6 +1660,108 @@ sub follow_link {
     $self->synchronize( sub {
         $link->__click();
     });
+}
+
+=head2 C<< $mech->click NAME [,X,Y] >>
+
+Has the effect of clicking a button on the current form. The first argument
+is the C<name> of the button to be clicked. The second and third arguments
+(optional) allow you to specify the (x,y) coordinates of the click.
+
+If there is only one button on the form, $mech->click() with no arguments
+simply clicks that one button.
+
+If you pass in a hash reference instead of a name,
+the following keys are recognized:
+
+=over 4
+
+=item *
+
+C<selector> - Find the element to click by the CSS selector
+
+=item *
+
+C<xpath> - Find the element to click by the XPath query
+
+=item *
+
+C<synchronize> - Synchronize the click (default is 1)
+
+Synchronizing means that WWW::Mechanize::Firefox will wait until
+one of the events listed in C<events> is fired. You want to switch
+it off when there will be no HTTP response or DOM event fired, for
+example for clicks that only modify the DOM.
+
+=back
+
+Returns a L<HTTP::Response> object.
+
+As a deviation from the WWW::Mechanize API, you can also pass a 
+hash reference as the first parameter. In it, you can specify
+the parameters to search much like for the C<find_link> calls.
+
+=cut
+
+sub click {
+    my ($self,$name,$x,$y) = @_;
+    my %options;
+    my @buttons;
+    
+    if (ref $name and blessed($name) and $name->can('__click')) {
+        $options{ dom } = $name;
+    } elsif (ref $name eq 'HASH') { # options
+        %options = %$name;
+    } else {
+        $options{ name } = $name;
+    };
+    
+    if (exists $options{ name }) {
+        $name = quotemeta($options{ name }|| '');
+        $options{ xpath } = [
+                       sprintf( q{//button[@name="%s"]}, $name),
+                       sprintf( q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                       q{//button},
+                       q{//input[(@type="button" or @type="submit")]},
+        ];
+        $options{ user_info } = "Button with name '$name'";
+    };
+    
+    if (! exists $options{ synchronize }) {
+        $options{ synchronize } = 1;
+    };
+    
+    if ($options{ dom }) {
+        @buttons = $options{ dom };
+    } else {
+        my ($method,$q);
+        for my $meth (qw(selector xpath)) {
+            if (exists $options{ $meth }) {
+                $q = delete $options{ $meth };
+                $method = $meth;
+            }
+        };
+        if (! exists $options{ one }) {
+            $options{ one } = 1;
+        };
+        croak "Need either a name, a selector or an xpath key!"
+            if not $method;
+        @buttons = $self->$method( $q, %options );
+    };
+    
+    #warn "Clicking id $buttons[0]->{id}";
+    
+    if ($options{ synchronize }) {
+        $self->synchronize($self->events, sub { # ,'abort'
+            $buttons[0]->__click();
+        });
+    } else {
+        $buttons[0]->__click();
+    }
+
+    if (defined wantarray) {
+        return $self->response
+    };
 }
 
 =head1 FORM METHODS
@@ -1781,7 +1835,9 @@ sub form_number {
 Find the form which has the listed fields.
 
 If the first argument is a hash reference, it's taken
-as options to C<< ->xpath >>
+as options to C<< ->xpath >>.
+
+See also C<< $mech->submit_form >>.
 
 =cut
 
@@ -1973,6 +2029,12 @@ a list of key/value pairs, all of which are optional.
 
 =item *
 
+C<< form => $mech->current_form() >>
+
+Specifies the form to be filled and submitted. Defaults to the current form.
+
+=item *
+
 C<< fields => \%fields >>
 
 Specifies the fields to be filled in the current form
@@ -1986,10 +2048,19 @@ and data setting in one operation. It selects the first form that contains
 all fields mentioned in \%fields. This is nice because you don't need to
 know the name or number of the form to do this.
 
-(calls C<<form_with_fields()>> and C<<set_fields()>>).
+(calls C<< form_with_fields() >> and C<< set_fields() >>).
 
 If you choose this, the form_number, form_name, form_id and fields options
 will be ignored.
+
+Example:
+
+  $mech->get('http://google.com/');
+  $mech->submit_form(
+      with_fields => {
+          q => 'WWW::Mechanize::Firefox examples',
+      },
+  );
 
 =back
 
@@ -2002,16 +2073,15 @@ sub submit_form {
     my $fields;
     if (! $form) {
         if ($fields = delete $options{ with_fields }) {
-            my @names = map { $_ & 1 ? () : $fields->[$_] } 0..$#$fields;
+            my @names = keys %$fields;
             $form = $self->form_with_fields( \%options, @names );
             if (! $form) {
                 $self->signal_condition("Couldn't find a matching form for @names.");
                 return
             };
-        } elsif ($fields = delete $options{ fields }) {
-            $form = $self->current_form;
         } else {
-            croak "No form given to submit.";
+            $fields = delete $options{ fields } || {};
+            $form = $self->current_form;
         };
     };
     
@@ -2034,12 +2104,12 @@ has the field value and its number as the 2 elements.
 =cut
 
 sub set_fields {
-    my ($self, @fields) = @_;
+    my ($self, %fields) = @_;
     my $f = $self->current_form;
     if (! $f) {
         croak "Can't set fields: No current form set.";
     };
-    $self->do_set_fields($self, form => $f, fields => \@fields);
+    $self->do_set_fields($self, form => $f, fields => \%fields);
 };
 
 sub do_set_fields {
@@ -2047,7 +2117,7 @@ sub do_set_fields {
     my $form = delete $options{ form };
     my $fields = delete $options{ fields };
     
-    while (my($n,$v) = splice @$fields, 0,2) {
+    while (my($n,$v) = each %$fields) {
         if (ref $v) {
             ($v,my $num) = @$v;
             warn "Index larger than 1 not supported"
@@ -2108,6 +2178,12 @@ sub clickables {
 
 Runs an XPath query in Firefox against the current document.
 
+    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+    # croaks if there is no link or more than one link found
+
+    my @para = $mech->xpath('//p');
+    # Collects all paragraphs
+
 The options allow the following keys:
 
 =over 4
@@ -2137,9 +2213,23 @@ or carp, depending on the C<autodie> parameter.
 C<< one >> - If true, ensure that at least one element is found. Otherwise croak
 or carp, depending on the C<autodie> parameter.
 
+=item *
+
+C<< maybe >> - If true, ensure that at most one element is found. Otherwise
+croak or carp, depending on the C<autodie> parameter.
+
+=item *
+
+C<< all >> - If true, return all elements found. This is the default.
+You can use this option if you want to use C<< ->xpath >> in scalar context
+to count the number of matched elements, as it will otherwise emit a warning
+for each usage in scalar context without any of the above restricting options.
+
 =back
 
 Returns the matched nodes.
+
+You can pass in a list of queries as an array reference for the first parameter.
 
 This is a method that is not implemented in WWW::Mechanize.
 
@@ -2150,47 +2240,85 @@ L<WWW::Mechanize>.
 
 sub xpath {
     my ($self,$query,%options) = @_;
-    $options{ document } ||= $self->document;
-    $options{ node } ||= $options{ document };
-    $options{ user_info } ||= "'$query'";
+    if ('ARRAY' ne (ref $query||'')) {
+        $query = [$query];
+    };
+    
+    if ($options{ node }) {
+        $options{ document } ||= $options{ node }->{ownerDocument};
+        #warn "Have node, searching below node";
+    } else {
+        $options{ document } ||= $self->document;
+        #$options{ node } = $options{ document };
+    };
+    
+    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
     my $single = delete $options{ single };
-    my $one = delete $options{ one } || $single;
-    #warn $query;
-    my @res = $options{ document }->__xpath($query, $options{ node });
+    my $one    = delete $options{ one };
+    my $maybe  = delete $options{ maybe };
+    
+    # Construct some helper variables
+    my $zero_allowed = not $single;
+    my $two_allowed = not( $single or $maybe );
+    my $return_first = ($single or $one or $maybe);
+    
+    # Sanity check for the common error of
+    # my $item = $mech->xpath("//foo");
+    if (! exists $options{ all } and not ($return_first)) {
+        $self->signal_condition(join "\n",
+            "You asked for many elements but seem to only want a single item.",
+            "Did you forget to pass the 'single' option with a true value?",
+            "Pass 'all => 1' to suppress this message and receive the count of items.",
+        ) if defined wantarray and !wantarray;
+    };
     
     if (not exists $options{ frames }) {
         $options{frames} = $self->{frames};
     };
     
-    # recursively join the results of sub(i)frames if wanted
-    if ($options{frames}) {
-        my @frames = $self->expand_frames( $options{ frames }, $options{ document } );
-        for my $frame (@frames) {
-            $options{ document } = $frame->{contentDocument};
-            $options{ node } = $options{ document };
-            push @res, $self->xpath($query, %options);
+    my @res;
+    
+    DOCUMENTS: {            
+        my @documents = $options{ document };
+        #warn "Invalid root document" unless $options{ document };
+        
+        # recursively join the results of sub(i)frames if wanted
+        # This should maybe go into the loop to expand every frame as we descend
+        # into the available subframes
+        if ($options{ frames } and not $options{ node }) {
+            push @documents, $self->expand_frames( $options{ frames }, $options{ document } );
+        };
+
+        while (@documents) {
+            my $doc = shift @documents;
+            #warn "Invalid document" unless $doc;
+
+            my $n = $options{ node } || $doc;
+            push @res, map { $doc->__xpath($_, $n) } @$query;
+            
+            # A small optimization to return if we already have enough elements
+            # We can't do this on $return_first as there might be more elements
+            last DOCUMENTS if @res and $one;        
         };
     };
     
-    if ($one) {
-        if (@res == 0) {
-            $self->signal_condition( "No elements found for $options{ user_info }" );
-        };
-        if ($single) {
-            if (@res > 1) {
-                $self->highlight_node(@res);
-                $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
-            }
-        };
-        return @res ? $res[0] : ();
-    } else {
-        return @res
+    if (! $zero_allowed and @res == 0) {
+        $self->signal_condition( "No elements found for $options{ user_info }" );
     };
+    
+    if (! $two_allowed and @res > 1) {
+        $self->highlight_node(@res);
+        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
+    };
+    
+    return $return_first ? $res[0] : @res;
 };
 
 =head2 C<< $mech->selector css_selector, %options >>
 
 Returns all nodes matching the given CSS selector.
+
+This takes the same options that C<< ->xpath >> does.
 
 In the long run, this should go into a general plugin for
 L<WWW::Mechanize>.
@@ -2200,15 +2328,21 @@ L<WWW::Mechanize>.
 sub selector {
     my ($self,$query,%options) = @_;
     $options{ user_info } ||= "CSS selector '$query'";
-    my $q = selector_to_xpath($query);    
-    $self->xpath($q, %options);
+    if ('ARRAY' ne (ref $query || '')) {
+        $query = [$query];
+    };
+    my @q = map { selector_to_xpath($_); } @$query;
+    $self->xpath(\@q, %options);
 };
 
 =head2 C<< $mech->expand_frames SPEC >>
 
 Expands the frame selectors (or C<1> to match all frames)
-into their respective DOM nodes according to the current
+into their respective DOM document nodes according to the current
 document.
+
+This method currently does not properly recurse downwards and will
+only expand one level of frames.
 
 This is mostly an internal method.
 
@@ -2228,10 +2362,12 @@ sub expand_frames {
     map { #warn "Expanding $_";
             ref $_
           ? $_
-          : $self->selector( $_,
-                           document => $document,
-                           frames => 0, # otherwise we'll recurse :)
-          )
+          : map { $_->{contentDocument} }
+            $self->selector(
+                $_,
+                document => $document,
+                frames => 0, # otherwise we'll recurse :)
+            )
     } @spec;
 };
 
@@ -2584,7 +2720,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
