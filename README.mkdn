@@ -499,6 +499,12 @@ or `->selector` when you want more control.
 A method to find links, like [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize)'s
 `->find_links` method.
 
+Note that Firefox
+might have reordered the links or frame links in the document
+so the absolute numbers passed via `n`
+might not be the same between
+[WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize) and [WWW::Mechanize::Firefox](http://search.cpan.org/search?mode=module&query=WWW::Mechanize::Firefox).
+
 Returns the DOM object as [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject)::Instance.
 
 The supported options are:
