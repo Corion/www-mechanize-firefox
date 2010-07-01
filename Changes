@@ -2,6 +2,9 @@
     . Add the examples to WWW::Mechanize::Firefox::Examples
     . Add test for (dis)allowing META redirects
     . Add author test to ensure Changes well-formedness
+    . Fix 'one' option to ->xpath() to correctly fail when no element is found
+    . Fix behaviour of ->click() to correctly fail if no element is found
+      when given as a name
 
 0.26 20100630
     . Add bcat.pl example to display text from the console in the browser

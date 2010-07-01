@@ -1728,9 +1728,13 @@ sub click {
         $options{ xpath } = [
                        sprintf( q{//button[@name="%s"]}, $name),
                        sprintf( q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+        ];
+        if ($options{ name } eq '') {
+            push @{ $options{ xpath }}, 
                        q{//button},
                        q{//input[(@type="button" or @type="submit")]},
-        ];
+            ;
+        };
         $options{ user_info } = "Button with name '$name'";
     };
     
@@ -1755,7 +1759,6 @@ sub click {
             if not $method;
         @buttons = $self->$method( $q, %options );
     };
-    
     #warn "Clicking id $buttons[0]->{id}";
     
     if ($options{ synchronize }) {
