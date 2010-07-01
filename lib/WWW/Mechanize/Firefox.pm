@@ -2352,10 +2352,7 @@ sub selector {
 
 Expands the frame selectors (or C<1> to match all frames)
 into their respective DOM document nodes according to the current
-document.
-
-This method currently does not properly recurse downwards and will
-only expand one level of frames.
+document. All frames will be visited in breadth first order.
 
 This is mostly an internal method.
 
