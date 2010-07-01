@@ -2264,7 +2264,7 @@ sub xpath {
     my $maybe  = delete $options{ maybe };
     
     # Construct some helper variables
-    my $zero_allowed = not $single;
+    my $zero_allowed = not ($single or $one);
     my $two_allowed = not( $single or $maybe );
     my $return_first = ($single or $one or $maybe);
     
