@@ -1,5 +1,6 @@
 0.27 to be released
     . Added the examples to WWW::Mechanize::Firefox::Examples
+    . Added test for (dis)allowing META redirects
 
 0.26 20100630
     . Added bcat.pl example to display text from the console in the browser
