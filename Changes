@@ -1,4 +1,4 @@
-0.27 to be released
+0.27 20100701
     . Add the examples to WWW::Mechanize::Firefox::Examples
     . Add test for (dis)allowing META redirects
     . Add author test to ensure Changes well-formedness
