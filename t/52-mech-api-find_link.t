@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 60;
+    plan tests => 59;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -40,16 +40,11 @@ $x = $mech->find_link( url_regex => qr/upcase/i );
 isa_ok( $x, 'WWW::Mechanize::Link' );
 like( $x->url, qr/\Qupcase.com/i, 'found link in uppercase meta tag' );
 
-{ local $TODO = "FRAME tags aren't handled";
 $x = $mech->find_link( text => 'CPAN A' );
-SKIP: {
-    if (! isa_ok( $x, 'WWW::Mechanize::Link' )) {
-        skip "No link found for first CPAN link", 2;
-    };
-    is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
-    is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
-};
-}
+isa_ok( $x, 'WWW::Mechanize::Link' );
+is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
+is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
+
 $x = $mech->find_link( url => 'CPAN' );
 ok( !defined $x, 'No url matching CPAN' );
 
@@ -75,14 +70,9 @@ $x = $mech->find_link( text_regex => qr/cpan/i, n=>153 );
 ok( !defined $x, 'No 153rd cpan link' );
 
 $x = $mech->find_link( url => 'http://b.cpan.org/' );
-SKIP: {
-    local $TODO = 'FRAME support is broken';
-    if (! isa_ok( $x, 'WWW::Mechanize::Link' )) {
-        skip "No link found for first CPAN link", 2;
-    };
-    is( $x->[0], 'http://b.cpan.org/', 'Got b.cpan.org' );
-    is( $x->url, 'http://b.cpan.org/', 'Got b.cpan.org' );
-};
+isa_ok( $x, 'WWW::Mechanize::Link' );
+is( $x->[0], 'http://b.cpan.org/', 'Got b.cpan.org' );
+is( $x->url, 'http://b.cpan.org/', 'Got b.cpan.org' );
 
 $x = $mech->find_link( url => 'http://b.cpan.org', n=>2 );
 ok( !defined $x, 'Not a second b.cpan.org' );
@@ -156,22 +146,15 @@ isa_ok( $x, 'WWW::Mechanize::Link' );
 @{$_} = @{$_}[0..3] for $x;
 is_deeply( $x, [ 'http://b.cpan.org/', 'CPAN B', '', 'a' ], 'Got 3rd <A> tag' );
 
-$x = $mech->find_link( tag_regex => qr/^(a|frame)$/, n => 7 );
+$x = $mech->find_link( tag_regex => qr/^(a|frame)$/i, n => 7 );
 isa_ok( $x, 'WWW::Mechanize::Link' );
-{ local $TODO = "Detecting FRAME tags via XPath doesn't seem to work here";
-  is_deeply( $x, [ 'http://d.cpan.org/', 'CPAN D', '', 'a' ], 'Got 7th <A> or <FRAME> tag' );
-};
 
 $x = $mech->find_link( text => 'Rebuild Index' );
-{
-    local $TODO = 'FRAME support is broken';
-    isa_ok( $x, 'WWW::Mechanize::Link' );
-}
+isa_ok( $x, 'WWW::Mechanize::Link' );
 # We don't need to fudge around with JS
 #is_deeply( [@{$x}[0..3]], [ '/cgi-bin/MT/mt.cgi', 'Rebuild Index', undef, 'a' ], 'Got the JavaScript link' );
 
 $x = $mech->find_link( url_regex => 'blongo.html' );
-diag $x->url;
 $x = $mech->find_link( url_regex => 'http://example/blongo.html' );
 diag $x->url;
 $x = $mech->find_link( url => 'blongo.html' );

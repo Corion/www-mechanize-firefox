@@ -1,5 +1,6 @@
 .gitignore
 Changes
+examples/bcat.pl
 examples/dump-links.pl
 examples/fullscreen.pl
 examples/gen_examples_pod.pl
@@ -39,6 +40,8 @@ t/50-mech-multi-event.t
 t/50-mech-new.t
 t/50-mech-save-dialog.t
 t/50-mech-status.t
+t/51-mech-field-frameset.html
+t/51-mech-field.t
 t/51-mech-form-with-fields.t
 t/51-mech-links.t
 t/51-mech-sandbox.html
@@ -46,6 +49,8 @@ t/51-mech-sandbox.t
 t/51-mech-set-content.t
 t/51-mech-submit.html
 t/51-mech-submit.t
+t/52-frameset-deep.html
+t/52-frameset-recursive.html
 t/52-frameset.html
 t/52-iframeset.html
 t/52-mech-api-find_link-frames.t

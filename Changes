@@ -1,6 +1,10 @@
-To be released
+0.26 to be released
+    . Added bcat.pl example to display text from the console in the browser
+    . Made input fields work across frames
+    . Added test for fields across frames
+    . Make ->field() and ->value() respect the current form if any
 
-0.25 to be released
+0.25 20100629
     . ->submit_form now can submit the current form without any fields
       specified. This was a fatal error before.
     . The Javascript code for closing a tab is now much shorter and likely

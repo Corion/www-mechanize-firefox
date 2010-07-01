@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.25_01';
+$VERSION = '0.26';
 
 =head1 NAME
 
@@ -1422,6 +1422,12 @@ sub signal_condition {
 A method to find links, like L<WWW::Mechanize>'s
 C<< ->find_links >> method.
 
+Note that Firefox
+might have reordered the links or frame links in the document
+so the absolute numbers passed via C<n>
+might not be the same between
+L<WWW::Mechanize> and L<WWW::Mechanize::Firefox>.
+
 Returns the DOM object as L<MozRepl::RemoteObject>::Instance.
 
 The supported options are:
@@ -1589,6 +1595,8 @@ This defaults to not look through child frames.
 sub find_link {
     my ($self,%opts) = @_;
     my $base = $self->base;
+    croak "Option 'all' not available for ->find_link. Did you mean to call ->find_all_links()?"
+        if 'all' eq ($opts{n} || '');
     if (my $link = $self->find_link_dom(frames => 0, %opts)) {
         return $self->make_link($link, $base)
     } else {
@@ -1901,20 +1909,12 @@ are triggered.
 
 sub field {
     my ($self,$name,$value,$pre,$post) = @_;
-    #my $doc = $self->current_form 
-    #        ? $self->current_form->{document}
-    #        : $self->document;
-    my @need_node;
-    if ($self->current_form) {
-        @need_node = (node => $self->current_form->{document});
-    };
     $self->get_set_value(
         name => $name,
         value => $value,
         pre => $pre,
         post => $post,
-        #document => $doc,
-        @need_node, #node => $self->current_form || $doc,
+        node => $self->current_form,
     );
 }
 
@@ -1939,6 +1939,7 @@ sub value {
     } else {
         my ($self,$name,%options) = @_;
         $self->get_set_value(
+            node => $self->current_form,
             %options,
             name => $name,
         );
@@ -2242,6 +2243,8 @@ L<WWW::Mechanize>.
 
 =cut
 
+#use vars '$nesting';
+#$nesting = '';
 sub xpath {
     my ($self,$query,%options) = @_;
     if ('ARRAY' ne (ref $query||'')) {
@@ -2289,20 +2292,26 @@ sub xpath {
         # recursively join the results of sub(i)frames if wanted
         # This should maybe go into the loop to expand every frame as we descend
         # into the available subframes
-        if ($options{ frames } and not $options{ node }) {
-            push @documents, $self->expand_frames( $options{ frames }, $options{ document } );
-        };
 
         while (@documents) {
             my $doc = shift @documents;
             #warn "Invalid document" unless $doc;
 
             my $n = $options{ node } || $doc;
+            #warn "$nesting>Searching @$query in $doc->{title}";
             push @res, map { $doc->__xpath($_, $n) } @$query;
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
             last DOCUMENTS if @res and $one;        
+            
+            if ($options{ frames } and not $options{ node }) {
+                #warn "$nesting>Expanding below " . $doc->{title};
+                #local $nesting .= "--";
+                my @d = $self->expand_frames( $options{ frames }, $doc );
+                #warn "Found $_->{title}" for @d;
+                push @documents, @d;
+            };
         };
     };
     
@@ -2638,6 +2647,11 @@ I have no use for it
 =head1 TODO
 
 =over 4
+
+=item *
+
+Add C<< limit >> parameter to C<< ->xpath() >> to allow an early exit-case
+when searching through frames.
 
 =item *
 
