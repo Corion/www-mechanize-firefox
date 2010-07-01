@@ -16,7 +16,7 @@ package WWW::Mechanize::Firefox::Examples;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.26';
+$VERSION = '0.27';
 
 1;
 
@@ -38,7 +38,7 @@ program that is also included in the examples directory.
 
 =head1 Example programs
 
-The following is a list of the 7 example programs that are included in the WWW::Mechanize::Firefox distribution.
+The following is a list of the 9 example programs that are included in the WWW::Mechanize::Firefox distribution.
 
 =over
 
@@ -49,6 +49,10 @@ The following is a list of the 7 example programs that are included in the WWW::
 =item * L<Example: screenshot.pl> Take a screenshot of a website
 
 =item * L<Example: dump-links.pl> Dump links on a webpage
+
+=item * L<Example: bcat.pl> Send console text to the browser
+
+=item * L<Example: fullscreen.pl> Switch the browser to full screen
 
 =item * L<Example: manipulate-javascript.pl> Make changes to Javascript values in a webpage
 
@@ -68,7 +72,7 @@ The following is a list of the 7 example programs that are included in the WWW::
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/open-local-file.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/open-local-file.pl>
 
 =head2 Example: open-url.pl
 
@@ -80,7 +84,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/open-url.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/open-url.pl>
 
 =head2 Example: screenshot.pl
 
@@ -151,7 +155,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/screenshot.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/screenshot.pl>
 
 =head2 Example: dump-links.pl
 
@@ -186,7 +190,158 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/dump-links.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/dump-links.pl>
+
+=head2 Example: bcat.pl
+
+Find out whether we have HTML:
+if (! $encode_type) {
+    #!perl -w
+    use strict;
+    use WWW::Mechanize::Firefox;
+    use Getopt::Long;
+    use Pod::Usage;
+    use HTML::Display::MozRepl;
+    use Cwd qw(getcwd);
+    
+    GetOptions(
+        'mozrepl|m:s' => \my $mozrepl,
+        'tab' => \my $tab,
+        'current|c' => \my $use_current_tab,
+        'close|q' => \my $close,
+        'title|t:s' => \my $title,
+        'type:s' => \my $encode_type,
+        #'focus|f' => \my $focus,
+    ) or pod2usage();
+    
+    $tab = $use_current_tab ? 'current'
+           : $tab ? qr/$tab/
+           : undef
+           ;
+    
+    $title ||= getcwd;
+    
+    my $d = HTML::Display::MozRepl->new(
+        tab     => $tab,
+        repl    => $mozrepl,
+        create  => 1,
+        autoclose => $close,
+    );
+    local $/;
+    binmode STDIN;
+    my $html = <>;
+    
+    # Find out whether we have HTML:
+    if (! $encode_type) {
+        if ($html =~ /^\s*</sm) {
+            $encode_type = 'html'
+        } else {
+            $encode_type = 'text',
+        };
+    };
+    
+    if ('text' eq $encode_type) {
+        my %map = (
+        '<' => '&lt;',
+        '>' => '&gt;',
+        '&' => '&amp;',
+        );
+        $html =~ s/([<>&])/$map{$1} || $1/ge;
+        $html =~ s/\r?\n/<br>/g;
+        $html = "<html><head><title>$title</title><body><pre>$html</pre></body></html>";
+    };
+    
+    $d->display($html);
+    
+    =head1 NAME
+    
+    bcat.pl - cat HTML to browser
+    
+    =head1 SYNOPSIS
+    
+    bcat.pl <index.html
+    
+    Options:
+       --tabname        title of tab to reuse
+       --mozrepl        connection string to Firefox
+       --close          automatically close the tab at the end of input
+       --type TYPE      Fix the type to 'html' or 'text'
+    
+    =head1 OPTIONS
+    
+    =over 4
+    
+    =item B<--tabname>
+    
+    Name of the tab to (re)use. A substring is enough.
+    
+    =item B<--close>
+    
+    Automatically close the tab when the input closes. This is good
+    for displaying intermediate information.
+    
+    =item B<--type TYPE>
+    
+    Force the type to be either C<html> or C<text>. If the type is
+    C<text>, line wrapping will be added.
+    
+    =item B<--mozrepl>
+    
+    Connection information for the mozrepl instance to use.
+    
+    =back
+    
+    =head1 DESCRIPTION
+    
+    B<This program> will display HTML read from STDIN
+    in a browser tab.
+    
+    =head1 SEE ALSO
+    
+    The original C<bcat> utility which inspired this program
+    at L<http://rtomayko.github.com/bcat/>.
+    
+    =cut
+
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/bcat.pl>
+
+=head2 Example: fullscreen.pl
+
+    use strict;
+    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
+    use WWW::Mechanize::Firefox;
+    use Time::HiRes;
+    
+    my $mech = WWW::Mechanize::Firefox->new(
+        #log => ['debug'],
+    );
+    
+    my ($window, $type) = $mech->eval('window');
+    
+    print "Going fullscreen\n";
+    $window->{fullScreen} = 1;
+    
+    sleep 10;
+    
+    print "Going back to normal\n";
+    $window->{fullScreen} = 0;
+    
+    =head1 NAME
+    
+    fullscreen.pl - toggle fullscreen mode of Firefox
+    
+    =head1 SYNOPSIS
+    
+    fullscreen.pl
+    
+    =head1 DESCRIPTION
+    
+    This program switches Firefox into fullscreen mode. It shows
+    how to access Firefox-internal variables and how to manipulate them.
+    
+    =cut
+
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/fullscreen.pl>
 
 =head2 Example: manipulate-javascript.pl
 
@@ -224,7 +379,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/manipulate-javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/manipulate-javascript.pl>
 
 =head2 Example: javascript.pl
 
@@ -255,7 +410,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/javascript.pl>
 
 =head2 Example: urlbar.pl
 
@@ -366,7 +521,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     };
 
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.26/examples/urlbar.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.27/examples/urlbar.pl>
 
 =head1 AUTHOR
 
