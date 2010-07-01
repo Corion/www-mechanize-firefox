@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 10;
+    plan tests => 14;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -81,3 +81,18 @@ $mech->click(''); # click the empty button
 # this weirdly raises no events in FF if it points to the same page
 like $mech->uri, qr/\b51-mech-submit.html$/i, "->click() the unnamed button works";
 
+# Non-existing link
+$mech->get_local('50-click.html');
+my $lives = eval { $mech->click('foobar'); 1 };
+my $msg = $@;
+ok !$lives, "->click() on non-existing parameter fails correctly";
+like $msg, qr/No elements found for Button with name 'foobar'/,
+    "... with the right error message";
+
+# Non-existing link via CSS selector
+$mech->get_local('50-click.html');
+$lives = eval { $mech->click({ selector => 'foobar' }); 1 };
+$msg = $@;
+ok !$lives, "->click() on non-existing parameter fails correctly";
+like $msg, qr/No elements found for CSS selector 'foobar'/,
+    "... with the right error message";
