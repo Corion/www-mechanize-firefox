@@ -1,11 +1,12 @@
 0.27 to be released
-    . Added the examples to WWW::Mechanize::Firefox::Examples
-    . Added test for (dis)allowing META redirects
+    . Add the examples to WWW::Mechanize::Firefox::Examples
+    . Add test for (dis)allowing META redirects
+    . Add author test to ensure Changes well-formedness
 
 0.26 20100630
-    . Added bcat.pl example to display text from the console in the browser
-    . Made input fields work across frames
-    . Added test for fields across frames
+    . Add bcat.pl example to display text from the console in the browser
+    . Make input fields work across frames
+    . Add test for fields across frames
     . Make ->field() and ->value() respect the current form if any
 
 0.25 20100629
@@ -17,7 +18,7 @@
     . ->update_html() does not return anything anymore, just like
       WWW::Mechanize does.
     . C<repl> constructor now also accepts host:port
-    . Added `bcat.pl` example script to cat HTML to the browser.
+    . Add `bcat.pl` example script to cat HTML to the browser.
 
 0.24 20100624
     ! ->find_link_dom now uses ->xpath and searches through frames
