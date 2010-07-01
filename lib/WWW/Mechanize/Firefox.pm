@@ -18,7 +18,7 @@ use Carp qw(carp croak);
 use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.25';
+$VERSION = '0.25_01';
 
 =head1 NAME
 
@@ -1901,16 +1901,20 @@ are triggered.
 
 sub field {
     my ($self,$name,$value,$pre,$post) = @_;
-    my $doc = $self->current_form 
-            ? $self->current_form->{document}
-            : $self->document;
+    #my $doc = $self->current_form 
+    #        ? $self->current_form->{document}
+    #        : $self->document;
+    my @need_node;
+    if ($self->current_form) {
+        @need_node = (node => $self->current_form->{document});
+    };
     $self->get_set_value(
         name => $name,
         value => $value,
         pre => $pre,
         post => $post,
-        document => $doc,
-        node => $self->current_form || $doc,
+        #document => $doc,
+        @need_node, #node => $self->current_form || $doc,
     );
 }
 
