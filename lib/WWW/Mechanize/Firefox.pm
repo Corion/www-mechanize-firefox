@@ -15,7 +15,6 @@ use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode);
 use Carp qw(carp croak);
-use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
 $VERSION = '0.27';
