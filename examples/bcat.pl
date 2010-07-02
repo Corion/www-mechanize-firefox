@@ -23,12 +23,13 @@ $tab = $use_current_tab ? 'current'
 
 $title ||= getcwd;
 
-my $d = HTML::Display::MozRepl->new(
+my $mech = WWW::Mechanize::Firefox->new(
     tab     => $tab,
     repl    => $mozrepl,
     create  => 1,
     autoclose => $close,
 );
+
 local $/;
 binmode STDIN;
 my $html = <>;
@@ -53,7 +54,7 @@ if ('text' eq $encode_type) {
     $html = "<html><head><title>$title</title><body><pre>$html</pre></body></html>";
 };
 
-$d->display($html);
+$mech->update_html($html);
 
 =head1 NAME
 
