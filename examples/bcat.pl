@@ -62,7 +62,7 @@ bcat.pl - cat HTML to browser
 
 =head1 SYNOPSIS
 
-bcat.pl <index.html
+  bcat.pl <index.html
 
 Options:
    --tabname        title of tab to reuse
