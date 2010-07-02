@@ -1,3 +1,6 @@
+0.28 to be released
+    . Fix bcat.pl and failing tests
+
 0.27 20100701
     . Add the examples to WWW::Mechanize::Firefox::Examples
     . Add test for (dis)allowing META redirects
