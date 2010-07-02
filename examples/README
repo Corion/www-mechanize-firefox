@@ -16,6 +16,7 @@ Javascript
 ==========
 manipulate-javascript.pl        Make changes to Javascript values in a webpage
 javascript.pl                   Execute Javascript in the webpage context
+js-console.pl                   Send messages to the Error Console
 
 Advanced
 ========
