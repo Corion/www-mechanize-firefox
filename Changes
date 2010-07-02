@@ -1,5 +1,6 @@
-0.28 to be released
+0.28 20100702
     . Fix bcat.pl and failing tests
+    . Add examples on how to access (and follow) the Error Console
 
 0.27 20100701
     . Add the examples to WWW::Mechanize::Firefox::Examples
