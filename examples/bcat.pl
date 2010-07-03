@@ -3,7 +3,6 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Getopt::Long;
 use Pod::Usage;
-use HTML::Display::MozRepl;
 use Cwd qw(getcwd);
 
 GetOptions(

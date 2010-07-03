@@ -1,3 +1,6 @@
+0.29 to be released
+    . Really fix bcat.pl and failing tests
+
 0.28 20100702
     . Fix bcat.pl and failing tests
     . Add examples on how to access (and follow) the Error Console
