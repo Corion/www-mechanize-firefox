@@ -1503,12 +1503,23 @@ sub quote_xpath($) {
     $_
 };
 
+#sub perl_regex_to_xpath($) {
+#    my ($re) = @_;
+#    my $flags = '';
+#    warn $re;
+#    $re =~ s!^\(\?([a-z]*)\-[a-z]*:(.*)\)$!$2!
+#        and $flags = $1;
+#    warn qq{=> XPATH: "$re" , "$flags"};
+#    ($re, $flags)
+#};
+
 sub find_link_dom {
     my ($self,%opts) = @_;
     my %xpath_options;
     
-    for (qw(node document)) {
-        if ($opts{ $_ }) {
+    for (qw(node document frames)) {
+        # Copy over XPath options that were passed in
+        if (exists $opts{ $_ }) {
             $xpath_options{ $_ } = delete $opts{ $_ };
         };
     };
