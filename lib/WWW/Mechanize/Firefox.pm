@@ -1533,22 +1533,29 @@ sub find_link_dom {
     $n--
         if ($n ne 'all'); # 1-based indexing
     my @spec;
-    if (my $p = delete $opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', quote_xpath $p;
-    }
-    # broken?
-    #if (my $p = delete $opts{ text_contains }) {
-    #    push @spec, sprintf 'contains(text(),"%s")', quotemeta $p;
-    #}
-    if (my $p = delete $opts{ id }) {
-        push @spec, sprintf '@id = "%s"', quote_xpath $p;
-    }
-    if (my $p = delete $opts{ name }) {
-        push @spec, sprintf '@name = "%s"', quote_xpath $p;
-    }
-    if (my $p = delete $opts{ class }) {
-        push @spec, sprintf '@class = "%s"', quote_xpath $p;
-    }
+    
+    # Decode text and text_contains into XPath
+    for my $lvalue (qw( text id name class )) {
+        my %lefthand = (
+            text => 'text()',
+        );
+        my %match_op = (
+            '' => q{%s="%s"},
+            'contains' => q{contains(%s,"%s")},
+            # Ideally we would also handle *_regex here, but Firefox XPath
+            # does not support fn:matches() :-(
+            #'regex' => q{matches(%s,"%s","%s")},
+        );
+        my $lhs = $lefthand{ $lvalue } || '@'.$lvalue;
+        for my $op (keys %match_op) {
+            my $key = "${lvalue}_$op";
+            if (exists $opts{ $key }) {
+                my $p = delete $opts{ $key };
+                push @spec, sprintf $match_op{ $op }, $lhs, $p;
+            };
+        };
+    };
+
     if (my $p = delete $opts{ url }) {
         push @spec, sprintf '@href = "%s" or @src="%s"', quote_xpath $p, quote_xpath $p;
     }
