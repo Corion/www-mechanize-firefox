@@ -1,5 +1,9 @@
-0.29 to be released
+0.29 20100704
     . Really fix bcat.pl and failing tests
+    . Use Firefox XPath library for ->find_link( text_contains => ... )
+    . Can't use Firefox XPath library for ->find_link( text_regex => ... )
+      as Firefox does not seem to define fn:matches()
+    . ->find_link() now really searches only the current frame, as Mechanize does
 
 0.28 20100702
     . Fix bcat.pl and failing tests
