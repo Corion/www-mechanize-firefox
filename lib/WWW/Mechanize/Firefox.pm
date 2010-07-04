@@ -1435,19 +1435,30 @@ The supported options are:
 
 =item *
 
-C<< text >> - the text of the link
+C<< text >> and C<< text_contains >> and C<< text_regex >>
+
+Match the text of the link as a complete string, substring or regular expression.
+
+Matching as a complete string or substring is a bit faster, as it is
+done in the XPath engine of Firefox.
 
 =item *
 
-C<< id >> - the C<id> attribute of the link
+C<< id >> and C<< id_contains >> and C<< id_regex >>
+
+Matches the C<id> attribute of the link completely or as part
 
 =item *
 
-C<< name >> - the C<name> attribute of the link
+C<< name >> and C<< name_contains >> and C<< name_regex >>
+
+Matches the C<name> attribute of the link
 
 =item *
 
-C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
+C<< url >> and C<< url_regex >>
+
+Matches the URL attribute of the link (C<href>, C<src> or C<content>).
 
 =item *
 
