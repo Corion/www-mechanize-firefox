@@ -2753,6 +2753,11 @@ L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
 L<https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs>
 for more tab info
 
+=item *
+
+L<https://developer.mozilla.org/en/Document_Loading_-_From_Load_Start_to_Finding_a_Handler>
+for information on how to possibly override the "Save As" dialog
+
 =back
 
 =head1 REPOSITORY
