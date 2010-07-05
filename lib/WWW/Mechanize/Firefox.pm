@@ -15,10 +15,9 @@ use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode);
 use Carp qw(carp croak);
-use Scalar::Util qw(blessed);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.26';
+$VERSION = '0.29';
 
 =head1 NAME
 
@@ -1436,19 +1435,30 @@ The supported options are:
 
 =item *
 
-C<< text >> - the text of the link
+C<< text >> and C<< text_contains >> and C<< text_regex >>
+
+Match the text of the link as a complete string, substring or regular expression.
+
+Matching as a complete string or substring is a bit faster, as it is
+done in the XPath engine of Firefox.
 
 =item *
 
-C<< id >> - the C<id> attribute of the link
+C<< id >> and C<< id_contains >> and C<< id_regex >>
+
+Matches the C<id> attribute of the link completely or as part
 
 =item *
 
-C<< name >> - the C<name> attribute of the link
+C<< name >> and C<< name_contains >> and C<< name_regex >>
+
+Matches the C<name> attribute of the link
 
 =item *
 
-C<< url >> - the URL attribute of the link (C<href>, C<src> or C<content>).
+C<< url >> and C<< url_regex >>
+
+Matches the URL attribute of the link (C<href>, C<src> or C<content>).
 
 =item *
 
@@ -1493,12 +1503,23 @@ sub quote_xpath($) {
     $_
 };
 
+#sub perl_regex_to_xpath($) {
+#    my ($re) = @_;
+#    my $flags = '';
+#    warn $re;
+#    $re =~ s!^\(\?([a-z]*)\-[a-z]*:(.*)\)$!$2!
+#        and $flags = $1;
+#    warn qq{=> XPATH: "$re" , "$flags"};
+#    ($re, $flags)
+#};
+
 sub find_link_dom {
     my ($self,%opts) = @_;
     my %xpath_options;
     
-    for (qw(node document)) {
-        if ($opts{ $_ }) {
+    for (qw(node document frames)) {
+        # Copy over XPath options that were passed in
+        if (exists $opts{ $_ }) {
             $xpath_options{ $_ } = delete $opts{ $_ };
         };
     };
@@ -1512,22 +1533,29 @@ sub find_link_dom {
     $n--
         if ($n ne 'all'); # 1-based indexing
     my @spec;
-    if (my $p = delete $opts{ text }) {
-        push @spec, sprintf 'text() = "%s"', quote_xpath $p;
-    }
-    # broken?
-    #if (my $p = delete $opts{ text_contains }) {
-    #    push @spec, sprintf 'contains(text(),"%s")', quotemeta $p;
-    #}
-    if (my $p = delete $opts{ id }) {
-        push @spec, sprintf '@id = "%s"', quote_xpath $p;
-    }
-    if (my $p = delete $opts{ name }) {
-        push @spec, sprintf '@name = "%s"', quote_xpath $p;
-    }
-    if (my $p = delete $opts{ class }) {
-        push @spec, sprintf '@class = "%s"', quote_xpath $p;
-    }
+    
+    # Decode text and text_contains into XPath
+    for my $lvalue (qw( text id name class )) {
+        my %lefthand = (
+            text => 'text()',
+        );
+        my %match_op = (
+            '' => q{%s="%s"},
+            'contains' => q{contains(%s,"%s")},
+            # Ideally we would also handle *_regex here, but Firefox XPath
+            # does not support fn:matches() :-(
+            #'regex' => q{matches(%s,"%s","%s")},
+        );
+        my $lhs = $lefthand{ $lvalue } || '@'.$lvalue;
+        for my $op (keys %match_op) {
+            my $key = "${lvalue}_$op";
+            if (exists $opts{ $key }) {
+                my $p = delete $opts{ $key };
+                push @spec, sprintf $match_op{ $op }, $lhs, $p;
+            };
+        };
+    };
+
     if (my $p = delete $opts{ url }) {
         push @spec, sprintf '@href = "%s" or @src="%s"', quote_xpath $p, quote_xpath $p;
     }
@@ -1729,9 +1757,13 @@ sub click {
         $options{ xpath } = [
                        sprintf( q{//button[@name="%s"]}, $name),
                        sprintf( q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+        ];
+        if ($options{ name } eq '') {
+            push @{ $options{ xpath }}, 
                        q{//button},
                        q{//input[(@type="button" or @type="submit")]},
-        ];
+            ;
+        };
         $options{ user_info } = "Button with name '$name'";
     };
     
@@ -1756,7 +1788,6 @@ sub click {
             if not $method;
         @buttons = $self->$method( $q, %options );
     };
-    
     #warn "Clicking id $buttons[0]->{id}";
     
     if ($options{ synchronize }) {
@@ -2265,7 +2296,7 @@ sub xpath {
     my $maybe  = delete $options{ maybe };
     
     # Construct some helper variables
-    my $zero_allowed = not $single;
+    my $zero_allowed = not ($single or $one);
     my $two_allowed = not( $single or $maybe );
     my $return_first = ($single or $one or $maybe);
     
@@ -2352,10 +2383,7 @@ sub selector {
 
 Expands the frame selectors (or C<1> to match all frames)
 into their respective DOM document nodes according to the current
-document.
-
-This method currently does not properly recurse downwards and will
-only expand one level of frames.
+document. All frames will be visited in breadth first order.
 
 This is mostly an internal method.
 
@@ -2724,6 +2752,11 @@ L<https://developer.mozilla.org/En/FUEL/Window> for JS events relating to tabs
 
 L<https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs>
 for more tab info
+
+=item *
+
+L<https://developer.mozilla.org/en/Document_Loading_-_From_Load_Start_to_Finding_a_Handler>
+for information on how to possibly override the "Save As" dialog
 
 =back
 

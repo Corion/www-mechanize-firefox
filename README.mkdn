@@ -499,25 +499,42 @@ or `->selector` when you want more control.
 A method to find links, like [WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize)'s
 `->find_links` method.
 
+Note that Firefox
+might have reordered the links or frame links in the document
+so the absolute numbers passed via `n`
+might not be the same between
+[WWW::Mechanize](http://search.cpan.org/search?mode=module&query=WWW::Mechanize) and [WWW::Mechanize::Firefox](http://search.cpan.org/search?mode=module&query=WWW::Mechanize::Firefox).
+
 Returns the DOM object as [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject)::Instance.
 
 The supported options are:
 
 - *
 
-`text` - the text of the link
+`text` and `text_contains` and `text_regex`
+
+Match the text of the link as a complete string, substring or regular expression.
+
+Matching as a complete string or substring is a bit faster, as it is
+done in the XPath engine of Firefox.
 
 - *
 
-`id` - the `id` attribute of the link
+`id` and `id_contains` and `id_regex`
+
+Matches the `id` attribute of the link completely or as part
 
 - *
 
-`name` - the `name` attribute of the link
+`name` and `name_contains` and `name_regex`
+
+Matches the `name` attribute of the link
 
 - *
 
-`url` - the URL attribute of the link (`href`, `src` or `content`).
+`url` and `url_regex`
+
+Matches the URL attribute of the link (`href`, `src` or `content`).
 
 - *
 
@@ -848,10 +865,7 @@ In the long run, this should go into a general plugin for
 
 Expands the frame selectors (or `1` to match all frames)
 into their respective DOM document nodes according to the current
-document.
-
-This method currently does not properly recurse downwards and will
-only expand one level of frames.
+document. All frames will be visited in breadth first order.
 
 This is mostly an internal method.
 
@@ -1095,6 +1109,11 @@ The MozRepl Firefox plugin at <http://wiki.github.com/bard/mozrepl>
 
 <https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs>
 for more tab info
+
+- *
+
+<https://developer.mozilla.org/en/Document_Loading_-_From_Load_Start_to_Finding_a_Handler>
+for information on how to possibly override the "Save As" dialog
 
 # REPOSITORY
 

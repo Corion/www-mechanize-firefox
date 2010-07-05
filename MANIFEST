@@ -63,6 +63,8 @@ t/53-mech-capture-js-error.html
 t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html
 t/60-mech-cookies.t
+t/65-mech-meta.html
+t/65-mech-meta.t
 t/70-download-url.t
 t/70-mech-png.t
 t/70-real-status.t

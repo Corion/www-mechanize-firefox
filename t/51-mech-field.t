@@ -30,7 +30,7 @@ for my $i (['direct','51-mech-submit.html'],['frame','51-mech-field-frameset.htm
     is $mech->value('r'), 'r', "We retrieve our value";
     
     $mech->form_id('testform2');
-    my $lived = eval {
+    $lived = eval {
        $mech->field( r => 'r' );
        $mech->field( q => 'q' );
        1

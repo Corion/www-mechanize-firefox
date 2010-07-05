@@ -13,13 +13,14 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 59;
+    plan tests => 68;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 $mech->allow('metaredirects', 0); # protect ourselves against redirects
 $mech->allow('frames', 0); # protect ourselves against outside requests
+# This still loads the frames. That's a bug in FF?
 
 my $fn = '52-mech-api-find_link.html';
 $mech->get_local($fn);
@@ -41,6 +42,21 @@ isa_ok( $x, 'WWW::Mechanize::Link' );
 like( $x->url, qr/\Qupcase.com/i, 'found link in uppercase meta tag' );
 
 $x = $mech->find_link( text => 'CPAN A' );
+isa_ok( $x, 'WWW::Mechanize::Link' );
+is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
+is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
+
+$x = $mech->find_link( tag => 'a', text_contains => 'CPAN A' );
+isa_ok( $x, 'WWW::Mechanize::Link' );
+is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
+is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
+
+$x = $mech->find_link( text_contains => 'CPAN A' );
+isa_ok( $x, 'WWW::Mechanize::Link' );
+is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
+is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
+
+$x = $mech->find_link( text_contains => 'CPAN' );
 isa_ok( $x, 'WWW::Mechanize::Link' );
 is( $x->[0], 'http://a.cpan.org/', 'First CPAN link' );
 is( $x->url, 'http://a.cpan.org/', 'First CPAN link' );
@@ -158,7 +174,7 @@ $x = $mech->find_link( url_regex => 'blongo.html' );
 $x = $mech->find_link( url_regex => 'http://example/blongo.html' );
 diag $x->url;
 $x = $mech->find_link( url => 'blongo.html' );
-isa_ok( $x, 'WWW::Mechanize::Link' );
+isa_ok( $x, 'WWW::Mechanize::Link', 'We can find things by URL part' );
 
 $x = $mech->find_link( url_abs => 'blongo.html' );
 ok( !defined $x, 'No match' );

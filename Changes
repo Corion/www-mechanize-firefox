@@ -1,7 +1,26 @@
-0.26 to be released
-    . Added bcat.pl example to display text from the console in the browser
-    . Made input fields work across frames
-    . Added test for fields across frames
+0.29 20100704
+    . Really fix bcat.pl and failing tests
+    . Use Firefox XPath library for ->find_link( text_contains => ... )
+    . Can't use Firefox XPath library for ->find_link( text_regex => ... )
+      as Firefox does not seem to define fn:matches()
+    . ->find_link() now really searches only the current frame, as Mechanize does
+
+0.28 20100702
+    . Fix bcat.pl and failing tests
+    . Add examples on how to access (and follow) the Error Console
+
+0.27 20100701
+    . Add the examples to WWW::Mechanize::Firefox::Examples
+    . Add test for (dis)allowing META redirects
+    . Add author test to ensure Changes well-formedness
+    . Fix 'one' option to ->xpath() to correctly fail when no element is found
+    . Fix behaviour of ->click() to correctly fail if no element is found
+      when given as a name
+
+0.26 20100630
+    . Add bcat.pl example to display text from the console in the browser
+    . Make input fields work across frames
+    . Add test for fields across frames
     . Make ->field() and ->value() respect the current form if any
 
 0.25 20100629
@@ -13,7 +32,7 @@
     . ->update_html() does not return anything anymore, just like
       WWW::Mechanize does.
     . C<repl> constructor now also accepts host:port
-    . Added `bcat.pl` example script to cat HTML to the browser.
+    . Add `bcat.pl` example script to cat HTML to the browser.
 
 0.24 20100624
     ! ->find_link_dom now uses ->xpath and searches through frames
