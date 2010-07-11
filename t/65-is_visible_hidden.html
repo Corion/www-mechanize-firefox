@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>65-is_visible_hidden.html</title>
+<script>
+var timer=2;
+
+function start() {
+     var el = document.getElementById('standby');
+     el.style.visibility='visible';
+     window.setTimeout(function () {
+          el.style.visibility='hidden';
+     }, timer*1000);
+};
+</script>
+</head>
+<body>
+<p id="before">Text before</p>
+<input id="start" onclick="javascript:start()" type="button" value="start"/>
+<div id="standby" style="visibility: hidden">Please stand by</div>
+<p>Text after</p>
+</body>
+</html>

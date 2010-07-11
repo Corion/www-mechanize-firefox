@@ -1,0 +1,22 @@
+<html>
+<head>
+<title>65-is_visible_none.html</title>
+<script>
+var timer=2;
+
+function start() {
+     var el = document.getElementById('standby');
+     el.style.display='block';
+     window.setTimeout(function () {
+          el.style.display='none';
+     }, timer*1000);
+};
+</script>
+</head>
+<body>
+<p id="before">Text before</p>
+<input id="start" onclick="javascript:start()" type="button" value="start"/>
+<div id="standby" style="display: none;">Please stand by</div>
+<p>Text after</p>
+</body>
+</html>
