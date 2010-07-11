@@ -1,3 +1,11 @@
+0.30 20100711
+    . Add ->is_visible method to check for node visibility
+    . Add ->wait_until_invisible method to wait until a node disappears
+    . Add tests for the above
+    . Added tail example program for tailing the Javascript console
+    . Added example program to send messages from the console to the Javascript
+      console (intended to delineate the start/stop of test runs)
+
 0.29 20100704
     . Really fix bcat.pl and failing tests
     . Use Firefox XPath library for ->find_link( text_contains => ... )
