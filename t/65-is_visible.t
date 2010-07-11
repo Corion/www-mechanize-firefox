@@ -31,7 +31,7 @@ if (! $el) {
     plan skip_all => "Couldn't get at 'timer'. Do you have a Javascript blocker?";
     exit;
 } else {
-    plan tests => 0+@files;
+    plan tests => 0+@files*11;
 };
 
 for my $file (@files) {
