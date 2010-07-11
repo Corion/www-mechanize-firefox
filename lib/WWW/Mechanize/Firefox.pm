@@ -1887,7 +1887,6 @@ sub form_with_fields {
         $options = shift @fields;
     };
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
-    #my @clauses = map { sprintf './/input[@name="%s"]', $_ } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     $self->{current_form} = $self->xpath($q,
@@ -2334,7 +2333,7 @@ sub xpath {
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
-            last DOCUMENTS if @res and $one;        
+            last DOCUMENTS if @res and $first;        
             
             if ($options{ frames } and not $options{ node }) {
                 #warn "$nesting>Expanding below " . $doc->{title};
