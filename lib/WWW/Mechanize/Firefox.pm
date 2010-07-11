@@ -1774,19 +1774,7 @@ sub click {
     if ($options{ dom }) {
         @buttons = $options{ dom };
     } else {
-        my ($method,$q);
-        for my $meth (qw(selector xpath)) {
-            if (exists $options{ $meth }) {
-                $q = delete $options{ $meth };
-                $method = $meth;
-            }
-        };
-        if (! exists $options{ one }) {
-            $options{ one } = 1;
-        };
-        croak "Need either a name, a selector or an xpath key!"
-            if not $method;
-        @buttons = $self->$method( $q, %options );
+        @buttons = $self->_option_query(%options);
     };
     #warn "Clicking id $buttons[0]->{id}";
     
@@ -2196,6 +2184,25 @@ sub set_visible {
         $visible_fields[ $idx ]->{value} = $values[ $idx ];
     }
 }
+
+# Internal method to run either an XPath or CSS query against the DOM
+# Returns the element(s) found
+sub _option_query {
+    my ($self,%options) = @_;
+    my ($method,$q);
+    for my $meth (qw(selector xpath)) {
+        if (exists $options{ $meth }) {
+            $q = delete $options{ $meth };
+            $method = $meth;
+        }
+    };
+    if (! grep { exists $options{ $_ } } qw(one maybe single) ) {
+        $options{ one } = 1;
+    };
+    croak "Need either a name, a selector or an xpath key!"
+        if not $method;
+    return $self->$method( $q, %options );
+};
 
 =head2 C<< $mech->clickables >>
 
