@@ -2439,13 +2439,16 @@ sub xpath {
     
     $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
     my $single = delete $options{ single };
-    my $one    = delete $options{ one };
+    my $first  = delete $options{ one };
     my $maybe  = delete $options{ maybe };
     
     # Construct some helper variables
-    my $zero_allowed = not ($single or $one);
-    my $two_allowed = not( $single or $maybe );
-    my $return_first = ($single or $one or $maybe);
+    my $zero_allowed = not ($single or $first);
+    my $two_allowed  = not( $single or $maybe );
+    my $return_first = ($single or $first or $maybe);
+    #warn "Zero: $zero_allowed";
+    #warn "Two : $two_allowed";
+    #warn "Ret : $return_first";
     
     # Sanity check for the common error of
     # my $item = $mech->xpath("//foo");
