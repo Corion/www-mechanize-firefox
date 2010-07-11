@@ -701,6 +701,41 @@ FORM METHODS
     The specifiers that are possible in WWW::Mechanize are not yet
     supported.
 
+  `$mech->is_visible ELEMENT'
+
+  `$mech->is_visible OPTIONS'
+
+    Returns true if the element is visible, that is, it is a member of the
+    DOM and neither it nor its ancestors have a CSS `visibility' attribute
+    of `hidden' or a `display' attribute of `none'.
+
+    You can either pass in a DOM element or a set of key/value pairs to
+    search the document for the element you want.
+
+    *   `xpath' - the XPath query
+
+    *   `selector' - the CSS selector
+
+    The remaining options are passed through to either the xpath or selector
+    method.
+
+  `$mech->wait_until_invisible ELEMENT'
+
+  `$mech->wait_until_invisible OPTIONS'
+
+    Waits until an element is not visible anymore.
+
+    Takes the same options as $mech->is_visible.
+
+    In addition, the following options are accepted:
+
+    *   `timeout' - the timeout after which the function will `croak'. To
+        catch the condition and handle it in your calling program, use an
+        eval block. A timeout of `0' means to never time out.
+
+    *   `sleep' - the interval in seconds used to sleep. Subsecond intervals
+        are possible.
+
   `$mech->clickables'
 
     Returns all clickable elements, that is, all elements with an `onclick'
