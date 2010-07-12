@@ -622,7 +622,7 @@ sub cookies {
     )
 }
 
-=head2 C<< $mech->highlight_node( NODES ) >>
+=head2 C<< $mech->highlight_node( @nodes ) >>
 
     my @links = $mech->selector('a');
     $mech->highlight_node(@links);
