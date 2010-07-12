@@ -5,7 +5,7 @@ use parent 'HTTP::Cookies';
 use Carp qw[croak];
 
 use vars qw[$VERSION];
-$VERSION = '0.29';
+$VERSION = '0.30';
 
 =head1 NAME
 

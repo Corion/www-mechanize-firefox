@@ -789,6 +789,50 @@ hidden form inputs are not considered.
 
 The specifiers that are possible in WWW::Mechanize are not yet supported.
 
+## C<< $mech->is_visible ELEMENT >>
+
+## C<< $mech->is_visible OPTIONS >>
+
+Returns true if the element is visible, that is, it is
+a member of the DOM and neither it nor its ancestors have
+a CSS `visibility` attribute of `hidden` or
+a `display` attribute of `none`.
+
+You can either pass in a DOM element or a set of key/value
+pairs to search the document for the element you want.
+
+- *
+
+`xpath` - the XPath query
+
+- *
+
+`selector` - the CSS selector
+
+The remaining options are passed through to either the
+L</xpath> or L</selector> method.
+
+## C<< $mech->wait_until_invisible ELEMENT >>
+
+## C<< $mech->wait_until_invisible OPTIONS >>
+
+Waits until an element is not visible anymore.
+
+Takes the same options as L<$mech->is_visible/->is_visible>.
+
+In addition, the following options are accepted:
+
+- *
+
+`timeout` - the timeout after which the function will `croak`. To catch
+the condition and handle it in your calling program, use an [eval](http://search.cpan.org/search?mode=module&query=eval) block.
+A timeout of `0` means to never time out.
+
+- *
+
+`sleep` - the interval in seconds used to [sleep](http://search.cpan.org/search?mode=module&query=sleep). Subsecond
+intervals are possible.
+
 ## C<< $mech->clickables >>
 
 Returns all clickable elements, that is, all elements

@@ -17,7 +17,7 @@ use Encode qw(encode);
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.29';
+$VERSION = '0.30';
 
 =head1 NAME
 
@@ -1774,19 +1774,7 @@ sub click {
     if ($options{ dom }) {
         @buttons = $options{ dom };
     } else {
-        my ($method,$q);
-        for my $meth (qw(selector xpath)) {
-            if (exists $options{ $meth }) {
-                $q = delete $options{ $meth };
-                $method = $meth;
-            }
-        };
-        if (! exists $options{ one }) {
-            $options{ one } = 1;
-        };
-        croak "Need either a name, a selector or an xpath key!"
-            if not $method;
-        @buttons = $self->$method( $q, %options );
+        @buttons = $self->_option_query(%options);
     };
     #warn "Clicking id $buttons[0]->{id}";
     
@@ -1887,7 +1875,6 @@ sub form_with_fields {
         $options = shift @fields;
     };
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
-    #my @clauses = map { sprintf './/input[@name="%s"]', $_ } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     $self->{current_form} = $self->xpath($q,
@@ -2198,6 +2185,166 @@ sub set_visible {
     }
 }
 
+=head2 C<< $mech->is_visible ELEMENT >>
+
+=head2 C<< $mech->is_visible OPTIONS >>
+
+Returns true if the element is visible, that is, it is
+a member of the DOM and neither it nor its ancestors have
+a CSS C<visibility> attribute of C<hidden> or
+a C<display> attribute of C<none>.
+
+You can either pass in a DOM element or a set of key/value
+pairs to search the document for the element you want.
+
+=over 4
+
+=item *
+
+C<xpath> - the XPath query
+
+=item *
+
+C<selector> - the CSS selector
+
+=back
+
+The remaining options are passed through to either the
+L</xpath> or L</selector> method.
+
+=cut
+
+sub is_visible {
+    my ($self,%options);
+    if (2 == @_) {
+        ($self,$options{dom}) = @_;
+    } else {
+        ($self,%options) = @_;
+    };
+    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
+        $options{ maybe } = 1;
+    };
+    if (! $options{dom}) {
+        $options{dom} = $self->_option_query(%options);
+    };
+    # No element means not visible
+    return
+        unless $options{ dom };
+    
+    my $_is_visible = $self->repl->declare(<<'JS');
+    function (obj)
+    {
+        while (obj) {
+            // No object
+            if (!obj) return false;
+            // Descends from document, so we're done
+            if (obj.parentNode === obj.ownerDocument)
+                return true;
+            // Not in the DOM
+            if (!obj.parentNode)
+                return false;
+            // Direct style check
+            if (obj.style) {
+                if (obj.style.display == 'none') return false;
+                if (obj.style.visibility == 'hidden') return false;
+            };
+            
+            if (window.getComputedStyle) {
+                var style = window.getComputedStyle(obj, "");
+                if (style.display == 'none')
+                    return false;
+                if (style.visibility == 'hidden')
+                    return false;
+            }
+            obj = obj.parentNode;
+        };
+        // The object does not live in the DOM at all
+        return false
+    }
+JS
+    $_is_visible->($options{dom});
+};
+
+=head2 C<< $mech->wait_until_invisible ELEMENT >>
+
+=head2 C<< $mech->wait_until_invisible OPTIONS >>
+
+Waits until an element is not visible anymore.
+
+Takes the same options as L<< $mech->is_visible/->is_visible >>.
+
+In addition, the following options are accepted:
+
+=over 4
+
+=item *
+
+C<timeout> - the timeout after which the function will C<croak>. To catch
+the condition and handle it in your calling program, use an L<eval> block.
+A timeout of C<0> means to never time out.
+
+=item *
+
+C<sleep> - the interval in seconds used to L<sleep>. Subsecond
+intervals are possible.
+
+=back
+
+=cut
+
+sub wait_until_invisible {
+    my ($self,%options);
+    if (2 == @_) {
+        ($self,$options{dom}) = @_;
+    } else {
+        ($self,%options) = @_;
+    };
+    my $sleep = delete $options{ sleep } || 0.3;
+    my $timeout = delete $options{ timeout } || 0;
+    
+    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
+        $options{ maybe } = 1;
+    };
+
+    if (! $options{dom}) {
+        $options{dom} = $self->_option_query(%options);
+    };
+    return
+        unless $options{dom};
+
+    my $timeout_after;
+    if ($timeout) {
+        $timeout_after = time + $timeout;
+    };
+    my $v;
+    while (     $v = $self->is_visible($options{dom})
+           and (!$timeout_after or time < $timeout_after )) {
+        sleep $sleep;
+    };
+    if (! $v and time > $timeout_after) {
+        croak "Timeout of $timeout seconds reached while waiting for element";
+    };    
+};
+
+# Internal method to run either an XPath or CSS query against the DOM
+# Returns the element(s) found
+sub _option_query {
+    my ($self,%options) = @_;
+    my ($method,$q);
+    for my $meth (qw(selector xpath)) {
+        if (exists $options{ $meth }) {
+            $q = delete $options{ $meth };
+            $method = $meth;
+        }
+    };
+    if (! grep { exists $options{ $_ } } qw(one maybe single) ) {
+        $options{ one } = 1;
+    };
+    croak "Need either a name, a selector or an xpath key!"
+        if not $method;
+    return $self->$method( $q, %options );
+};
+
 =head2 C<< $mech->clickables >>
 
 Returns all clickable elements, that is, all elements
@@ -2292,13 +2439,16 @@ sub xpath {
     
     $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
     my $single = delete $options{ single };
-    my $one    = delete $options{ one };
+    my $first  = delete $options{ one };
     my $maybe  = delete $options{ maybe };
     
     # Construct some helper variables
-    my $zero_allowed = not ($single or $one);
-    my $two_allowed = not( $single or $maybe );
-    my $return_first = ($single or $one or $maybe);
+    my $zero_allowed = not ($single or $first);
+    my $two_allowed  = not( $single or $maybe );
+    my $return_first = ($single or $first or $maybe);
+    #warn "Zero: $zero_allowed";
+    #warn "Two : $two_allowed";
+    #warn "Ret : $return_first";
     
     # Sanity check for the common error of
     # my $item = $mech->xpath("//foo");
@@ -2334,7 +2484,7 @@ sub xpath {
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
-            last DOCUMENTS if @res and $one;        
+            last DOCUMENTS if @res and $first;        
             
             if ($options{ frames } and not $options{ node }) {
                 #warn "$nesting>Expanding below " . $doc->{title};

@@ -1,0 +1,29 @@
+<html>
+<head>
+<title>65-is_visible_text.html</title>
+<script>
+var timer=2;
+
+function start() {
+     var el = document.getElementById('standby');
+     var text_el = document.getElementById('standby-message');
+     el.style.visibility='visible';
+     text_el.innerHTML='Please stand'+' by';
+     window.setTimeout(function () {
+          el.style.visibility='hidden';
+          text_el.innerHTML = 'Ready, again';
+     }, timer*1000);
+};
+</script>
+</head>
+<body>
+<p id="before">Text before</p>
+<input id="start" onclick="javascript:start()" type="button" value="start"/>
+<div id="standby" style="visibility: hidden;"></div>
+<div id="standby-message">Ready</div>
+<p>Text after</p>
+</body>
+</html>
+</script>
+</head>
+</html>

@@ -5,11 +5,13 @@ examples/dump-links.pl
 examples/fullscreen.pl
 examples/gen_examples_pod.pl
 examples/javascript.pl
+examples/js-console.pl
 examples/manipulate-javascript.pl
 examples/open-local-file.pl
 examples/open-url.pl
 examples/README
 examples/screenshot.pl
+examples/tail-console.pl
 examples/urlbar.pl
 INSTALL
 lib/HTML/Display/MozRepl.pm
@@ -63,6 +65,12 @@ t/53-mech-capture-js-error.html
 t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html
 t/60-mech-cookies.t
+t/65-is_visible.t
+t/65-is_visible_hidden.html
+t/65-is_visible_none.html
+t/65-is_visible_reload.html
+t/65-is_visible_remove.html
+t/65-is_visible_text.html
 t/65-mech-meta.html
 t/65-mech-meta.t
 t/70-download-url.t
@@ -75,6 +83,7 @@ t/70-two-instances.t
 t/70-urlbar-2.html
 t/70-urlbar.html
 t/70-urlbar.t
+t/99-changes.t
 t/99-examples.t
 t/99-manifest.t
 t/99-pod.t
