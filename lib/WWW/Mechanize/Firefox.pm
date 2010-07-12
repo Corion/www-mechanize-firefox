@@ -116,16 +116,6 @@ value is changed. By default this is C<[blur, change]>.
 
 =back
 
-=head3 Launch Firefox if C<mozrepl> is not running
-
-This will launch Firefox if the program can't connect to the
-C<mozrepl> plugin in Firefox. This will also enable C<mozrepl>
-in a Firefox process if it is not already running.
-
-  my $mech = WWW::Mechanize::Firefox->new(
-      launch => 'firefox',
-  );
-
 =cut
 
 sub new {
@@ -266,19 +256,14 @@ sub allow  {
 
 =head2 C<< $mech->js_errors( [PAGE] ) >>
 
+  print $_->{message}
+      for $mech->js_errors();
+
 An interface to the Javascript Error Console
 
 Returns the list of errors in the JEC
 
-=head3 Check that your Page has no Javascript compile errors
-
-  $mech->get('mypage');
-  my @errors = $mech->js_errors();
-  if (@errors) {
-      die "Found errors on page: @errors";
-  };
-
-Maybbe this should be called C<js_messages> or
+Maybe this should be called C<js_messages> or
 C<js_console_messages> instead.
 
 =cut
@@ -310,6 +295,8 @@ JS
 
 =head2 C<< $mech->clear_js_errors >>
 
+    $mech->clear_js_errors();
+
 Clears all Javascript messages from the console
 
 =cut
@@ -323,6 +310,8 @@ sub clear_js_errors {
 =head2 C<< $mech->eval_in_page( $STR [, $ENV] [, $DOCUMENT] ) >>
 
 =head2 C<< $mech->eval( $STR [, $ENV] [, $DOCUMENT] ) >>
+
+  my ($value, $type) = $mech->eval( '2+2' );
 
 Evaluates the given Javascript fragment in the
 context of the web page.
@@ -353,12 +342,6 @@ This method is special to WWW::Mechanize::Firefox.
 Also, using this method opens a potential B<security risk> as
 the returned values can be objects and using these objects
 can execute malicious code in the context of the Firefox application.
-
-=head3 Override the Javascript C<alert()> function
-
-  $mech->eval_in_page('alert("Hello");',
-      { alert => sub { print "Captured alert: '@_'\n" } }
-  );
 
 =cut
 
@@ -539,6 +522,11 @@ sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
 =head2 C<< $mech->progress_listener( SOURCE, CALLBACKS ) >>
 
+    my $eventlistener = progress_listener(
+        $browser,
+        onLocationChange => \&onLocationChange,
+    );
+
 Sets up the callbacks for the C<< nsIWebProgressListener >> interface
 to be the Perl subroutines you pass in.
 
@@ -546,20 +534,6 @@ Returns a handle. Once the handle gets released, all callbacks will
 get stopped. Also, all Perl callbacks will get deregistered from the
 Javascript bridge, so make sure not to use the same callback
 in different progress listeners at the same time.
-
-=head3 Get notified when the current tab changes
-
-    my $browser = $mech->repl->expr('window.getBrowser()');
-
-    my $eventlistener = progress_listener(
-        $browser,
-        onLocationChange => \&onLocationChange,
-    );
-
-    while (1) {
-        $mech->repl->poll();
-        sleep 1;
-    };
 
 =cut
 
@@ -632,6 +606,8 @@ sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
 
 =head2 C<< $mech->cookies >>
 
+  my $cookie_jar = $mech->cookies();
+
 Returns a L<HTTP::Cookies> object that was initialized
 from the live Firefox instance.
 
@@ -647,6 +623,9 @@ sub cookies {
 }
 
 =head2 C<< $mech->highlight_node( NODES ) >>
+
+    my @links = $mech->selector('a');
+    $mech->highlight_node(@links);
 
 Convenience method that marks all nodes in the arguments
 with
@@ -678,15 +657,13 @@ sub highlight_node {
 
 =head2 C<< $mech->get( URL ) >>
 
+  $mech->get('http://google.com');
+
 Retrieves the URL C<URL> into the tab.
 
 It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>. It does not yet support the additional parameters
 that L<WWW::Mechanize> supports for saving a file etc.
-
-Example:
-
-  $mech->get('http://google.com');
 
 =cut
 
@@ -701,16 +678,14 @@ sub get {
 
 =head2 C<< $mech->get_local( $filename ) >>
 
+  $mech->get_local('test.html');
+
 Shorthand method to construct the appropriate
 C<< file:// >> URI and load it into Firefox. Relative
 paths will be interpreted as relative to C<$0>.
 
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
-
-Example:
-
-  $mech->get_local('test.html');
 
 =cut
 
@@ -882,6 +857,8 @@ sub synchronize {
 
 =head2 C<< $mech->res >> / C<< $mech->response >>
 
+    my $response = $mech->response();
+
 Returns the current response as a L<HTTP::Response> object.
 
 =cut
@@ -952,6 +929,10 @@ sub response {
 
 =head2 C<< $mech->success >>
 
+    $mech->get('http://google.com');
+    print "Yay"
+        if $mech->success();
+
 Returns a boolean telling whether the last request was successful.
 If there hasn't been an operation yet, returns false.
 
@@ -966,6 +947,10 @@ sub success {
 
 =head2 C<< $mech->status >>
 
+    $mech->get('http://google.com');
+    print $mech->status();
+    # 200
+
 Returns the HTTP status code of the response.
 This is a 3-digit number like 200 for OK, 404 for not found, and so on.
 
@@ -976,6 +961,8 @@ sub status {
 };
 
 =head2 C<< $mech->reload( [BYPASS_CACHE] ) >>
+
+    $mech->reload();
 
 Reloads the current page. If C<BYPASS_CACHE>
 is a true value, the browser is not allowed to
@@ -999,6 +986,8 @@ sub reload {
 
 =head2 C<< $mech->back >>
 
+    $mech->back();
+
 Goes one page back in the page history.
 
 Returns the (new) response.
@@ -1014,6 +1003,8 @@ sub back {
 
 =head2 C<< $mech->forward >>
 
+    $mech->forward();
+
 Goes one page back in the page history.
 
 Returns the (new) response.
@@ -1028,6 +1019,8 @@ sub forward {
 }
 
 =head2 C<< $mech->uri >>
+
+    print "We are at " . $mech->uri;
 
 Returns the current document URI.
 
@@ -1223,18 +1216,6 @@ and pass it in the C<progress> option.
 The download will
 continue in the background. It will also not show up in the
 Download Manager.
-
-=head3 Upload a file to an C<ftp> server
-
-B< Not implemented > - this requires instantiating and passing
-a C< nsIURI > object instead of a C< nsILocalFile >.
-
-You can use C<< ->save_url >> to I<transfer> files. C<$localname>
-can be a local filename, a C<file://> URL or any other URL that allows
-uploads, like C<ftp://>.
-
-  $mech->save_url('file://path/to/my/file.txt'
-      => 'ftp://myserver.example/my/file.txt');
 
 =cut
 
@@ -1904,6 +1885,8 @@ sub forms {
 
 =head2 C<< $mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS] >>
 
+  $mech->field( user => 'joe' );
+
 Sets the field with the name to the given value.
 Returns the value.
 
@@ -1919,10 +1902,6 @@ By default, the events set in the
 constructor for C<pre_events> and C<post_events>
 are triggered.
 
-=head3 Set a value without triggering events
-
-  $mech->field( 'myfield', 'myvalue', [], [] );
-
 =cut
 
 sub field {
@@ -1937,6 +1916,8 @@ sub field {
 }
 
 =head2 C<< $mech->value( NAME_OR_ELEMENT, [%OPTIONS] ) >>
+
+    print $mech->value( 'user' );
 
 Returns the value of the field named C<NAME> or of the
 DOM element passed in.
@@ -2566,6 +2547,8 @@ sub expand_frames {
 
 =head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
 
+    my $png_data = $mech->content_as_png();
+
 Returns the given tab or the current page rendered as PNG image.
 
 All parameters are optional. 
@@ -2581,33 +2564,6 @@ This is specific to WWW::Mechanize::Firefox.
 Currently, the data transfer between Firefox and Perl
 is done Base64-encoded. It would be beneficial to find what's
 necessary to make JSON handle binary data more gracefully.
-
-=head3 Save the current page as PNG
-
-  my $png = $mech->content_as_png();
-  open my $fh, '>', 'page.png'
-      or die "Couldn't save to 'page.png': $!";
-  binmode $fh;
-  print {$fh} $png;
-  close $fh;
-
-Also see the file C<screenshot.pl> included in the
-distribution.
-
-=head3 Save top left corner of the current page as PNG
-
-  my $rect = {
-    left  =>    0,
-    top   =>    0,
-    width  => 200,
-    height => 200,
-  };
-  my $png = $mech->content_as_png(undef, $rect);
-  open my $fh, '>', 'page.png'
-      or die "Couldn't save to 'page.png': $!";
-  binmode $fh;
-  print {$fh} $png;
-  close $fh;
 
 =cut
 
@@ -2653,6 +2609,9 @@ JS
 
 =head2 C<< $mech->element_as_png $element >>
 
+    my $shiny = $mech->selector('#shiny', single => 1);
+    my $i_want_this = $mech->element_as_png($shiny);
+
 Returns PNG image data for a single element
 
 =cut
@@ -2666,6 +2625,10 @@ sub element_as_png {
 };
 
 =head2 C<< $mech->element_coordinates $element >>
+
+    my $shiny = $mech->selector('#shiny', single => 1);
+    my ($pos) = $mech->element_coordinates($shiny);
+    print $pos->{x},',', $pos->{y};
 
 Returns the page-coordinates of the C<$element>
 in pixels as a hash with four entries, C<left>, C<top>, C<width> and C<height>.
