@@ -655,28 +655,31 @@ sub highlight_node {
 
 =head1 NAVIGATION METHODS
 
-=head2 C<< $mech->get( URL ) >>
+=head2 C<< $mech->get( $url, %options ) >>
 
-  $mech->get('http://google.com');
+  $mech->get( $url, ':content_file' => $tempfile );
 
 Retrieves the URL C<URL> into the tab.
 
 It returns a faked L<HTTP::Response> object for interface compatibility
-with L<WWW::Mechanize>. It does not yet support the additional parameters
-that L<WWW::Mechanize> supports for saving a file etc.
+with L<WWW::Mechanize>.
 
 =cut
 
 sub get {
-    my ($self,$url) = @_;
+    my ($self,$url, %options) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    $self->synchronize($self->events, sub {
-        $b->loadURI($url);
-    });
+    if (my $target = delete $options{":content_file"}) {
+        $self->save_url($url => $target, %options);
+    } else {
+        $self->synchronize($self->events, sub {
+            $b->loadURI($url);
+        });
+    };
 };
 
-=head2 C<< $mech->get_local( $filename ) >>
+=head2 C<< $mech->get_local( $filename , %options ) >>
 
   $mech->get_local('test.html');
 
@@ -690,14 +693,14 @@ also exist in WWW::Mechanize through a plugin.
 =cut
 
 sub get_local {
-    my ($self, $htmlfile) = @_;
+    my ($self, $htmlfile, %options) = @_;
     my $fn = File::Spec->rel2abs(
                  File::Spec->catfile(dirname($0),$htmlfile),
                  getcwd,
              );
     $fn =~ s!\\!/!g; # fakey "make file:// URL"
 
-    $self->get("file://$fn")
+    $self->get("file://$fn", %options);
 }
 
 # Should I port this to Perl?
