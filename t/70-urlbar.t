@@ -28,7 +28,7 @@ sub onStatusChange {
 }
 
 sub onProgressChange {
-    diag "Progress changed:  @_\n";
+    #diag "Progress changed:  @_\n";
 }
 
 my $browser = $mech->tab->{linkedBrowser};

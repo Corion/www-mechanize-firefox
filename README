@@ -15,7 +15,10 @@ SYNOPSIS
     For more examples see WWW::Mechanize::Firefox::Examples.
 
 METHODS
-  `$mech->new( ARGS )'
+  `$mech->new( %args )'
+
+      use WWW::Mechanize::Firefox;
+      my $mech = WWW::Mechanize::Firefox->new();
 
     Creates a new instance and connects it to Firefox.
 
@@ -69,17 +72,8 @@ METHODS
     *   `post_events' - the events that are sent to an input field after its
         value is changed. By default this is `[blur, change]'.
 
-    Launch Firefox if `mozrepl' is not running
-    This will launch Firefox if the program can't connect to the `mozrepl'
-    plugin in Firefox. This will also enable `mozrepl' in a Firefox process
-    if it is not already running.
-
-      my $mech = WWW::Mechanize::Firefox->new(
-          launch => 'firefox',
-      );
-
 JAVASCRIPT METHODS
-  `$mech->allow( OPTIONS )'
+  `$mech->allow( %options )'
 
     Enables or disables browser features for the current tab. The following
     options are recognized:
@@ -101,29 +95,29 @@ JAVASCRIPT METHODS
     Disable Javascript
       $mech->allow( javascript => 0 );
 
-  `$mech->js_errors( [PAGE] )'
+  `$mech->js_errors()'
+
+      print $_->{message}
+          for $mech->js_errors();
 
     An interface to the Javascript Error Console
 
     Returns the list of errors in the JEC
 
-    Check that your Page has no Javascript compile errors
-      $mech->get('mypage');
-      my @errors = $mech->js_errors();
-      if (@errors) {
-          die "Found errors on page: @errors";
-      };
-
-    Maybbe this should be called `js_messages' or `js_console_messages'
+    Maybe this should be called `js_messages' or `js_console_messages'
     instead.
 
   `$mech->clear_js_errors'
 
+        $mech->clear_js_errors();
+
     Clears all Javascript messages from the console
 
-  `$mech->eval_in_page( $STR [, $ENV] [, $DOCUMENT] )'
+  `$mech->eval_in_page( $str [, $env [, $document]] )'
 
-  `$mech->eval( $STR [, $ENV] [, $DOCUMENT] )'
+  `$mech->eval( $str [, $env [, $document]] )'
+
+      my ($value, $type) = $mech->eval( '2+2' );
 
     Evaluates the given Javascript fragment in the context of the web page.
     Returns a pair of value and Javascript type.
@@ -150,11 +144,6 @@ JAVASCRIPT METHODS
     values can be objects and using these objects can execute malicious code
     in the context of the Firefox application.
 
-    Override the Javascript `alert()' function
-      $mech->eval_in_page('alert("Hello");',
-          { alert => sub { print "Captured alert: '@_'\n" } }
-      );
-
   `$mech->unsafe_page_property_access( ELEMENT )'
 
     Allows you unsafe access to properties of the current page. Using such
@@ -179,11 +168,18 @@ UI METHODS
 
     This method is special to WWW::Mechanize::Firefox.
 
-  `$mech->autodie'
+  `$mech->autodie( [$state] )'
+
+      $mech->autodie(0);
 
     Accessor to get/set whether warnings become fatal.
 
-  `$mech->progress_listener( SOURCE, CALLBACKS )'
+  `$mech->progress_listener( $source, %callbacks )'
+
+        my $eventlistener = progress_listener(
+            $browser,
+            onLocationChange => \&onLocationChange,
+        );
 
     Sets up the callbacks for the `nsIWebProgressListener' interface to be
     the Perl subroutines you pass in.
@@ -193,26 +189,17 @@ UI METHODS
     Javascript bridge, so make sure not to use the same callback in
     different progress listeners at the same time.
 
-    Get notified when the current tab changes
-        my $browser = $mech->repl->expr('window.getBrowser()');
-
-        my $eventlistener = progress_listener(
-            $browser,
-            onLocationChange => \&onLocationChange,
-        );
-
-        while (1) {
-            $mech->repl->poll();
-            sleep 1;
-        };
-
   `$mech->repl'
+
+      my ($value,$type) = $mech->repl->expr('2+2');
 
     Gets the MozRepl::RemoteObject instance that is used.
 
     This method is special to WWW::Mechanize::Firefox.
 
   `$mech->events'
+
+      $mech->events( ['load'] );
 
     Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
     will wait for after requesting a new page. Returns an array reference.
@@ -221,13 +208,18 @@ UI METHODS
 
   `$mech->cookies'
 
+      my $cookie_jar = $mech->cookies();
+
     Returns a HTTP::Cookies object that was initialized from the live
     Firefox instance.
 
     Note: `->set_cookie' is not yet implemented, as is saving the cookie
     jar.
 
-  `$mech->highlight_node( NODES )'
+  `$mech->highlight_node( @nodes )'
+
+        my @links = $mech->selector('a');
+        $mech->highlight_node(@links);
 
     Convenience method that marks all nodes in the arguments with
 
@@ -242,29 +234,24 @@ UI METHODS
     state except reloading the page.
 
 NAVIGATION METHODS
-  `$mech->get( URL )'
+  `$mech->get( $url, %options )'
+
+      $mech->get( $url, ':content_file' => $tempfile );
 
     Retrieves the URL `URL' into the tab.
 
     It returns a faked HTTP::Response object for interface compatibility
-    with WWW::Mechanize. It does not yet support the additional parameters
-    that WWW::Mechanize supports for saving a file etc.
+    with WWW::Mechanize.
 
-    Example:
+  `$mech->get_local( $filename , %options )'
 
-      $mech->get('http://google.com');
-
-  `$mech->get_local( $filename )'
+      $mech->get_local('test.html');
 
     Shorthand method to construct the appropriate `file://' URI and load it
     into Firefox. Relative paths will be interpreted as relative to `$0'.
 
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
-
-    Example:
-
-      $mech->get_local('test.html');
 
   `$mech->synchronize( $event, $callback )'
 
@@ -293,9 +280,15 @@ NAVIGATION METHODS
 
   `$mech->res' / `$mech->response'
 
+        my $response = $mech->response();
+
     Returns the current response as a HTTP::Response object.
 
   `$mech->success'
+
+        $mech->get('http://google.com');
+        print "Yay"
+            if $mech->success();
 
     Returns a boolean telling whether the last request was successful. If
     there hasn't been an operation yet, returns false.
@@ -304,10 +297,16 @@ NAVIGATION METHODS
 
   `$mech->status'
 
+        $mech->get('http://google.com');
+        print $mech->status();
+        # 200
+
     Returns the HTTP status code of the response. This is a 3-digit number
     like 200 for OK, 404 for not found, and so on.
 
   `$mech->reload( [BYPASS_CACHE] )'
+
+        $mech->reload();
 
     Reloads the current page. If `BYPASS_CACHE' is a true value, the browser
     is not allowed to use a cached page. This is the difference between
@@ -317,17 +316,23 @@ NAVIGATION METHODS
 
   `$mech->back'
 
+        $mech->back();
+
     Goes one page back in the page history.
 
     Returns the (new) response.
 
   `$mech->forward'
 
+        $mech->forward();
+
     Goes one page back in the page history.
 
     Returns the (new) response.
 
   `$mech->uri'
+
+        print "We are at " . $mech->uri;
 
     Returns the current document URI.
 
@@ -340,11 +345,15 @@ CONTENT METHODS
 
   `$mech->docshell'
 
+        my $ds = $mech->docshell;
+
     Returns the `docShell' Javascript object.
 
     This is WWW::Mechanize::Firefox specific.
 
   `$mech->content'
+
+      print $mech->content;
 
     Returns the current content of the tab as a scalar.
 
@@ -354,10 +363,15 @@ CONTENT METHODS
 
   `$mech->update_html( $html )'
 
+      $mech->update_html($html);
+
     Writes `$html' into the current document. This is mostly implemented as
     a convenience method for HTML::Display::MozRepl.
 
-  `$mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] )'
+  `$mech->save_content( $localname [, $resource_directory] [, %options ] )'
+
+      $mech->get('http://google.com');
+      $mech->save_content('google search page','google search page files');
 
     Saves the given URL to the given filename. The URL will be fetched from
     the cache if possible, avoiding unnecessary network traffic.
@@ -378,12 +392,9 @@ CONTENT METHODS
     The download will continue in the background. It will not show up in the
     Download Manager.
 
-    Example:
+  `$mech->save_url( $url, $localname, [%options] )'
 
-      $mech->get('http://google.com');
-      $mech->save_content('google search page','google search page files');
-
-  `$mech->save_url( $url, $localname, [%OPTIONS] )'
+      $mech->save_url('http://google.com','google_index.html');
 
     Saves the given URL to the given filename. The URL will be fetched from
     the cache if possible, avoiding unnecessary network traffic.
@@ -399,18 +410,9 @@ CONTENT METHODS
     The download will continue in the background. It will also not show up
     in the Download Manager.
 
-    Upload a file to an `ftp' server
-     Not implemented - this requires instantiating and passing a ` nsIURI '
-    object instead of a ` nsILocalFile '.
-
-    You can use `->save_url' to *transfer* files. `$localname' can be a
-    local filename, a `file://' URL or any other URL that allows uploads,
-    like `ftp://'.
-
-      $mech->save_url('file://path/to/my/file.txt'
-          => 'ftp://myserver.example/my/file.txt');
-
   `$mech->base'
+
+      print $mech->base;
 
     Returns the URL base for the current page.
 
@@ -420,28 +422,44 @@ CONTENT METHODS
 
   `$mech->content_type'
 
+  `$mech->ct'
+
+      print $mech->content_type;
+
     Returns the content type of the currently loaded document
 
   `$mech->is_html()'
+
+      print $mech->is_html();
 
     Returns true/false on whether our content is HTML, according to the HTTP
     headers.
 
   `$mech->title'
 
+      print "We are on page " . $mech->title;
+
     Returns the current document title.
 
 EXTRACTION METHODS
   `$mech->links'
 
-    Returns all links in the document.
+      print $_->text . " -> " . $_->url . "\n"
+          for $mech->links;
+
+    Returns all links in the document as WWW::Mechanize::Link objects.
 
     Currently accepts no parameters. See `->xpath' or `->selector' when you
     want more control.
 
-  `$mech->find_link_dom( OPTIONS )'
+  `$mech->find_link_dom( %options )'
+
+      print $_->{innerHTML} . "\n"
+          for $mech->find_link_dom( text_contains => 'CPAN' );
 
     A method to find links, like WWW::Mechanize's `->find_links' method.
+    This method returns DOM objects from Firefox instead of
+    WWW::Mechanize::Link objects.
 
     Note that Firefox might have reordered the links or frame links in the
     document so the absolute numbers passed via `n' might not be the same
@@ -484,7 +502,10 @@ EXTRACTION METHODS
         The method `croak's if no link is found. If the `single' option is
         true, it also `croak's when more than one link is found.
 
-  `$mech->find_link( OPTIONS )'
+  `$mech->find_link( %options )'
+
+      print $_->text . "\n"
+          for $mech->find_link_dom( text_contains => 'CPAN' );
 
     A method quite similar to WWW::Mechanize's method. The options are
     documented in `->find_link_dom'.
@@ -493,7 +514,10 @@ EXTRACTION METHODS
 
     This defaults to not look through child frames.
 
-  `$mech->find_all_links( OPTIONS )'
+  `$mech->find_all_links( %options )'
+
+      print $_->text . "\n"
+          for $mech->find_link_dom( text_regex => qr/google/i );
 
     Finds all links in the document. The options are documented in
     `->find_link_dom'.
@@ -502,7 +526,10 @@ EXTRACTION METHODS
 
     This defaults to not look through child frames.
 
-  `$mech->find_all_links_dom OPTIONS'
+  `$mech->find_all_links_dom %options'
+
+      print $_->{innerHTML} . "\n"
+          for $mech->find_link_dom( text_regex => qr/google/i );
 
     Finds all matching linky DOM nodes in the document. The options are
     documented in `->find_link_dom'.
@@ -511,21 +538,26 @@ EXTRACTION METHODS
 
     This defaults to not look through child frames.
 
-  `$mech->follow_link LINK'
+  `$mech->follow_link $link'
 
-  `$mech->follow_link OPTIONS'
+  `$mech->follow_link %options'
+
+      $mech->follow_link( xpath => '//a[text() = "Click here!"]' );
 
     Follows the given link. Takes the same parameters that `find_link_dom'
     uses.
 
-  `$mech->click NAME [,X,Y]'
+  `$mech->click $name [,$x ,$y]'
+
+      $mech->click( 'go' );
+      $mech->click({ xpath => '//button[@name="go"]' });
 
     Has the effect of clicking a button on the current form. The first
     argument is the `name' of the button to be clicked. The second and third
     arguments (optional) allow you to specify the (x,y) coordinates of the
     click.
 
-    If there is only one button on the form, $mech->click() with no
+    If there is only one button on the form, `$mech->click()' with no
     arguments simply clicks that one button.
 
     If you pass in a hash reference instead of a name, the following keys
@@ -551,45 +583,68 @@ EXTRACTION METHODS
 FORM METHODS
   `$mech->current_form'
 
+      print $mech->current_form->{name};
+
     Returns the current form.
 
     This method is incompatible with WWW::Mechanize. It returns the DOM
     `<form>' object and not a HTML::Form instance.
 
-  `$mech->form_name NAME [, OPTIONS]'
+  `$mech->form_name $name [, %options]'
 
-    Selects the current form by its name.
+      $mech->form_name( 'search' );
 
-  `$mech->form_id ID [, OPTIONS]'
+    Selects the current form by its name. The options are identical to those
+    accepted by the $mech-xpath> method.
 
-    Selects the current form by its `id' attribute.
+  `$mech->form_id $id [, %options]'
+
+      $mech->form_id( 'login' );
+
+    Selects the current form by its `id' attribute. The options are
+    identical to those accepted by the $mech-xpath> method.
 
     This is equivalent to calling
 
-        $mech->selector("#$name",single => 1,%options)
+        $mech->selector("#$id",single => 1,%options)
 
-  `$mech->form_number NUMBER [, OPTIONS]'
+  `$mech->form_number $number [, %options]'
 
-    Selects the *number*th form.
+      $mech->form_number( 2 );
 
-  `$mech->form_with_fields [$OPTIONS], FIELDS'
+    Selects the *number*th form. The options are identical to those accepted
+    by the $mech->xpath method.
+
+  `$mech->form_with_fields [$options], @fields'
+
+      $mech->form_with_fields(
+          'user', 'password'
+      );
 
     Find the form which has the listed fields.
 
     If the first argument is a hash reference, it's taken as options to
     `->xpath'.
 
-    See also `$mech->submit_form'.
+    See also $mech->submit_form.
 
-  `$mech->forms OPTIONS'
+  `$mech->forms %options'
+
+      my @forms = $mech->forms();
 
     When called in a list context, returns a list of the forms found in the
     last fetched page. In a scalar context, returns a reference to an array
     with those forms.
 
+    The options are identical to those accepted by the $mech->selector
+    method.
+
     The returned elements are the DOM `<form>' elements.
 
-  `$mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS]'
+  `$mech->field $name, $value, [,\@pre_events [,\@post_events]]'
+
+      $mech->field( user => 'joe' );
+      $mech->field( not_empty => '', [], [] ); # bypass JS validation
 
     Sets the field with the name to the given value. Returns the value.
 
@@ -604,10 +659,9 @@ FORM METHODS
     By default, the events set in the constructor for `pre_events' and
     `post_events' are triggered.
 
-    Set a value without triggering events
-      $mech->field( 'myfield', 'myvalue', [], [] );
+  `$mech->value( $name_or_element, [%options] )'
 
-  `$mech->value( NAME_OR_ELEMENT, [%OPTIONS] )'
+        print $mech->value( 'user' );
 
     Returns the value of the field named `NAME' or of the DOM element passed
     in.
@@ -619,7 +673,7 @@ FORM METHODS
     is also still supported but will likely be deprecated in favour of the
     `->field' method.
 
-  `$mech->get_set_value( OPTIONS )'
+  `$mech->get_set_value( %options )'
 
     Allows fine-grained access to getting/setting a value with a different
     API. Supported keys are:
@@ -633,11 +687,20 @@ FORM METHODS
 
   `$mech->submit'
 
+      $mech->submit;
+
     Submits the current form. Note that this does not fire the `onClick'
     event and thus also does not fire eventual Javascript handlers. Maybe
     you want to use `$mech->click' instead.
 
-  `$mech->submit_form( ... )'
+  `$mech->submit_form( %options )'
+
+      $mech->submit_form(
+          with_fields => {
+              user => 'me',
+              pass => 'secret',
+          }
+      );
 
     This method lets you select a form from the previously fetched page,
     fill in its fields, and submit it. It combines the
@@ -662,21 +725,17 @@ FORM METHODS
         because you don't need to know the name or number of the form to do
         this.
 
-        (calls `form_with_fields()' and `set_fields()').
+        (calls $mech->form_with_fields() and $mech->set_fields()).
 
         If you choose this, the form_number, form_name, form_id and fields
         options will be ignored.
 
-        Example:
-
-          $mech->get('http://google.com/');
-          $mech->submit_form(
-              with_fields => {
-                  q => 'WWW::Mechanize::Firefox examples',
-              },
-          );
-
   `$mech->set_fields( $name => $value, ... )'
+
+      $mech->set_fields(
+          user => 'me',
+          pass => 'secret',
+      );
 
     This method sets multiple fields of the current form. It takes a list of
     field name and value pairs. If there is more than one field with the
@@ -684,7 +743,9 @@ FORM METHODS
     the duplicate field to set, use a value which is an anonymous array
     which has the field value and its number as the 2 elements.
 
-  `$mech->set_visible @values'
+  `$mech->set_visible( @values )'
+
+      $mech->set_visible( $username, $password );
 
     This method sets fields of the current form without having to know their
     names. So if you have a login screen that wants a username and password,
@@ -701,9 +762,13 @@ FORM METHODS
     The specifiers that are possible in WWW::Mechanize are not yet
     supported.
 
-  `$mech->is_visible ELEMENT'
+  `$mech->is_visible $element'
 
-  `$mech->is_visible OPTIONS'
+  `$mech->is_visible %options'
+
+      if ($mech->is_visible( selector => '#login' )) {
+          print "You can log in now.";
+      };
 
     Returns true if the element is visible, that is, it is a member of the
     DOM and neither it nor its ancestors have a CSS `visibility' attribute
@@ -716,12 +781,14 @@ FORM METHODS
 
     *   `selector' - the CSS selector
 
-    The remaining options are passed through to either the xpath or selector
-    method.
+    The remaining options are passed through to either the /$mech->xpath or
+    /$mech->selector method.
 
-  `$mech->wait_until_invisible ELEMENT'
+  `$mech->wait_until_invisible $element'
 
-  `$mech->wait_until_invisible OPTIONS'
+  `$mech->wait_until_invisible %options'
+
+      $mech->wait_until_invisible( $please_wait );
 
     Waits until an element is not visible anymore.
 
@@ -738,18 +805,23 @@ FORM METHODS
 
   `$mech->clickables'
 
+        print "You could click on\n";
+        for my $el ($mech->clickables) {
+            print $el->{innerHTML}, "\n";
+        };
+
     Returns all clickable elements, that is, all elements with an `onclick'
     attribute.
 
-  `$mech->xpath QUERY, %options'
-
-    Runs an XPath query in Firefox against the current document.
+  `$mech->xpath $query, %options'
 
         my $link = $mech->xpath('//a[id="clickme"]', one => 1);
         # croaks if there is no link or more than one link found
 
         my @para = $mech->xpath('//p');
         # Collects all paragraphs
+
+    Runs an XPath query in Firefox against the current document.
 
     The options allow the following keys:
 
@@ -787,16 +859,22 @@ FORM METHODS
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
 
-  `$mech->selector css_selector, %options'
+  `$mech->selector $css_selector, %options'
 
-    Returns all nodes matching the given CSS selector.
+      my @text = $mech->selector('p.content');
+
+    Returns all nodes matching the given CSS selector. If $css_selector is
+    an array reference, it returns all nodes matched by any of the CSS
+    selectors in the array.
 
     This takes the same options that `->xpath' does.
 
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
 
-  `$mech->expand_frames SPEC'
+  `$mech->expand_frames $spec'
+
+      my @frames = $mech->expand_frames();
 
     Expands the frame selectors (or `1' to match all frames) into their
     respective DOM document nodes according to the current document. All
@@ -805,7 +883,9 @@ FORM METHODS
     This is mostly an internal method.
 
 IMAGE METHODS
-  `$mech->content_as_png [TAB, COORDINATES]'
+  `$mech->content_as_png [$tab, \%coordinates ]'
+
+        my $png_data = $mech->content_as_png();
 
     Returns the given tab or the current page rendered as PNG image.
 
@@ -823,35 +903,18 @@ IMAGE METHODS
     Base64-encoded. It would be beneficial to find what's necessary to make
     JSON handle binary data more gracefully.
 
-    Save the current page as PNG
-      my $png = $mech->content_as_png();
-      open my $fh, '>', 'page.png'
-          or die "Couldn't save to 'page.png': $!";
-      binmode $fh;
-      print {$fh} $png;
-      close $fh;
-
-    Also see the file `screenshot.pl' included in the distribution.
-
-    Save top left corner of the current page as PNG
-      my $rect = {
-        left  =>    0,
-        top   =>    0,
-        width  => 200,
-        height => 200,
-      };
-      my $png = $mech->content_as_png(undef, $rect);
-      open my $fh, '>', 'page.png'
-          or die "Couldn't save to 'page.png': $!";
-      binmode $fh;
-      print {$fh} $png;
-      close $fh;
-
   `$mech->element_as_png $element'
+
+        my $shiny = $mech->selector('#shiny', single => 1);
+        my $i_want_this = $mech->element_as_png($shiny);
 
     Returns PNG image data for a single element
 
   `$mech->element_coordinates $element'
+
+        my $shiny = $mech->selector('#shiny', single => 1);
+        my ($pos) = $mech->element_coordinates($shiny);
+        print $pos->{x},',', $pos->{y};
 
     Returns the page-coordinates of the `$element' in pixels as a hash with
     four entries, `left', `top', `width' and `height'.
@@ -900,7 +963,6 @@ INCOMPATIBILITIES WITH WWW::Mechanize
 
     *   `->select'
 
-    *
     *   `->tick'
 
     *   `->untick'
@@ -939,10 +1001,6 @@ TODO
         `nsIWebProgressListener'.
 
     *   Make `->click' use `->click_with_options'
-
-    *   Write a unified `find_element' handler that handles the `single',
-        `one' etc. options, instead of (badly) reimplementing it in `xpath',
-        `selector', `links' and `click'.
 
     *   Rip out parts of Test::HTML::Content and graft them onto the
         `links()' and `find_link()' methods here. Firefox is a conveniently
