@@ -2078,6 +2078,8 @@ sub get_set_value {
 
 =head2 C<< $mech->submit >>
 
+  $mech->submit;
+
 Submits the current form. Note that this does B<not> fire the C<onClick>
 event and thus also does not fire eventual Javascript handlers.
 Maybe you want to use C<< $mech->click >> instead.
@@ -2095,7 +2097,14 @@ sub submit {
     }
 };
 
-=head2 C<< $mech->submit_form( ... ) >>
+=head2 C<< $mech->submit_form( %options ) >>
+
+  $mech->submit_form(
+      with_fields => {
+          user => 'me',
+          pass => 'secret',
+      }
+  );
 
 This method lets you select a form from the previously fetched page,
 fill in its fields, and submit it. It combines the form_number/form_name,
@@ -2125,19 +2134,10 @@ and data setting in one operation. It selects the first form that contains
 all fields mentioned in \%fields. This is nice because you don't need to
 know the name or number of the form to do this.
 
-(calls C<< form_with_fields() >> and C<< set_fields() >>).
+(calls L<< /$mech->form_with_fields() >> and L<< /$mech->set_fields() >>).
 
 If you choose this, the form_number, form_name, form_id and fields options
 will be ignored.
-
-Example:
-
-  $mech->get('http://google.com/');
-  $mech->submit_form(
-      with_fields => {
-          q => 'WWW::Mechanize::Firefox examples',
-      },
-  );
 
 =back
 
@@ -2171,6 +2171,11 @@ sub submit_form {
 }
 
 =head2 C<< $mech->set_fields( $name => $value, ... ) >>
+
+  $mech->set_fields(
+      user => 'me',
+      pass => 'secret',
+  );
 
 This method sets multiple fields of the current form. It takes a list of
 field name and value pairs. If there is more than one field with the same
@@ -2221,7 +2226,7 @@ and the first and second fields will be set accordingly. The method is
 called set_visible because it acts only on visible fields;
 hidden form inputs are not considered. 
 
-The specifiers that are possible in WWW::Mechanize are not yet supported.
+The specifiers that are possible in L<WWW::Mechanize> are not yet supported.
 
 =cut
 
@@ -2250,9 +2255,13 @@ sub _default_limiter {
     return ()
 };
 
-=head2 C<< $mech->is_visible ELEMENT >>
+=head2 C<< $mech->is_visible $element >>
 
-=head2 C<< $mech->is_visible OPTIONS >>
+=head2 C<< $mech->is_visible %options >>
+
+  if ($mech->is_visible( selector => '#login' )) {
+      print "You can log in now.";
+  };
 
 Returns true if the element is visible, that is, it is
 a member of the DOM and neither it nor its ancestors have
@@ -2275,7 +2284,7 @@ C<selector> - the CSS selector
 =back
 
 The remaining options are passed through to either the
-L</xpath> or L</selector> method.
+L<< /$mech->xpath|xpath >> or L<< /$mech->selector|selector >> method.
 
 =cut
 
@@ -2328,9 +2337,11 @@ JS
     $_is_visible->($options{dom});
 };
 
-=head2 C<< $mech->wait_until_invisible ELEMENT >>
+=head2 C<< $mech->wait_until_invisible $element >>
 
-=head2 C<< $mech->wait_until_invisible OPTIONS >>
+=head2 C<< $mech->wait_until_invisible %options >>
+
+  $mech->wait_until_invisible( $please_wait );
 
 Waits until an element is not visible anymore.
 
@@ -2406,6 +2417,11 @@ sub _option_query {
 
 =head2 C<< $mech->clickables >>
 
+    print "You could click on\n";
+    for my $el ($mech->clickables) {
+        print $el->{innerHTML}, "\n";
+    };
+
 Returns all clickable elements, that is, all elements
 with an C<onclick> attribute.
 
@@ -2416,15 +2432,15 @@ sub clickables {
     $self->xpath('//*[@onclick]', %options);
 };
 
-=head2 C<< $mech->xpath QUERY, %options >>
-
-Runs an XPath query in Firefox against the current document.
+=head2 C<< $mech->xpath $query, %options >>
 
     my $link = $mech->xpath('//a[id="clickme"]', one => 1);
     # croaks if there is no link or more than one link found
 
     my @para = $mech->xpath('//p');
     # Collects all paragraphs
+
+Runs an XPath query in Firefox against the current document.
 
 The options allow the following keys:
 
@@ -2480,8 +2496,6 @@ L<WWW::Mechanize>.
 
 =cut
 
-#use vars '$nesting';
-#$nesting = '';
 sub xpath {
     my ($self,$query,%options) = @_;
     if ('ARRAY' ne (ref $query||'')) {
@@ -2567,9 +2581,13 @@ sub xpath {
     return $return_first ? $res[0] : @res;
 };
 
-=head2 C<< $mech->selector css_selector, %options >>
+=head2 C<< $mech->selector $css_selector, %options >>
 
-Returns all nodes matching the given CSS selector.
+  my @text = $mech->selector('p.content');
+
+Returns all nodes matching the given CSS selector. If
+$css_selector is an array reference, it returns
+all nodes matched by any of the CSS selectors in the array.
 
 This takes the same options that C<< ->xpath >> does.
 
@@ -2588,7 +2606,9 @@ sub selector {
     $self->xpath(\@q, %options);
 };
 
-=head2 C<< $mech->expand_frames SPEC >>
+=head2 C<< $mech->expand_frames $spec >>
+
+  my @frames = $mech->expand_frames();
 
 Expands the frame selectors (or C<1> to match all frames)
 into their respective DOM document nodes according to the current
@@ -2623,7 +2643,7 @@ sub expand_frames {
 
 =head1 IMAGE METHODS
 
-=head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
+=head2 C<< $mech->content_as_png [$tab, \%coordinates ] >>
 
     my $png_data = $mech->content_as_png();
 
@@ -2808,8 +2828,6 @@ C<< ->select >>
 
 =item *
 
-=item *
-
 C<< ->tick >>
 
 =item *
@@ -2880,13 +2898,6 @@ and our own C<nsIWebProgressListener>.
 =item *
 
 Make C<< ->click >> use C<< ->click_with_options >>
-
-=item *
-
-Write a unified C<find_element> handler that handles
-the C<single>, C<one> etc. options, instead of (badly)
-reimplementing it in C<xpath>, C<selector>, C<links>
-and C<click>.
 
 =item *
 
