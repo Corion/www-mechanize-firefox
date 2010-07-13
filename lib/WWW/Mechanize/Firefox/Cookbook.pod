@@ -1,0 +1,146 @@
+=pod
+
+=head1 NAME
+
+WWW::Mechanize::Firefox::Cookbook - Recipes for using WWW::Mechanize::Firefox
+
+=head1 Introduction
+
+Note that WWW::Mechanize::Firefox is quite similar in its API to L<WWW::Mechanize>,
+so many of the recipes in L<WWW::Mechanize::Cookbook> apply to it as well.
+
+=head1 Basics
+
+=head2 Launch WWW::Mechanize::Firefox
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new();
+  $mech->get('http://google.com');
+
+=head2 Launch WWW::Mechanize::Firefox if Firefox is not running
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      launch => '/path/to/firefox',
+  );
+  $mech->get('http://google.com');
+
+=head2 Use an existing tab
+
+=head2 Use the current tab
+
+=head2 Fetch a page to a file
+
+=head1 UI interaction
+
+=head2 Keep the tab open after your program quits
+
+In the case that you want to navigate the user to a specific place and
+then take over manually, you can prevent the automatic closing of the browser
+tab. Either create your C<$mech> object like this:
+
+  my $mech = WWW::Mechanize::Firefox->new(
+      autoclose => 0,
+  );
+
+or decide at runtime whether to close the tab:
+
+  $mech->autoclose_tab(0);
+
+This does currently not work.
+
+=head2 Get notified when the current tab changes
+
+    my $browser = $mech->repl->expr('window.getBrowser()');
+
+    my $eventlistener = progress_listener(
+        $browser,
+        onLocationChange => \&onLocationChange,
+    );
+
+    while (1) {
+        $mech->repl->poll();
+        sleep 1;
+    };
+
+
+=head1 Images
+
+=head2 Save the current page as PNG
+
+This will take a "screenshot" which also includes plugins like Flash.
+
+  my $png = $mech->content_as_png();
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
+Also see the file C<screenshot.pl> included and installed through the
+distribution.
+
+=head3 Save top left corner of the current page as PNG
+
+  my $rect = {
+    left  =>    0,
+    top   =>    0,
+    width  => 200,
+    height => 200,
+  };
+  my $png = $mech->content_as_png(undef, $rect);
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
+=head1 Javascript
+
+=head2 Check that your Page has no Javascript compile errors
+
+  $mech->get('mypage');
+  my @errors = map {$_->{message}} $mech->js_errors();
+  if (@errors) {
+      die "Found errors on page: @errors";
+  };
+
+=head3 Override the Javascript C<alert()> function
+
+  $mech->eval_in_page('alert("Hello");',
+      { alert => sub { print "Captured alert: '@_'\n" } }
+  );
+
+=head3 Set a value without triggering Javascript events
+
+Just pass empty lists for the lists of events to invoke
+
+  $mech->field( 'myfield', 'myvalue', [], [] );
+
+=head1 Not working yet
+
+=head2 Upload a file to an C<ftp> server
+
+B< Not implemented > - this requires instantiating and passing
+a C< nsIURI > object instead of a C< nsILocalFile >.
+
+You can use C<< ->save_url >> to I<transfer> files. C<$localname>
+can be a local filename, a C<file://> URL or any other URL that allows
+uploads, like C<ftp://>.
+
+  $mech->save_url('file://path/to/my/file.txt'
+      => 'ftp://myserver.example/my/file.txt');
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+Contributed examples contain the original author's name.
+
+=head1 COPYRIGHT
+
+Copyright 2010, Max Maischein.
+
+All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
+
+=cut
