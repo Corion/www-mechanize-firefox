@@ -1,3 +1,8 @@
+0.31 to be released
+    . ->get now supports the :local_file shortcut for local saving
+    . WWW::Mechanize::Firefox::Cookbook contains snippets
+    . Documentation is more unified, short examples of function usage
+
 0.30 20100711
     . Add ->is_visible method to check for node visibility
     . Add ->wait_until_invisible method to wait until a node disappears
