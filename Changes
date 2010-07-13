@@ -1,4 +1,4 @@
-0.31 to be released
+0.31 20100713
     . ->get now supports the :local_file shortcut for local saving
     . WWW::Mechanize::Firefox::Cookbook contains snippets
     . Documentation is more unified, short examples of function usage
