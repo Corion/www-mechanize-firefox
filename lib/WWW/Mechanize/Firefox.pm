@@ -1718,7 +1718,8 @@ sub follow_link {
         ($self,$link) = @_
     } else {
         ($self,%opts) = @_;
-        $link = $self->find_link_dom(one => 1, %opts);
+        _default_limiter( one => \%opts );
+        $link = $self->find_link_dom(%opts);
     }
     $self->synchronize( sub {
         $link->__click();
@@ -1851,9 +1852,9 @@ are identical to those accepted by the L</$mech->xpath> method.
 sub form_name {
     my ($self,$name,%options) = @_;
     $name = quote_xpath $name;
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->selector("form[name='$name']",
         user_info => "form id '$name'",
-        single => 1,
         %options
     );
 };
@@ -1874,9 +1875,10 @@ This is equivalent to calling
 
 sub form_id {
     my ($self,$name,%options) = @_;
+    
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->selector("#$name",
         user_info => "form id '$name'",
-        single => 1,
         %options
     );
 };
@@ -1893,9 +1895,10 @@ are identical to those accepted by the L<< /$mech->xpath >> method.
 
 sub form_number {
     my ($self,$number,%options) = @_;
+
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->xpath("//form[$number]",
         user_info => "form number $number",
-        single => 1,
         %options
     );
 };
@@ -1924,8 +1927,8 @@ sub form_with_fields {
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->xpath($q,
-        single => 1,
         user_info => "form with fields [@fields]",
         %$options
     );
@@ -2043,10 +2046,10 @@ sub get_set_value {
     if (blessed $name) {
         @fields = $name;
     } else {
+        _default_limiter( single => \%options );
         @fields = $self->xpath(
             sprintf( q{.//input[@name="%s"] | .//select[@name="%s"] | .//textarea[@name="%s"]}, 
                                    $name,              $name,                 $name),
-            single => 1,
             %options,
         );
     };
@@ -2236,6 +2239,15 @@ sub set_visible {
     }
 }
 
+# Return the default limiter if no other limiting option is set:
+sub _default_limiter {
+    my ($default, $options) = @_;
+    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
+        $options{ $default } = 1;
+    };
+    return ()
+};
+
 =head2 C<< $mech->is_visible ELEMENT >>
 
 =head2 C<< $mech->is_visible OPTIONS >>
@@ -2272,9 +2284,7 @@ sub is_visible {
     } else {
         ($self,%options) = @_;
     };
-    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
-        $options{ maybe } = 1;
-    };
+    _default_limiter( 'maybe', \%options );
     if (! $options{dom}) {
         $options{dom} = $self->_option_query(%options);
     };
@@ -2353,9 +2363,7 @@ sub wait_until_invisible {
     my $sleep = delete $options{ sleep } || 0.3;
     my $timeout = delete $options{ timeout } || 0;
     
-    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
-        $options{ maybe } = 1;
-    };
+    _default_limiter( 'maybe', \%options );
 
     if (! $options{dom}) {
         $options{dom} = $self->_option_query(%options);
@@ -2388,9 +2396,7 @@ sub _option_query {
             $method = $meth;
         }
     };
-    if (! grep { exists $options{ $_ } } qw(one maybe single) ) {
-        $options{ one } = 1;
-    };
+    _default_limiter( 'one' => \%options );
     croak "Need either a name, a selector or an xpath key!"
         if not $method;
     return $self->$method( $q, %options );
