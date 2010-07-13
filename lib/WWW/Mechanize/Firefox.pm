@@ -1927,7 +1927,7 @@ sub form_with_fields {
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
-    _default_limiter( single => \%options );
+    _default_limiter( single => $options );
     $self->{current_form} = $self->xpath($q,
         user_info => "form with fields [@fields]",
         %$options
@@ -2250,7 +2250,7 @@ sub set_visible {
 sub _default_limiter {
     my ($default, $options) = @_;
     if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
-        $options{ $default } = 1;
+        $options->{ $default } = 1;
     };
     return ()
 };
