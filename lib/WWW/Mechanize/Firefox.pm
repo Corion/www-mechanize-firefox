@@ -1976,6 +1976,7 @@ sub get_set_value {
         @fields = $self->xpath(
             sprintf( q{.//input[@name="%s"] | .//select[@name="%s"] | .//textarea[@name="%s"]}, 
                                    $name,              $name,                 $name),
+            single => 1,
             %options,
         );
     };
@@ -1983,10 +1984,6 @@ sub get_set_value {
         if (! ref $pre);
     $post = [$post]
         if (! ref $pre);
-    $self->signal_condition( "No field found for '$name'" )
-        if (! @fields);
-    $self->signal_condition( "Too many fields found for '$name'" )
-        if (@fields > 1);
         
     if ($fields[0]) {
         if ($set_value) {
