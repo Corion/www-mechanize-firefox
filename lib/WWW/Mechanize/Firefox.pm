@@ -2197,7 +2197,7 @@ sub do_set_fields {
     while (my($n,$v) = each %$fields) {
         if (ref $v) {
             ($v,my $num) = @$v;
-            warn "Index larger than 1 not supported"
+            warn "Index larger than 1 not supported, ignoring"
                 unless $num == 1;
         };
         
@@ -2205,7 +2205,9 @@ sub do_set_fields {
     }
 };
 
-=head2 C<< $mech->set_visible @values >>
+=head2 C<< $mech->set_visible( @values ) >>
+
+  $mech->set_visible( $username, $password );
 
 This method sets fields of the current form without having to know their
 names. So if you have a login screen that wants a username and password,
