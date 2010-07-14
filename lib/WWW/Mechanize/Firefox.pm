@@ -407,12 +407,28 @@ sub unsafe_page_property_access {
 
 =head1 UI METHODS
 
-=head2 C<< $mech->addTab( OPTIONS ) >>
+=head2 C<< $mech->addTab( %options ) >>
 
-Creates a new tab. The tab will be automatically closed upon program exit.
+Creates a new tab and returns it.
+The tab will be automatically closed upon program exit.
 
 If you want the tab to remain open, pass a false value to the the C< autoclose >
 option.
+
+The recognized options are:
+
+=over 4
+
+=item *
+
+C<repl> - the repl to use. By default it will use C<< $mech->repl >>.
+
+=item *
+
+C<autoclose> - whether to automatically close the tab at program exit. Default is
+to close the tab.
+
+=back
 
 =cut
 
@@ -972,11 +988,11 @@ sub status {
     $_[0]->response->code
 };
 
-=head2 C<< $mech->reload( [BYPASS_CACHE] ) >>
+=head2 C<< $mech->reload( [$bypass_cache] ) >>
 
     $mech->reload();
 
-Reloads the current page. If C<BYPASS_CACHE>
+Reloads the current page. If C<$bypass_cache>
 is a true value, the browser is not allowed to
 use a cached page. This is the difference between
 pressing C<F5> (cached) and C<shift-F5> (uncached).
