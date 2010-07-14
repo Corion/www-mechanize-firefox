@@ -19,19 +19,25 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 $mech->get_local('51-mech-submit.html');
+
+my ($triggered,$type,$ok);
+eval {
+    ($triggered, $type) = $mech->eval_in_page('myevents');
+    $ok = 1;
+};
+if (! $triggered) {
+    SKIP: { skip "Couldn't get at 'myevents'. Do you have a Javascript blocker?", 10; };
+    exit;
+};
+ok $triggered, "We have JS enabled";
+
 $mech->allow('javascript' => 1);
 $mech->form_id('testform');
 
 $mech->field('q','1');
 $mech->submit();
-my ($triggered,$type) = $mech->eval_in_page('myevents');
 
-if (! $triggered) {
-    SKIP: { skip "Couldn't get at 'myevents'. Do you have a Javascript blocker?", 9; };
-    exit;
-};
-
-ok $triggered, "We found 'myevents'";
+($triggered, $type) = $mech->eval_in_page('myevents');
 
 is $triggered->{action}, 1, 'Action   was triggered';
 is $triggered->{submit}, 0, 'OnSubmit was not triggered';

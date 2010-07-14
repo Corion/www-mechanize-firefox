@@ -26,8 +26,12 @@ my @files = qw<
 # Check that we can execute JS
 $mech->get_local($files[0]);
 $mech->allow('javascript' => 1);
-my ($el,$type) = $mech->eval_in_page('timer');
-if (! $el) {
+my ($triggered,$type,$ok);
+eval {
+    ($triggered, $type) = $mech->eval_in_page('timer');
+    $ok = 1;
+};
+if (! $triggered) {
     plan skip_all => "Couldn't get at 'timer'. Do you have a Javascript blocker?";
     exit;
 } else {

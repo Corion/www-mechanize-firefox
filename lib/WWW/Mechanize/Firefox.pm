@@ -17,7 +17,7 @@ use Encode qw(encode);
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.30';
+$VERSION = '0.31';
 
 =head1 NAME
 
@@ -40,7 +40,10 @@ For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
 =head1 METHODS
 
-=head2 C<< $mech->new( ARGS ) >>
+=head2 C<< $mech->new( %args ) >>
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new();
 
 Creates a new instance and connects it to Firefox.
 
@@ -195,7 +198,7 @@ sub DESTROY {
 
 =head1 JAVASCRIPT METHODS
 
-=head2 C<< $mech->allow( OPTIONS ) >>
+=head2 C<< $mech->allow( %options ) >>
 
 Enables or disables browser features for the current tab.
 The following options are recognized:
@@ -254,7 +257,7 @@ sub allow  {
     };
 };
 
-=head2 C<< $mech->js_errors( [PAGE] ) >>
+=head2 C<< $mech->js_errors() >>
 
   print $_->{message}
       for $mech->js_errors();
@@ -307,9 +310,9 @@ sub clear_js_errors {
 
 };
 
-=head2 C<< $mech->eval_in_page( $STR [, $ENV] [, $DOCUMENT] ) >>
+=head2 C<< $mech->eval_in_page( $str [, $env [, $document]] ) >>
 
-=head2 C<< $mech->eval( $STR [, $ENV] [, $DOCUMENT] ) >>
+=head2 C<< $mech->eval( $str [, $env [, $document]] ) >>
 
   my ($value, $type) = $mech->eval( '2+2' );
 
@@ -512,7 +515,9 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub tab { $_[0]->{tab} };
 
-=head2 C<< $mech->autodie >>
+=head2 C<< $mech->autodie( [$state] ) >>
+
+  $mech->autodie(0);
 
 Accessor to get/set whether warnings become fatal.
 
@@ -520,7 +525,7 @@ Accessor to get/set whether warnings become fatal.
 
 sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
-=head2 C<< $mech->progress_listener( SOURCE, CALLBACKS ) >>
+=head2 C<< $mech->progress_listener( $source, %callbacks ) >>
 
     my $eventlistener = progress_listener(
         $browser,
@@ -585,6 +590,8 @@ JS
 
 =head2 C<< $mech->repl >>
 
+  my ($value,$type) = $mech->repl->expr('2+2');
+
 Gets the L<MozRepl::RemoteObject> instance that is used.
 
 This method is special to WWW::Mechanize::Firefox.
@@ -594,6 +601,8 @@ This method is special to WWW::Mechanize::Firefox.
 sub repl { $_[0]->{repl} };
 
 =head2 C<< $mech->events >>
+
+  $mech->events( ['load'] );
 
 Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
 will wait for after requesting a new page. Returns an array reference.
@@ -622,7 +631,7 @@ sub cookies {
     )
 }
 
-=head2 C<< $mech->highlight_node( NODES ) >>
+=head2 C<< $mech->highlight_node( @nodes ) >>
 
     my @links = $mech->selector('a');
     $mech->highlight_node(@links);
@@ -655,28 +664,31 @@ sub highlight_node {
 
 =head1 NAVIGATION METHODS
 
-=head2 C<< $mech->get( URL ) >>
+=head2 C<< $mech->get( $url, %options ) >>
 
-  $mech->get('http://google.com');
+  $mech->get( $url, ':content_file' => $tempfile );
 
 Retrieves the URL C<URL> into the tab.
 
 It returns a faked L<HTTP::Response> object for interface compatibility
-with L<WWW::Mechanize>. It does not yet support the additional parameters
-that L<WWW::Mechanize> supports for saving a file etc.
+with L<WWW::Mechanize>.
 
 =cut
 
 sub get {
-    my ($self,$url) = @_;
+    my ($self,$url, %options) = @_;
     my $b = $self->tab->{linkedBrowser};
 
-    $self->synchronize($self->events, sub {
-        $b->loadURI($url);
-    });
+    if (my $target = delete $options{":content_file"}) {
+        $self->save_url($url => $target, %options);
+    } else {
+        $self->synchronize($self->events, sub {
+            $b->loadURI($url);
+        });
+    };
 };
 
-=head2 C<< $mech->get_local( $filename ) >>
+=head2 C<< $mech->get_local( $filename , %options ) >>
 
   $mech->get_local('test.html');
 
@@ -690,14 +702,14 @@ also exist in WWW::Mechanize through a plugin.
 =cut
 
 sub get_local {
-    my ($self, $htmlfile) = @_;
+    my ($self, $htmlfile, %options) = @_;
     my $fn = File::Spec->rel2abs(
                  File::Spec->catfile(dirname($0),$htmlfile),
                  getcwd,
              );
     $fn =~ s!\\!/!g; # fakey "make file:// URL"
 
-    $self->get("file://$fn")
+    $self->get("file://$fn", %options);
 }
 
 # Should I port this to Perl?
@@ -1052,6 +1064,8 @@ sub document {
 
 =head2 C<< $mech->docshell >>
 
+    my $ds = $mech->docshell;
+
 Returns the C<docShell> Javascript object.
 
 This is WWW::Mechanize::Firefox specific.
@@ -1064,6 +1078,8 @@ sub docshell {
 }
 
 =head2 C<< $mech->content >>
+
+  print $mech->content;
 
 Returns the current content of the tab as a scalar.
 
@@ -1091,6 +1107,8 @@ JS
 
 =head2 C<< $mech->update_html( $html ) >>
 
+  $mech->update_html($html);
+
 Writes C<$html> into the current document. This is mostly
 implemented as a convenience method for L<HTML::Display::MozRepl>.
 
@@ -1106,7 +1124,10 @@ sub update_html {
     return
 };
 
-=head2 C<< $mech->save_content( $localname [, $resource_directory] [, %OPTIONS ] ) >>
+=head2 C<< $mech->save_content( $localname [, $resource_directory] [, %options ] ) >>
+
+  $mech->get('http://google.com');
+  $mech->save_content('google search page','google search page files');
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1128,11 +1149,6 @@ and pass it in the C<progress> option.
 The download will
 continue in the background. It will not show up in the
 Download Manager.
-
-Example:
-
-  $mech->get('http://google.com');
-  $mech->save_content('google search page','google search page files');
 
 =cut
 
@@ -1199,7 +1215,9 @@ JS
     );
 }
 
-=head2 C<< $mech->save_url( $url, $localname, [%OPTIONS] ) >>
+=head2 C<< $mech->save_url( $url, $localname, [%options] ) >>
+
+  $mech->save_url('http://google.com','google_index.html');
 
 Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
@@ -1266,6 +1284,8 @@ JS
 
 =head2 C<< $mech->base >>
 
+  print $mech->base;
+
 Returns the URL base for the current page.
 
 The base is either specified through a C<base>
@@ -1285,6 +1305,10 @@ sub base {
 
 =head2 C<< $mech->content_type >>
 
+=head2 C<< $mech->ct >>
+
+  print $mech->content_type;
+
 Returns the content type of the currently loaded document
 
 =cut
@@ -1298,6 +1322,8 @@ sub content_type {
 
 =head2 C<< $mech->is_html() >>
 
+  print $mech->is_html();
+
 Returns true/false on whether our content is HTML, according to the
 HTTP headers.
 
@@ -1309,6 +1335,8 @@ sub is_html {
 }
 
 =head2 C<< $mech->title >>
+
+  print "We are on page " . $mech->title;
 
 Returns the current document title.
 
@@ -1323,7 +1351,10 @@ sub title {
 
 =head2 C<< $mech->links >>
 
-Returns all links in the document.
+  print $_->text . " -> " . $_->url . "\n"
+      for $mech->links;
+
+Returns all links in the document as L<WWW::Mechanize::Link> objects.
 
 Currently accepts no parameters. See C<< ->xpath >>
 or C<< ->selector >> when you want more control.
@@ -1397,10 +1428,14 @@ sub signal_condition {
     }
 };
 
-=head2 C<< $mech->find_link_dom( OPTIONS ) >>
+=head2 C<< $mech->find_link_dom( %options ) >>
+
+  print $_->{innerHTML} . "\n"
+      for $mech->find_link_dom( text_contains => 'CPAN' );
 
 A method to find links, like L<WWW::Mechanize>'s
-C<< ->find_links >> method.
+C<< ->find_links >> method. This method returns DOM objects from
+Firefox instead of WWW::Mechanize::Link objects.
 
 Note that Firefox
 might have reordered the links or frame links in the document
@@ -1590,7 +1625,10 @@ sub find_link_dom {
     $res[$n]
 }
 
-=head2 C<< $mech->find_link( OPTIONS ) >>
+=head2 C<< $mech->find_link( %options ) >>
+
+  print $_->text . "\n"
+      for $mech->find_link_dom( text_contains => 'CPAN' );
 
 A method quite similar to L<WWW::Mechanize>'s method.
 The options are documented in C<< ->find_link_dom >>.
@@ -1613,7 +1651,10 @@ sub find_link {
     };
 };
 
-=head2 C<< $mech->find_all_links( OPTIONS ) >>
+=head2 C<< $mech->find_all_links( %options ) >>
+
+  print $_->text . "\n"
+      for $mech->find_link_dom( text_regex => qr/google/i );
 
 Finds all links in the document.
 The options are documented in C<< ->find_link_dom >>.
@@ -1636,7 +1677,10 @@ sub find_all_links {
     return \@matches;
 };
 
-=head2 C<< $mech->find_all_links_dom OPTIONS >>
+=head2 C<< $mech->find_all_links_dom %options >>
+
+  print $_->{innerHTML} . "\n"
+      for $mech->find_link_dom( text_regex => qr/google/i );
 
 Finds all matching linky DOM nodes in the document.
 The options are documented in C<< ->find_link_dom >>.
@@ -1657,9 +1701,11 @@ sub find_all_links_dom {
 };
 
 
-=head2 C<< $mech->follow_link LINK >>
+=head2 C<< $mech->follow_link $link >>
 
-=head2 C<< $mech->follow_link OPTIONS >>
+=head2 C<< $mech->follow_link %options >>
+
+  $mech->follow_link( xpath => '//a[text() = "Click here!"]' );
 
 Follows the given link. Takes the same parameters that C<find_link_dom>
 uses.
@@ -1672,21 +1718,25 @@ sub follow_link {
         ($self,$link) = @_
     } else {
         ($self,%opts) = @_;
-        $link = $self->find_link_dom(one => 1, %opts);
+        _default_limiter( one => \%opts );
+        $link = $self->find_link_dom(%opts);
     }
     $self->synchronize( sub {
         $link->__click();
     });
 }
 
-=head2 C<< $mech->click NAME [,X,Y] >>
+=head2 C<< $mech->click $name [,$x ,$y] >>
+
+  $mech->click( 'go' );
+  $mech->click({ xpath => '//button[@name="go"]' });
 
 Has the effect of clicking a button on the current form. The first argument
 is the C<name> of the button to be clicked. The second and third arguments
 (optional) allow you to specify the (x,y) coordinates of the click.
 
-If there is only one button on the form, $mech->click() with no arguments
-simply clicks that one button.
+If there is only one button on the form, C<< $mech->click() >> with
+no arguments simply clicks that one button.
 
 If you pass in a hash reference instead of a name,
 the following keys are recognized:
@@ -1776,6 +1826,8 @@ sub click {
 
 =head2 C<< $mech->current_form >>
 
+  print $mech->current_form->{name};
+
 Returns the current form.
 
 This method is incompatible with L<WWW::Mechanize>.
@@ -1788,64 +1840,81 @@ sub current_form {
     $_[0]->{current_form}
 };
 
-=head2 C<< $mech->form_name NAME [, OPTIONS] >>
+=head2 C<< $mech->form_name $name [, %options] >>
 
-Selects the current form by its name.
+  $mech->form_name( 'search' );
+
+Selects the current form by its name. The options
+are identical to those accepted by the L</$mech->xpath> method.
 
 =cut
 
 sub form_name {
     my ($self,$name,%options) = @_;
     $name = quote_xpath $name;
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->selector("form[name='$name']",
         user_info => "form id '$name'",
-        single => 1,
         %options
     );
 };
 
-=head2 C<< $mech->form_id ID [, OPTIONS] >>
+=head2 C<< $mech->form_id $id [, %options] >>
+
+  $mech->form_id( 'login' );
 
 Selects the current form by its C<id> attribute.
+The options
+are identical to those accepted by the L</$mech->xpath> method.
 
 This is equivalent to calling
 
-    $mech->selector("#$name",single => 1,%options)
+    $mech->selector("#$id",single => 1,%options)
 
 =cut
 
 sub form_id {
     my ($self,$name,%options) = @_;
+    
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->selector("#$name",
         user_info => "form id '$name'",
-        single => 1,
         %options
     );
 };
 
-=head2 C<< $mech->form_number NUMBER [, OPTIONS] >>
+=head2 C<< $mech->form_number $number [, %options] >>
+
+  $mech->form_number( 2 );
 
 Selects the I<number>th form.
+The options
+are identical to those accepted by the L<< /$mech->xpath >> method.
 
 =cut
 
 sub form_number {
     my ($self,$number,%options) = @_;
+
+    _default_limiter( single => \%options );
     $self->{current_form} = $self->xpath("//form[$number]",
         user_info => "form number $number",
-        single => 1,
         %options
     );
 };
 
-=head2 C<< $mech->form_with_fields [$OPTIONS], FIELDS >>
+=head2 C<< $mech->form_with_fields [$options], @fields >>
+
+  $mech->form_with_fields(
+      'user', 'password'
+  );
 
 Find the form which has the listed fields.
 
 If the first argument is a hash reference, it's taken
 as options to C<< ->xpath >>.
 
-See also C<< $mech->submit_form >>.
+See also L<< /$mech->submit_form >>.
 
 =cut
 
@@ -1858,19 +1927,25 @@ sub form_with_fields {
     my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
+    _default_limiter( single => $options );
     $self->{current_form} = $self->xpath($q,
-        single => 1,
         user_info => "form with fields [@fields]",
         %$options
     );
 };
 
-=head2 C<< $mech->forms OPTIONS >>
+=head2 C<< $mech->forms %options >>
+
+  my @forms = $mech->forms();
 
 When called in a list context, returns a list 
 of the forms found in the last fetched page.
 In a scalar context, returns a reference to
 an array with those forms.
+
+The options
+are identical to those accepted by the L<< /$mech->selector >> method.
+
 
 The returned elements are the DOM C<< <form> >> elements.
 
@@ -1883,9 +1958,10 @@ sub forms {
                      : \@res
 };
 
-=head2 C<< $mech->field NAME, VALUE [,PRE EVENTS] [,POST EVENTS] >>
+=head2 C<< $mech->field $name, $value, [,\@pre_events [,\@post_events]] >>
 
   $mech->field( user => 'joe' );
+  $mech->field( not_empty => '', [], [] ); # bypass JS validation
 
 Sets the field with the name to the given value.
 Returns the value.
@@ -1915,7 +1991,7 @@ sub field {
     );
 }
 
-=head2 C<< $mech->value( NAME_OR_ELEMENT, [%OPTIONS] ) >>
+=head2 C<< $mech->value( $name_or_element, [%options] ) >>
 
     print $mech->value( 'user' );
 
@@ -1945,7 +2021,7 @@ sub value {
     };
 };
 
-=head2 C<< $mech->get_set_value( OPTIONS ) >>
+=head2 C<< $mech->get_set_value( %options ) >>
 
 Allows fine-grained access to getting/setting a value
 with a different API. Supported keys are:
@@ -1970,6 +2046,7 @@ sub get_set_value {
     if (blessed $name) {
         @fields = $name;
     } else {
+        _default_limiter( single => \%options );
         @fields = $self->xpath(
             sprintf( q{.//input[@name="%s"] | .//select[@name="%s"] | .//textarea[@name="%s"]}, 
                                    $name,              $name,                 $name),
@@ -1980,10 +2057,6 @@ sub get_set_value {
         if (! ref $pre);
     $post = [$post]
         if (! ref $pre);
-    $self->signal_condition( "No field found for '$name'" )
-        if (! @fields);
-    $self->signal_condition( "Too many fields found for '$name'" )
-        if (@fields > 1);
         
     if ($fields[0]) {
         if ($set_value) {
@@ -2005,6 +2078,8 @@ sub get_set_value {
 
 =head2 C<< $mech->submit >>
 
+  $mech->submit;
+
 Submits the current form. Note that this does B<not> fire the C<onClick>
 event and thus also does not fire eventual Javascript handlers.
 Maybe you want to use C<< $mech->click >> instead.
@@ -2022,7 +2097,14 @@ sub submit {
     }
 };
 
-=head2 C<< $mech->submit_form( ... ) >>
+=head2 C<< $mech->submit_form( %options ) >>
+
+  $mech->submit_form(
+      with_fields => {
+          user => 'me',
+          pass => 'secret',
+      }
+  );
 
 This method lets you select a form from the previously fetched page,
 fill in its fields, and submit it. It combines the form_number/form_name,
@@ -2052,19 +2134,10 @@ and data setting in one operation. It selects the first form that contains
 all fields mentioned in \%fields. This is nice because you don't need to
 know the name or number of the form to do this.
 
-(calls C<< form_with_fields() >> and C<< set_fields() >>).
+(calls L<< /$mech->form_with_fields() >> and L<< /$mech->set_fields() >>).
 
 If you choose this, the form_number, form_name, form_id and fields options
 will be ignored.
-
-Example:
-
-  $mech->get('http://google.com/');
-  $mech->submit_form(
-      with_fields => {
-          q => 'WWW::Mechanize::Firefox examples',
-      },
-  );
 
 =back
 
@@ -2099,6 +2172,11 @@ sub submit_form {
 
 =head2 C<< $mech->set_fields( $name => $value, ... ) >>
 
+  $mech->set_fields(
+      user => 'me',
+      pass => 'secret',
+  );
+
 This method sets multiple fields of the current form. It takes a list of
 field name and value pairs. If there is more than one field with the same
 name, the first one found is set. If you want to select which of the
@@ -2124,7 +2202,7 @@ sub do_set_fields {
     while (my($n,$v) = each %$fields) {
         if (ref $v) {
             ($v,my $num) = @$v;
-            warn "Index larger than 1 not supported"
+            warn "Index larger than 1 not supported, ignoring"
                 unless $num == 1;
         };
         
@@ -2132,7 +2210,9 @@ sub do_set_fields {
     }
 };
 
-=head2 C<< $mech->set_visible @values >>
+=head2 C<< $mech->set_visible( @values ) >>
+
+  $mech->set_visible( $username, $password );
 
 This method sets fields of the current form without having to know their
 names. So if you have a login screen that wants a username and password,
@@ -2146,7 +2226,7 @@ and the first and second fields will be set accordingly. The method is
 called set_visible because it acts only on visible fields;
 hidden form inputs are not considered. 
 
-The specifiers that are possible in WWW::Mechanize are not yet supported.
+The specifiers that are possible in L<WWW::Mechanize> are not yet supported.
 
 =cut
 
@@ -2166,9 +2246,22 @@ sub set_visible {
     }
 }
 
-=head2 C<< $mech->is_visible ELEMENT >>
+# Return the default limiter if no other limiting option is set:
+sub _default_limiter {
+    my ($default, $options) = @_;
+    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
+        $options->{ $default } = 1;
+    };
+    return ()
+};
 
-=head2 C<< $mech->is_visible OPTIONS >>
+=head2 C<< $mech->is_visible $element >>
+
+=head2 C<< $mech->is_visible %options >>
+
+  if ($mech->is_visible( selector => '#login' )) {
+      print "You can log in now.";
+  };
 
 Returns true if the element is visible, that is, it is
 a member of the DOM and neither it nor its ancestors have
@@ -2191,7 +2284,7 @@ C<selector> - the CSS selector
 =back
 
 The remaining options are passed through to either the
-L</xpath> or L</selector> method.
+L<< /$mech->xpath|xpath >> or L<< /$mech->selector|selector >> method.
 
 =cut
 
@@ -2202,9 +2295,7 @@ sub is_visible {
     } else {
         ($self,%options) = @_;
     };
-    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
-        $options{ maybe } = 1;
-    };
+    _default_limiter( 'maybe', \%options );
     if (! $options{dom}) {
         $options{dom} = $self->_option_query(%options);
     };
@@ -2246,9 +2337,11 @@ JS
     $_is_visible->($options{dom});
 };
 
-=head2 C<< $mech->wait_until_invisible ELEMENT >>
+=head2 C<< $mech->wait_until_invisible $element >>
 
-=head2 C<< $mech->wait_until_invisible OPTIONS >>
+=head2 C<< $mech->wait_until_invisible %options >>
+
+  $mech->wait_until_invisible( $please_wait );
 
 Waits until an element is not visible anymore.
 
@@ -2283,9 +2376,7 @@ sub wait_until_invisible {
     my $sleep = delete $options{ sleep } || 0.3;
     my $timeout = delete $options{ timeout } || 0;
     
-    if (! grep { exists $options{ $_ } } qw(single one maybe all)) {
-        $options{ maybe } = 1;
-    };
+    _default_limiter( 'maybe', \%options );
 
     if (! $options{dom}) {
         $options{dom} = $self->_option_query(%options);
@@ -2318,15 +2409,18 @@ sub _option_query {
             $method = $meth;
         }
     };
-    if (! grep { exists $options{ $_ } } qw(one maybe single) ) {
-        $options{ one } = 1;
-    };
+    _default_limiter( 'one' => \%options );
     croak "Need either a name, a selector or an xpath key!"
         if not $method;
     return $self->$method( $q, %options );
 };
 
 =head2 C<< $mech->clickables >>
+
+    print "You could click on\n";
+    for my $el ($mech->clickables) {
+        print $el->{innerHTML}, "\n";
+    };
 
 Returns all clickable elements, that is, all elements
 with an C<onclick> attribute.
@@ -2338,15 +2432,15 @@ sub clickables {
     $self->xpath('//*[@onclick]', %options);
 };
 
-=head2 C<< $mech->xpath QUERY, %options >>
-
-Runs an XPath query in Firefox against the current document.
+=head2 C<< $mech->xpath $query, %options >>
 
     my $link = $mech->xpath('//a[id="clickme"]', one => 1);
     # croaks if there is no link or more than one link found
 
     my @para = $mech->xpath('//p');
     # Collects all paragraphs
+
+Runs an XPath query in Firefox against the current document.
 
 The options allow the following keys:
 
@@ -2402,8 +2496,6 @@ L<WWW::Mechanize>.
 
 =cut
 
-#use vars '$nesting';
-#$nesting = '';
 sub xpath {
     my ($self,$query,%options) = @_;
     if ('ARRAY' ne (ref $query||'')) {
@@ -2489,9 +2581,13 @@ sub xpath {
     return $return_first ? $res[0] : @res;
 };
 
-=head2 C<< $mech->selector css_selector, %options >>
+=head2 C<< $mech->selector $css_selector, %options >>
 
-Returns all nodes matching the given CSS selector.
+  my @text = $mech->selector('p.content');
+
+Returns all nodes matching the given CSS selector. If
+$css_selector is an array reference, it returns
+all nodes matched by any of the CSS selectors in the array.
 
 This takes the same options that C<< ->xpath >> does.
 
@@ -2510,7 +2606,9 @@ sub selector {
     $self->xpath(\@q, %options);
 };
 
-=head2 C<< $mech->expand_frames SPEC >>
+=head2 C<< $mech->expand_frames $spec >>
+
+  my @frames = $mech->expand_frames();
 
 Expands the frame selectors (or C<1> to match all frames)
 into their respective DOM document nodes according to the current
@@ -2545,7 +2643,7 @@ sub expand_frames {
 
 =head1 IMAGE METHODS
 
-=head2 C<< $mech->content_as_png [TAB, COORDINATES] >>
+=head2 C<< $mech->content_as_png [$tab, \%coordinates ] >>
 
     my $png_data = $mech->content_as_png();
 
@@ -2730,8 +2828,6 @@ C<< ->select >>
 
 =item *
 
-=item *
-
 C<< ->tick >>
 
 =item *
@@ -2802,13 +2898,6 @@ and our own C<nsIWebProgressListener>.
 =item *
 
 Make C<< ->click >> use C<< ->click_with_options >>
-
-=item *
-
-Write a unified C<find_element> handler that handles
-the C<single>, C<one> etc. options, instead of (badly)
-reimplementing it in C<xpath>, C<selector>, C<links>
-and C<click>.
 
 =item *
 

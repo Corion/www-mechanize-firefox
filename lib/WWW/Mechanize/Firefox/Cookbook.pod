@@ -27,9 +27,37 @@ so many of the recipes in L<WWW::Mechanize::Cookbook> apply to it as well.
 
 =head2 Use an existing tab
 
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      tab => qr/^Google/,
+  );
+  $mech->get('http://google.com');
+
 =head2 Use the current tab
 
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      tab => 'current',
+  );
+  $mech->get('http://google.com');
+
 =head2 Fetch a page to a file
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      tab => 'current',
+  );
+  $mech->get('http://google.com',
+      ':content_file' => 'google_com.html' );
+
+=head2 Fetch a page to a file with all images
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      tab => 'current',
+  );
+  $mech->get('http://google.com');
+  $mech->save_content('google_com.html', 'google_com files');
 
 =head1 UI interaction
 

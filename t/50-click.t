@@ -23,10 +23,15 @@ $mech->autodie(1);
 $mech->get_local('50-click.html');
 $mech->allow('javascript' => 1);
 
-my ($clicked,$type) = $mech->eval_in_page('clicked');
+my ($clicked,$type,$ok);
+
+eval {
+    ($clicked, $type) = $mech->eval_in_page('clicked');
+    $ok = 1;
+};
 
 if (! $clicked) {
-    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 9; };
+    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 13; };
     exit;
 };
 
