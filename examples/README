@@ -10,7 +10,6 @@ open-url.pl                     Open an URL in Firefox
 screenshot.pl                   Take a screenshot of a website
 dump-links.pl                   Dump links on a webpage
 bcat.pl                         Send console text to the browser
-fullscreen.pl                   Switch the browser to full screen
 
 Javascript
 ==========
@@ -19,6 +18,8 @@ javascript.pl                   Execute Javascript in the webpage context
 js-console.pl                   Send messages to the Error Console
 tail-console.pl                 Display messages from the Error Console to STDOUT
 
-Advanced
+Advanced / Firefox application
 ========
 urlbar.pl                       Listen to changes in the location bar
+fullscreen.pl                   Switch the browser to full screen
+proxy-settings.pl               Change the proxy settings and other settings in Firefox
