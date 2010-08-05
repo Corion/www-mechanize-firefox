@@ -153,13 +153,20 @@ JAVASCRIPT METHODS
     function, edit the source code.
 
 UI METHODS
-  `$mech->addTab( OPTIONS )'
+  `$mech->addTab( %options )'
 
-    Creates a new tab. The tab will be automatically closed upon program
-    exit.
+    Creates a new tab and returns it. The tab will be automatically closed
+    upon program exit.
 
     If you want the tab to remain open, pass a false value to the the `
     autoclose ' option.
+
+    The recognized options are:
+
+    *   `repl' - the repl to use. By default it will use `$mech->repl'.
+
+    *   `autoclose' - whether to automatically close the tab at program
+        exit. Default is to close the tab.
 
   `$mech->tab'
 
@@ -304,13 +311,13 @@ NAVIGATION METHODS
     Returns the HTTP status code of the response. This is a 3-digit number
     like 200 for OK, 404 for not found, and so on.
 
-  `$mech->reload( [BYPASS_CACHE] )'
+  `$mech->reload( [$bypass_cache] )'
 
         $mech->reload();
 
-    Reloads the current page. If `BYPASS_CACHE' is a true value, the browser
-    is not allowed to use a cached page. This is the difference between
-    pressing `F5' (cached) and `shift-F5' (uncached).
+    Reloads the current page. If `$bypass_cache' is a true value, the
+    browser is not allowed to use a cached page. This is the difference
+    between pressing `F5' (cached) and `shift-F5' (uncached).
 
     Returns the (new) response.
 
