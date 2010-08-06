@@ -1,3 +1,9 @@
+0.32 to be released
+    . Add WWW::Mechanize::Firefox::Troubleshooting as a document
+      for things that still need to be implemented. Also list
+      workarounds.
+    . Add example for how to change Firefox settings.
+
 0.31 20100713
     . ->get now supports the :local_file shortcut for local saving
     . WWW::Mechanize::Firefox::Cookbook contains snippets
