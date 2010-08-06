@@ -951,6 +951,7 @@ sub response {
 
     # We're cool!
     my $c = $self->content;
+    # XXX don't encode here, encode in $self->content
     return HTTP::Response->new(200,'',[],encode 'UTF-8', $c)
 }
 *res = \&response;
@@ -1118,6 +1119,8 @@ function(d){
     return e.innerHTML;
 }
 JS
+    # XXX Properly set the proper encoding on the result!
+    # Use UTF-8 unless we know what it actually is
     $html->($d);
 };
 
