@@ -1,0 +1,90 @@
+=pod
+
+=head1 NAME
+
+WWW::Mechanize::Firefox::FAQ - Frequently Asked Questions on WWW::Mechanize::Firefox
+
+=head1 Firefox
+
+=head2 How Dependent On The Firefox Version Is The Module?
+
+The module itself should work with any version of Firefox
+starting from version 2.0. Depending on how deep your Perl
+code interacts with the application structure of Firefox,
+you will or will not encounter version specific problems.
+
+If you are only using WWW::Mechanize::Firefox to access
+the DOM of web pages, you will not notice any version dependencies.
+
+If you use WWW::Mechanize::Firefox to modify the behaviour
+of Firefox itself, for example by changing settings
+through Perl code, you will likely be affected by
+reorganizations of the application structure.
+
+=head1 Other Browsers
+
+=head2 Is There WWW::Mechanize::Firefox for Internet Explorer?
+
+No.
+
+If you want to automate Internet Explorer, there is
+L<Win32::IE::Mechanize>. This module is not API compatible
+and does not let you conveniently get at the DOM methods.
+
+=head2 Is There WWW::Mechanize::Firefox for Google Chrome?
+
+There is a plugin called "chromerepl" for Google Chrome. This
+claims to be what C<mozrepl> is for Firefox. The problem is
+that the Chrome plugin does not download, so I cannot tell you
+whether it would work.
+
+In principle, it should be possible to write a similar
+module, WWW::Mechanize::Chrome (or maybe WWW::Mechanize::Chromatic)
+once the plugin is proven to work. The deeper interaction with
+the application won't work immediately because Chrome and Firefox
+still have a different application structure.
+
+=head1 SUPPORT AND BUG REPORTS
+
+=head2 Where Can I Ask For Help?
+
+If you encounter problems with a website or want feedback on
+how to approach extracting data from a website, please post your
+question on L<http://perlmonks.org>. Many competent people and I
+read this site and will answer your questions.
+
+You do not need to sign up there. You can just go to
+L<http://perlmonks.org/?node=SoPW> and post your question directly.
+
+I do not monitor other forums, so Perlmonks is the best site to
+get answers about WWW::Mechanize::Firefox.
+
+=head2 Where Can I Report Bugs?
+
+Please use the CPAN RT queue to report and review bugs:
+
+https://rt.cpan.org/dist/www-mechanize-firefox
+
+or send a mail with your bug report to
+
+www-mechanize-firefox-Bugs@rt.cpan.org
+
+Please do make sure that you include a small, self-contained
+program that reproduces the problem and shows what you expect
+to happen and what happens instead. This makes it much easier
+for me to help you better in resolving the problem.
+
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+Contributed examples contain the original author's name.
+
+=head1 COPYRIGHT
+
+Copyright 2010, Max Maischein.
+
+All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
+
+=cut
