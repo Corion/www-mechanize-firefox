@@ -21,6 +21,19 @@ of Firefox itself, for example by changing settings
 through Perl code, you will likely be affected by
 reorganizations of the application structure.
 
+=head2 Do I Need An X Session To Run Firefox?
+
+Yes.
+
+If you run a unixish operating system, like OSX or Ubuntu or some other
+Linux distribution, then Firefox will connect to your X server. If you do not
+want Firefox to actually display on your monitor, many people have had success
+by running Firefox on another X server separate from the main X server,
+like Xvfb.
+
+Personally, I would prefer to have a "headless Firefox" that does not
+need a windowing environment. So far, I am unaware of this actually existing.
+
 =head1 Other Browsers
 
 =head2 Is There WWW::Mechanize::Firefox for Internet Explorer?
