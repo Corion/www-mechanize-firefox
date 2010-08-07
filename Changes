@@ -1,4 +1,7 @@
 0.32 to be released
+    . Add WWW::Mechanize::Firefox::FAQ as a list of frequently asked
+      questions. As people now actually ask questions, this file
+      has a reason to exist.
     . Add WWW::Mechanize::Firefox::Troubleshooting as a document
       for things that still need to be implemented. Also list
       workarounds.

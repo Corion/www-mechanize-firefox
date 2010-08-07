@@ -9,6 +9,7 @@ examples/js-console.pl
 examples/manipulate-javascript.pl
 examples/open-local-file.pl
 examples/open-url.pl
+examples/proxy-settings.pl
 examples/README
 examples/screenshot.pl
 examples/tail-console.pl
@@ -19,6 +20,7 @@ lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
 lib/WWW/Mechanize/Firefox/Cookbook.pod
 lib/WWW/Mechanize/Firefox/Examples.pm
+lib/WWW/Mechanize/Firefox/FAQ.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
 MANIFEST			This list of files
