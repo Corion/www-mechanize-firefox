@@ -26,7 +26,8 @@ reorganizations of the application structure.
 Yes.
 
 If you run a unixish operating system, like OSX or Ubuntu or some other
-Linux distribution, then Firefox will connect to your X server. If you do not
+Linux distribution, then Firefox will connect to your X server and display
+a window there. If you do not
 want Firefox to actually display on your monitor, many people have had success
 by running Firefox on another X server separate from the main X server,
 like Xvfb.
@@ -87,17 +88,15 @@ program that reproduces the problem and shows what you expect
 to happen and what happens instead. This makes it much easier
 for me to help you better in resolving the problem.
 
-
 =head1 AUTHOR
 
 Max Maischein C<corion@cpan.org>
-
-Contributed examples contain the original author's name.
 
 =head1 COPYRIGHT
 
 Copyright 2010, Max Maischein.
 
-All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
+All Rights Reserved. This module is free software. It may be used,
+redistributed and/or modified under the same terms as Perl itself.
 
 =cut

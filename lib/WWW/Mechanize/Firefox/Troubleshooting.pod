@@ -135,4 +135,27 @@ directly.
 
 There is no workaround.
 
+=head1 Known Problems
+
+=head2 Page Encoding Versus Perl Encoding
+
+Currently, whatever Firefox delivers as the page content
+is assumed to be UTF-8. This is likely not the case in some
+situations, for example with pages encoded in koi-8. There is
+no real workaround to that. WWW::Mechanize needs to talk
+to Firefox to get its guess about the encoding and then
+needs to decode the content according to what Firefox
+tells it.
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright 2010, Max Maischein.
+
+All Rights Reserved. This module is free software. It may be used,
+redistributed and/or modified under the same terms as Perl itself.
+
 =cut
