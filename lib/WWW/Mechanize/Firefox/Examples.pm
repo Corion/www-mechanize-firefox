@@ -38,7 +38,7 @@ program that is also included in the examples directory.
 
 =head1 Example programs
 
-The following is a list of the 11 example programs that are included in the WWW::Mechanize::Firefox distribution.
+The following is a list of the 12 example programs that are included in the WWW::Mechanize::Firefox distribution.
 
 =over
 
@@ -52,8 +52,6 @@ The following is a list of the 11 example programs that are included in the WWW:
 
 =item * L<Example: bcat.pl> Send console text to the browser
 
-=item * L<Example: fullscreen.pl> Switch the browser to full screen
-
 =item * L<Example: manipulate-javascript.pl> Make changes to Javascript values in a webpage
 
 =item * L<Example: javascript.pl> Execute Javascript in the webpage context
@@ -63,6 +61,10 @@ The following is a list of the 11 example programs that are included in the WWW:
 =item * L<Example: tail-console.pl> Display messages from the Error Console to STDOUT
 
 =item * L<Example: urlbar.pl> Listen to changes in the location bar
+
+=item * L<Example: fullscreen.pl> Switch the browser to full screen
+
+=item * L<Example: proxy-settings.pl> Change the proxy settings and other settings in Firefox
 
 =back
 
@@ -308,44 +310,6 @@ if (! $encode_type) {
     =cut
 
 Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.31/examples/bcat.pl>
-
-=head2 Example: fullscreen.pl
-
-    use strict;
-    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
-    use WWW::Mechanize::Firefox;
-    use Time::HiRes;
-    
-    my $mech = WWW::Mechanize::Firefox->new(
-        #log => ['debug'],
-    );
-    
-    my ($window, $type) = $mech->eval('window');
-    
-    print "Going fullscreen\n";
-    $window->{fullScreen} = 1;
-    
-    sleep 10;
-    
-    print "Going back to normal\n";
-    $window->{fullScreen} = 0;
-    
-    =head1 NAME
-    
-    fullscreen.pl - toggle fullscreen mode of Firefox
-    
-    =head1 SYNOPSIS
-    
-    fullscreen.pl
-    
-    =head1 DESCRIPTION
-    
-    This program switches Firefox into fullscreen mode. It shows
-    how to access Firefox-internal variables and how to manipulate them.
-    
-    =cut
-
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.31/examples/fullscreen.pl>
 
 =head2 Example: manipulate-javascript.pl
 
@@ -732,6 +696,95 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 
 Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.31/examples/urlbar.pl>
+
+=head2 Example: fullscreen.pl
+
+    use strict;
+    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
+    use WWW::Mechanize::Firefox;
+    use Time::HiRes;
+    
+    my $mech = WWW::Mechanize::Firefox->new(
+        #log => ['debug'],
+    );
+    
+    my ($window, $type) = $mech->eval('window');
+    
+    print "Going fullscreen\n";
+    $window->{fullScreen} = 1;
+    
+    sleep 10;
+    
+    print "Going back to normal\n";
+    $window->{fullScreen} = 0;
+    
+    =head1 NAME
+    
+    fullscreen.pl - toggle fullscreen mode of Firefox
+    
+    =head1 SYNOPSIS
+    
+    fullscreen.pl
+    
+    =head1 DESCRIPTION
+    
+    This program switches Firefox into fullscreen mode. It shows
+    how to access Firefox-internal variables and how to manipulate them.
+    
+    =cut
+
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.31/examples/fullscreen.pl>
+
+=head2 Example: proxy-settings.pl
+
+Check the network proxy settings
+my $prefs = $mech->repl->expr(<<'JS');
+    #!perl -w
+    use strict;
+    use Getopt::Long;
+    use WWW::Mechanize::Firefox;
+    
+    my $mech = WWW::Mechanize::Firefox->new();
+    
+    # Check the network proxy settings
+    my $prefs = $mech->repl->expr(<<'JS');
+      Components.classes["@mozilla.org/preferences-service;1"]
+        .getService(Components.interfaces.nsIPrefBranch);
+    JS
+    
+    print "Your proxy settings are\n";
+    print "Proxy type\t",  $prefs->getIntPref('network.proxy.type'),"\n";
+    print "HTTP  proxy\t", $prefs->getCharPref('network.proxy.http'),"\n";
+    print "HTTP  port\t",  $prefs->getIntPref('network.proxy.http_port'),"\n";
+    print "SOCKS proxy\t", $prefs->getCharPref('network.proxy.socks'),"\n";
+    print "SOCKS port\t",  $prefs->getIntPref('network.proxy.socks_port'),"\n";
+    
+    # Switch off the proxy
+    if ($prefs->getIntPref('network.proxy.type') != 0) {
+        $prefs->setIntPref('network.proxy.type',0);
+    };
+    
+    # Switch on the manual proxy configuration
+    $prefs->setIntPref('network.proxy.type',1);
+    
+    
+    =head1 NAME
+    
+    proxy-settings.pl - display and change the proxy settings of Firefox
+    
+    =head1 SYNOPSIS
+    
+    proxy-settings.pl
+    
+    =head1 DESCRIPTION
+    
+    This shows how to read and write configuration settings
+    from L<about:config> . Particularly, it shows how
+    to switch the proxy settings in Firefox on and off.
+    
+    =cut
+
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.31/examples/proxy-settings.pl>
 
 =head1 AUTHOR
 
