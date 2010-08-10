@@ -210,6 +210,10 @@ The recognized options are:
 `autoclose` - whether to automatically close the tab at program exit. Default is
 to close the tab.
 
+## C<< $mech->closeTab( $tab [,$repl] ) >>
+
+Close the given tab.
+
 ## C<< $mech->tab >>
 
 Gets the object that represents the Firefox tab used by WWW::Mechanize::Firefox.
@@ -411,11 +415,31 @@ This is WWW::Mechanize::Firefox specific.
 
   print $mech->content;
 
-Returns the current content of the tab as a scalar.
+Returns the current content of the tab as a scalar. The content
+does not decoded according to the encoding. It is returned
+as raw octets.
 
 This is likely not binary-safe.
 
 It also currently only works for HTML pages.
+
+## C<< $mech->content_utf8 >>
+
+    print $mech->content_utf8;
+
+This always returns the content as a Unicode string. It tries
+to decode the raw content according to its input encoding.
+
+This method is very experimental.
+
+Don't use this method when trying to get at binary data.
+
+## C<< $mech->content_encoding >>
+
+    print "The content is encoded as ", $mech->content_encoding;
+
+Returns the encoding that the content is in. This can be used
+to convert the content to UTF-8.
 
 ## C<< $mech->update_html( $html ) >>
 
@@ -423,6 +447,12 @@ It also currently only works for HTML pages.
 
 Writes `$html` into the current document. This is mostly
 implemented as a convenience method for [HTML::Display::MozRepl](http://search.cpan.org/search?mode=module&query=HTML::Display::MozRepl).
+
+## C<< $mech->set_tab_content $tab, $html [,$repl] >>
+
+This is a more general method that allows you to replace
+the HTML of an arbitrary tab, and not only the tab that
+WWW::Mechanize::Firefox is associated with.
 
 ## C<< $mech->save_content( $localname [, $resource_directory] [, %options ] ) >>
 

@@ -971,9 +971,7 @@ sub response {
     };   
 
     # We're cool!
-    my $c = $self->content;
-    # XXX don't encode here, encode in $self->content
-    return HTTP::Response->new(200,'',[],encode 'UTF-8', $c)
+    return HTTP::Response->new(200,'',[],$self->content_utf8)
 }
 *res = \&response;
 
@@ -1119,7 +1117,9 @@ sub docshell {
 
   print $mech->content;
 
-Returns the current content of the tab as a scalar.
+Returns the current content of the tab as a scalar. The content
+does not decoded according to the encoding. It is returned
+as raw octets.
 
 This is likely not binary-safe.
 
@@ -1137,12 +1137,58 @@ sub content {
 function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
-    return e.innerHTML;
+    return [e.innerHTML,d.inputEncoding];
 }
 JS
-    # XXX Properly set the proper encoding on the result!
-    # Use UTF-8 unless we know what it actually is
-    $html->($d);
+    # We return the raw bytes here.
+    my ($content,$encoding) = @{ $html->($d) };
+    return $content
+};
+
+=head2 C<< $mech->content_utf8 >>
+
+    print $mech->content_utf8;
+
+This always returns the content as a Unicode string. It tries
+to decode the raw content according to its input encoding.
+
+This method is very experimental.
+
+Don't use this method when trying to get at binary data.
+
+=cut
+
+sub content_utf8 {
+    my ($self, $d) = @_;
+    
+    my $rn = $self->repl->repl;
+    $d ||= $self->document; # keep a reference to it!
+    
+    my $html = $self->repl->declare(<<'JS');
+function(d){
+    var e = d.createElement("div");
+    e.appendChild(d.documentElement.cloneNode(true));
+    return [e.innerHTML,d.inputEncoding];
+}
+JS
+    # Decode the result to utf8
+    my ($content,$encoding) = @{ $html->($d) };
+    return decode($encoding, $content);
+};
+
+=head2 C<< $mech->content_encoding >>
+
+    print "The content is encoded as ", $mech->content_encoding;
+
+Returns the encoding that the content is in. This can be used
+to convert the content to UTF-8.
+
+=cut
+
+sub content_encoding {
+    my ($self, $d) = @_;
+    $d ||= $self->document; # keep a reference to it!
+    return $d->{inputEncoding};
 };
 
 =head2 C<< $mech->update_html( $html ) >>
