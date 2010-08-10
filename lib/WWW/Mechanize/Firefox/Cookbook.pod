@@ -41,6 +41,21 @@ so many of the recipes in L<WWW::Mechanize::Cookbook> apply to it as well.
   );
   $mech->get('http://google.com');
 
+=head2 Bring the tab to the foreground at start
+
+  use WWW::Mechanize::Firefox;
+  my $mech = WWW::Mechanize::Firefox->new(
+      activate => 1,
+  );
+  $mech->get('http://google.com');
+
+=head2 Bring the tab to the foreground later
+
+  my $mech = WWW::Mechanize::Firefox->new(
+  );
+  ...
+  $mech->activateTab();
+
 =head2 Fetch a page to a file
 
   use WWW::Mechanize::Firefox;
