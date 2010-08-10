@@ -13,7 +13,7 @@ use MIME::Base64;
 use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
-use Encode qw(encode);
+use Encode qw(encode decode);
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
