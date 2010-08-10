@@ -438,6 +438,8 @@ JS
 
 =head2 C<< $mech->addTab( %options ) >>
 
+    my $new = $mech->addTab();
+
 Creates a new tab and returns it.
 The tab will be automatically closed upon program exit.
 
