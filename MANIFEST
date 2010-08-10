@@ -39,6 +39,7 @@ t/50-form2.html
 t/50-form2.t
 t/50-form3.html
 t/50-mech-bufsize.t
+t/50-mech-closeTab.t
 t/50-mech-ct.t
 t/50-mech-event.t
 t/50-mech-get.t
