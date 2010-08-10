@@ -466,18 +466,8 @@ sub addTab {
     my $repl = $options{ repl } || $self->repl;
     my $rn = $repl->name;
 
-    my $tab = $repl->declare(<<'JS')->();
-    function (){
-        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                           .getService(Components.interfaces.nsIWindowMediator);
-        var win = wm.getMostRecentWindow('navigator:browser');
-        if (! win) {
-          // No browser windows are open, so open a new one.
-          win = window.open('about:blank');
-        };
-        return win.getBrowser().addTab();
-    }
-JS
+    my $tab = $self->browser( $repl )->addTab;
+
     if (not exists $options{ autoclose } or $options{ autoclose }) {
         $self->autoclose_tab($tab)
     };
@@ -502,15 +492,7 @@ sub autoclose_tab {
 sub selectedTab {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
-    my $selected_tab = $repl->declare(<<'JS');
-function() {
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                       .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    return win.getBrowser().selectedTab
-}
-JS
-    return $selected_tab->();
+    return $self->browser( $repl )->{tabContainer}->{selectedItem};
 }
 
 =head2 C<< $mech->closeTab( $tab [,$repl] ) >>
