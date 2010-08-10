@@ -168,6 +168,10 @@ UI METHODS
     *   `autoclose' - whether to automatically close the tab at program
         exit. Default is to close the tab.
 
+  `$mech->closeTab( $tab [,$repl] )'
+
+    Close the given tab.
+
   `$mech->tab'
 
     Gets the object that represents the Firefox tab used by
