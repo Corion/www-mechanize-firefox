@@ -6,6 +6,14 @@
       for things that still need to be implemented. Also list
       workarounds.
     . Add example for how to change Firefox settings.
+    . Change code for closing a tab so it works dynamically
+    . Add method ->closeTab for closing arbitrary tabs and a test for it
+    . Add experimental ->content_utf8 method that always tries to decode
+      the content.
+    ! All HTTP::Response objects now use ->content_utf8() instead of
+      expecting the content to be in utf8. This may break your
+      encoding-sensitive code, so please send me test cases where it breaks
+      for you.
 
 0.31 20100713
     . ->get now supports the :local_file shortcut for local saving
