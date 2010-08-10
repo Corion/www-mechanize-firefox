@@ -576,14 +576,8 @@ sub activateTab {
     my ($self, $tab, $repl ) = @_;
     $tab ||= $self->tab;
     $repl ||= $self->repl;
-    # Work around a bug in MozRepl::RemoteObject
-    $repl->declare(<<'JS')->($self->browser($repl), $tab);
-    function (b,t) {
-        b.tabContainer.selectedItem = t
-    };
-JS
-    # This enters a deep recursion on the JS side and I don't know why
     #$self->browser( $repl )->{selectedItem} = $tab;
+    $self->browser( $repl )->{tabContainer}->{selectedItem} = $tab;
 };
 
 =head2 C<< $mech->tab >>
