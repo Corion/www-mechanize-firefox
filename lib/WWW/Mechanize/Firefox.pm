@@ -555,6 +555,29 @@ JS
     return @$tabs
 }
 
+=head2 C<< $mech->activateTab( [ $tab [, $repl ]] ) >>
+
+    $mech->activateTab( $mytab ); # bring to foreground
+    
+Activates the tab passed in. The tab defaults to the tab associated
+with the C<$mech> object.
+
+=cut
+
+sub activateTab {
+    my ($self, $tab, $repl ) = @_;
+    $tab ||= $self->tab;
+    $repl ||= $self->repl;
+    # Work around a bug in MozRepl::RemoteObject
+    $repl->declare(<<'JS')->($self->browser($repl), $tab);
+    function (b,t) {
+        b.tabContainer.selectedItem = t
+    };
+JS
+    # This enters a deep recursion on the JS side and I don't know why
+    #$self->browser( $repl )->{selectedItem} = $tab;
+};
+
 =head2 C<< $mech->tab >>
 
 Gets the object that represents the Firefox tab used by WWW::Mechanize::Firefox.
