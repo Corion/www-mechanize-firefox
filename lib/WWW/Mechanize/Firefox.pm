@@ -1173,7 +1173,14 @@ function(d){
 JS
     # Decode the result to utf8
     my ($content,$encoding) = @{ $html->($d) };
-    return decode($encoding, $content);
+    if ($encoding eq 'UTF-8') {
+        if (! utf8::is_utf8($content)) {
+            # Switch on UTF-8 flag
+            $content = Encode::decode($encoding, $content);
+        };
+    } else {
+        return decode($encoding, $content);
+    };
 };
 
 =head2 C<< $mech->content_encoding >>
