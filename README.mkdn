@@ -191,7 +191,19 @@ this function, edit the source code.
 
 # UI METHODS
 
+## C<< $mech->browser( [$repl] ) >>
+
+    my $b = $mech->browser();
+
+Returns the current Firefox browser instance, or opens a new browser
+window if none is available, and returns its browser instance.
+
+If you need to call this as a class method, pass in the [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject)
+bridge to use.
+
 ## C<< $mech->addTab( %options ) >>
+
+    my $new = $mech->addTab();
 
 Creates a new tab and returns it.
 The tab will be automatically closed upon program exit.
@@ -213,6 +225,14 @@ to close the tab.
 ## C<< $mech->closeTab( $tab [,$repl] ) >>
 
 Close the given tab.
+
+## C<< $mech->activateTab( [ $tab [, $repl ]] ) >>
+
+    $mech->activateTab( $mytab ); # bring to foreground
+    
+
+Activates the tab passed in. The tab defaults to the tab associated
+with the `$mech` object.
 
 ## C<< $mech->tab >>
 
