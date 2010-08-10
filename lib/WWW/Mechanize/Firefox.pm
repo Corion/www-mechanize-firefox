@@ -446,10 +446,7 @@ sub addTab {
           // No browser windows are open, so open a new one.
           win = window.open('about:blank');
         };
-        var b = win.getBrowser();
-        var t = b.addTab();
-        t.parentTabBox = b;
-        return t
+        return win.getBrowser().addTab();
     }
 JS
     if (not exists $options{ autoclose } or $options{ autoclose }) {
@@ -462,9 +459,11 @@ JS
 sub autoclose_tab {
     my ($self,$tab) = @_;
     my $release = join "",
-        q{var b=self.parentTabBox;},
-        q{self.parentTabBox=undefined;},
-        q{if(b){b.removeTab(self)};},
+        q<var p=self.parentNode;>,
+        q<while(p && p.tagName != "tabbrowser") {>,
+            q<p = p.parentNode>,
+        q<};>,
+        q<if(p){p.removeTab(self)};>,
     ;
     $tab->__release_action($release);
 };
@@ -483,6 +482,28 @@ function() {
 }
 JS
     return $selected_tab->();
+}
+
+=head2 C<< $mech->closeTab( $tab [,$repl] ) >>
+
+Close the given tab.
+
+=cut
+
+sub closeTab {
+    my ($self,$tab,$repl) = @_;
+    $repl ||= $self->repl;
+    my $close_tab = $repl->declare(<<'JS');
+function(tab) {
+    // find containing browser
+    var p = tab.parentNode;
+    while (p.tagName != "tabbrowser") {
+        p = p.parentNode;
+    };
+    if(p){p.removeTab(tab)};
+}
+JS
+    return $close_tab->($tab);
 }
 
 sub openTabs {
