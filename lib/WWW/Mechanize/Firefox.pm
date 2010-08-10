@@ -407,6 +407,35 @@ sub unsafe_page_property_access {
 
 =head1 UI METHODS
 
+=head2 C<< $mech->browser( [$repl] ) >>
+
+    my $b = $mech->browser();
+
+Returns the current Firefox browser instance, or opens a new browser
+window if none is available, and returns its browser instance.
+
+If you need to call this as a class method, pass in the L<MozRepl::RemoteObject>
+bridge to use.
+
+=cut
+
+sub browser {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    return $repl->declare(<<'JS')->();
+    function() {
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        var win = wm.getMostRecentWindow('navigator:browser');
+        if (! win) {
+          // No browser windows are open, so open a new one.
+          win = window.open('about:blank');
+        };
+        return win.getBrowser()
+    }
+JS
+};
+
 =head2 C<< $mech->addTab( %options ) >>
 
 Creates a new tab and returns it.
