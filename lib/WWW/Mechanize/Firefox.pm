@@ -181,7 +181,7 @@ sub new {
         unless $args{tab};
         
     if (delete $args{ activate }) {
-        $class->activateTab( $tab, $args{ repl });
+        $class->activateTab( $args{ tab }, $args{ repl });
     };
     
     $args{ response } ||= undef;
