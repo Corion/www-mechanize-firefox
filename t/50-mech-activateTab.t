@@ -41,10 +41,11 @@ HTML
 
 my $tab = $mech->tab;
 
-my $old_tab = $mech->selectedTab;
+my $old_tab = $mech->selectedTab( $repl );
 
 $mech->activateTab( $tab2 );
-my $current = $mech->selectedTab;
+#sleep 5;
+my $current = $mech->selectedTab( $repl );
 ok $current, "We got a currently selected tab";
 
 is $current->{title}, $magic2, "We selected tab 2";
