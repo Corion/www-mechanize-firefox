@@ -67,6 +67,10 @@ active tab will be used instead.
 C<create> - will create a new tab if no existing tab matching
 the criteria given in C<tab> can be found.
 
+=item *
+
+C<activate> - make the tab the active tab
+
 =item * 
 
 C<launch> - name of the program to launch if we can't connect to it on
@@ -176,6 +180,10 @@ sub new {
     die "No tab found"
         unless $args{tab};
         
+    if (delete $args{ activate }) {
+        $class->activateTab( $tab, $args{ repl });
+    };
+    
     $args{ response } ||= undef;
     $args{ current_form } ||= undef;
         
