@@ -3115,6 +3115,17 @@ for information on how to possibly override the "Save As" dialog
 The public repository of this module is 
 L<http://github.com/Corion/www-mechanize-firefox>.
 
+=head1 SUPPORT
+
+The public support forum of this module is
+L<http://perlmonks.org/>.
+
+=head1 BUG TRACKER
+
+Please report bugs in this module via the RT CPAN bug queue at
+L<https://rt.cpan.org/Public/Dist/Display.html?Name=WWW-Mechanize-Firefox>
+or via mail to L<www-mechanize-firefox-Bugs@rt.cpan.org>.
+
 =head1 AUTHOR
 
 Max Maischein C<corion@cpan.org>
