@@ -153,13 +153,43 @@ JAVASCRIPT METHODS
     function, edit the source code.
 
 UI METHODS
-  `$mech->addTab( OPTIONS )'
+  `$mech->browser( [$repl] )'
 
-    Creates a new tab. The tab will be automatically closed upon program
-    exit.
+        my $b = $mech->browser();
+
+    Returns the current Firefox browser instance, or opens a new browser
+    window if none is available, and returns its browser instance.
+
+    If you need to call this as a class method, pass in the
+    MozRepl::RemoteObject bridge to use.
+
+  `$mech->addTab( %options )'
+
+        my $new = $mech->addTab();
+
+    Creates a new tab and returns it. The tab will be automatically closed
+    upon program exit.
 
     If you want the tab to remain open, pass a false value to the the `
     autoclose ' option.
+
+    The recognized options are:
+
+    *   `repl' - the repl to use. By default it will use `$mech->repl'.
+
+    *   `autoclose' - whether to automatically close the tab at program
+        exit. Default is to close the tab.
+
+  `$mech->closeTab( $tab [,$repl] )'
+
+    Close the given tab.
+
+  `$mech->activateTab( [ $tab [, $repl ]] )'
+
+        $mech->activateTab( $mytab ); # bring to foreground
+    
+    Activates the tab passed in. The tab defaults to the tab associated with
+    the `$mech' object.
 
   `$mech->tab'
 
@@ -304,13 +334,13 @@ NAVIGATION METHODS
     Returns the HTTP status code of the response. This is a 3-digit number
     like 200 for OK, 404 for not found, and so on.
 
-  `$mech->reload( [BYPASS_CACHE] )'
+  `$mech->reload( [$bypass_cache] )'
 
         $mech->reload();
 
-    Reloads the current page. If `BYPASS_CACHE' is a true value, the browser
-    is not allowed to use a cached page. This is the difference between
-    pressing `F5' (cached) and `shift-F5' (uncached).
+    Reloads the current page. If `$bypass_cache' is a true value, the
+    browser is not allowed to use a cached page. This is the difference
+    between pressing `F5' (cached) and `shift-F5' (uncached).
 
     Returns the (new) response.
 
@@ -355,11 +385,30 @@ CONTENT METHODS
 
       print $mech->content;
 
-    Returns the current content of the tab as a scalar.
+    Returns the current content of the tab as a scalar. The content does not
+    decoded according to the encoding. It is returned as raw octets.
 
     This is likely not binary-safe.
 
     It also currently only works for HTML pages.
+
+  `$mech->content_utf8'
+
+        print $mech->content_utf8;
+
+    This always returns the content as a Unicode string. It tries to decode
+    the raw content according to its input encoding.
+
+    This method is very experimental.
+
+    Don't use this method when trying to get at binary data.
+
+  `$mech->content_encoding'
+
+        print "The content is encoded as ", $mech->content_encoding;
+
+    Returns the encoding that the content is in. This can be used to convert
+    the content to UTF-8.
 
   `$mech->update_html( $html )'
 
@@ -367,6 +416,12 @@ CONTENT METHODS
 
     Writes `$html' into the current document. This is mostly implemented as
     a convenience method for HTML::Display::MozRepl.
+
+  `$mech->set_tab_content $tab, $html [,$repl]'
+
+    This is a more general method that allows you to replace the HTML of an
+    arbitrary tab, and not only the tab that WWW::Mechanize::Firefox is
+    associated with.
 
   `$mech->save_content( $localname [, $resource_directory] [, %options ] )'
 

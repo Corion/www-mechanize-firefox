@@ -9,6 +9,7 @@ examples/js-console.pl
 examples/manipulate-javascript.pl
 examples/open-local-file.pl
 examples/open-url.pl
+examples/proxy-settings.pl
 examples/README
 examples/screenshot.pl
 examples/tail-console.pl
@@ -19,6 +20,8 @@ lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
 lib/WWW/Mechanize/Firefox/Cookbook.pod
 lib/WWW/Mechanize/Firefox/Examples.pm
+lib/WWW/Mechanize/Firefox/FAQ.pod
+lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
@@ -35,7 +38,9 @@ t/50-form-with-fields.t
 t/50-form2.html
 t/50-form2.t
 t/50-form3.html
+t/50-mech-activateTab.t
 t/50-mech-bufsize.t
+t/50-mech-closeTab.t
 t/50-mech-ct.t
 t/50-mech-event.t
 t/50-mech-get.t

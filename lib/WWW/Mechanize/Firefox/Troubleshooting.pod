@@ -1,0 +1,161 @@
+=pod
+
+=head1 NAME
+
+WWW::Mechanize::Firefox::Troubleshooting - things to watch out for
+
+=head1 Installation
+
+If you notice that tests get skipped and/or the module installs
+but "does not seem to work", there are some more steps required
+to configure Firefox:
+
+=over 4
+
+=item 1.
+
+Install mozrepl from
+
+L<http://wiki.github.com/bard/mozrepl/>
+
+A direct link is
+   
+L<http://repo.hyperstruct.net/mozrepl/1.0/mozrepl.xpi>
+
+=item 2.
+
+Launch Firefox
+
+=item 3.
+
+Start C<mozrepl> in Firefox by going to the menu:
+
+   "Tools" -> "MozRepl" -> "Start"
+
+You may want to tick the "Activate on startup" item.
+
+Alternatively, launch the Firefox binary with the C<-mozrepl> command line
+switch:
+
+  firefox -mozrepl
+
+If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
+this might be because you use the NoScript Mozilla extension
+and have it blocking Javascript for file:// URLs. While this is good,
+the tests need Javascript enabled.
+
+Solution:
+
+=over 4
+
+=item 1.
+
+Open t/50-click.html in Firefox
+
+=item 2.
+
+Allow Javascript for all file:// URLs
+
+=item 3.
+
+Re-run tests
+
+=item 4.
+
+No test should fail
+
+=back
+
+=back
+
+=head1 Dialogs that break your application
+
+This section lists things that can (and will) happen which might
+block your Perl scripts from working properly
+with Firefox.
+
+=head2 Save-As Dialog Displays
+
+If a webserver sends the appropriate headers, Firefox will ask the
+user where to save a file. This dialog will pop up and stall
+the Perl application until a user clicks "OK" to confirm where
+to save the file.
+
+=head3 Solution
+
+Find where Firefox pops up the dialog and replace that with a
+callback to Perl.
+
+=head3 Workaround
+
+In many cases, you can instruct Firefox to always save files
+into the same folder. This may or may not be acceptable.
+You can directly call C<< ->get >> or C<< ->save_url >>
+and also specify where to save the content by using
+
+  $mech->get( $url, ':content_file' => $tempfile );
+
+or alternatively
+
+  $mech->save_url( $url => $target_filename );
+
+Both of these workarounds require you to know the URL
+you want to download.
+
+=head2 Updates to Firefox Add-Ons
+
+The dialog notification for new versions of Add-Ons is not
+yet automated. If Firefox pops up this dialog, your application
+will stall until a human closes this dialog.
+
+=head3 Solution
+
+Find where Firefox pops up this dialog and override the display either
+through a setting or through replacing the Javascript code with
+the appropriate Perl code.
+
+=head3 Workaround
+
+Disable checking for and notification about updated Add-Ons.
+
+=head2 Proxy password
+
+If a fresh Firefox process is launched and a proxy is configured,
+Firefox will ask for the credentials needed for that proxy.
+The Perl script will stall until a human enters or confirms
+the credentials.
+
+=head3 Solution
+
+Find where Firefox pops up this dialog and override the display
+with a function that supplies the appropriate credentials
+directly.
+
+=head3 Workaround
+
+There is no workaround.
+
+=head1 Known Problems
+
+=head2 Page Encoding Versus Perl Encoding
+
+Currently, whatever Firefox delivers as the page content
+is assumed to be UTF-8. This is likely not the case in some
+situations, for example with pages encoded in koi-8. There is
+no real workaround to that. WWW::Mechanize needs to talk
+to Firefox to get its guess about the encoding and then
+needs to decode the content according to what Firefox
+tells it.
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright 2010, Max Maischein.
+
+All Rights Reserved. This module is free software. It may be used,
+redistributed and/or modified under the same terms as Perl itself.
+
+=cut
