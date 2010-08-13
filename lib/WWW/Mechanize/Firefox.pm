@@ -1155,9 +1155,8 @@ sub docshell {
 
   print $mech->content;
 
-Returns the current content of the tab as a scalar. The content
-does not decoded according to the encoding. It is returned
-as raw octets.
+This always returns the content as a Unicode string. It tries
+to decode the raw content according to its input encoding.
 
 This is likely not binary-safe.
 
@@ -1180,45 +1179,13 @@ function(d){
 JS
     # We return the raw bytes here.
     my ($content,$encoding) = @{ $html->($d) };
-    return $content
-};
-
-=head2 C<< $mech->content_utf8 >>
-
-    print $mech->content_utf8;
-
-This always returns the content as a Unicode string. It tries
-to decode the raw content according to its input encoding.
-
-This method is very experimental.
-
-Don't use this method when trying to get at binary data.
-
-=cut
-
-sub content_utf8 {
-    my ($self, $d) = @_;
-    
-    my $rn = $self->repl->repl;
-    $d ||= $self->document; # keep a reference to it!
-    
-    my $html = $self->repl->declare(<<'JS');
-function(d){
-    var e = d.createElement("div");
-    e.appendChild(d.documentElement.cloneNode(true));
-    return [e.innerHTML,d.inputEncoding];
-}
-JS
-    # Decode the result to utf8
-    my ($content,$encoding) = @{ $html->($d) };
-    if ($encoding eq 'UTF-8') {
-        if (! utf8::is_utf8($content)) {
-            # Switch on UTF-8 flag
-            $content = Encode::decode($encoding, $content);
-        };
-    } else {
-        return decode($encoding, $content);
+    if (! utf8::is_utf8($content)) {
+        # Switch on UTF-8 flag
+        # This should never happen, as JSON::XS (and JSON) should always
+        # already return proper UTF-8
+        $content = Encode::decode($encoding, $content);
     };
+    return $content
 };
 
 =head2 C<< $mech->content_encoding >>
@@ -1226,7 +1193,7 @@ JS
     print "The content is encoded as ", $mech->content_encoding;
 
 Returns the encoding that the content is in. This can be used
-to convert the content to UTF-8.
+to convert the content from UTF-8 back to its native encoding.
 
 =cut
 
