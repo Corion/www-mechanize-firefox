@@ -2154,7 +2154,7 @@ in addition to all keys that C<< $mech->xpath >> supports.
 
 =cut
 
-sub get_set_value {
+sub _field_by_name {
     my ($self,%options) = @_;
     my @fields;
     my $name  = delete $options{ name };
@@ -2166,10 +2166,6 @@ sub get_set_value {
     } elsif ($name =~ s/^\.//) {
         $attr = 'class'
     };
-    my $set_value = exists $options{ value };
-    my $value = delete $options{ value };
-    my $pre   = delete $options{pre}  || $self->{pre_value};
-    my $post  = delete $options{post} || $self->{post_value};
     if (blessed $name) {
         @fields = $name;
     } else {
@@ -2180,10 +2176,21 @@ sub get_set_value {
             %options,
         );
     };
+    @fields
+}
+
+sub get_set_value {
+    my ($self,%options) = @_;
+    my $set_value = exists $options{ value };
+    my $value = delete $options{ value };
+    my $pre   = delete $options{pre}  || $self->{pre_value};
+    my $post  = delete $options{post} || $self->{post_value};
+    my $name  = delete $options{ name };
+    my @fields = $self->_field_by_name( name => $name, %options );
     $pre = [$pre]
         if (! ref $pre);
     $post = [$post]
-        if (! ref $pre);
+        if (! ref $post);
         
     if ($fields[0]) {
         if ($set_value) {
