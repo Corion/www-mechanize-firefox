@@ -140,12 +140,10 @@ There is no workaround.
 =head2 Page Encoding Versus Perl Encoding
 
 Currently, whatever Firefox delivers as the page content
-is assumed to be UTF-8. This is likely not the case in some
-situations, for example with pages encoded in koi-8. There is
-no real workaround to that. WWW::Mechanize needs to talk
-to Firefox to get its guess about the encoding and then
-needs to decode the content according to what Firefox
-tells it.
+is decoded to UTF-8 unless it already is. This is likely not the case in some
+situations, for example with pages encoded in koi-8. Please send
+me test cases where decoding fails or does not produce the
+correct data.
 
 =head1 AUTHOR
 
