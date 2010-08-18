@@ -1009,7 +1009,7 @@ sub response {
     };   
 
     # We're cool!
-    return HTTP::Response->new(200,'',[],$self->content_utf8)
+    return HTTP::Response->new(200,'',[],$self->content)
 }
 *res = \&response;
 
