@@ -2159,7 +2159,7 @@ sub get_set_value {
     my @fields;
     my $name  = delete $options{ name };
     my $attr = 'name';
-    if ($name =~ s/^[^]//) {
+    if ($name =~ s/^\^//) { # if it starts with ^, it's supposed to be a name
         $attr = 'name'
     } elsif ($name =~ s/^#//) {
         $attr = 'id'
