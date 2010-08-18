@@ -2210,6 +2210,53 @@ sub get_set_value {
     }
 }
 
+=head2 C<< $mech->select( $name, $value ) >>
+
+=head2 C<< $mech->select( $name, \@values ) >>
+
+Given the name of a C<select> field, set its value to the value
+specified.  If the field is not C<< <select multiple> >> and the
+C<$value> is an array, only the B<first> value will be set.  [Note:
+the documentation previously claimed that only the last value would
+be set, but this was incorrect.]  Passing C<$value> as a hash with
+an C<n> key selects an item by number (e.g.
+C<< {n => 3} >> or C<< {n => [2,4]} >>).
+The numbering starts at 1.  This applies to the current form.
+
+If you have a field with C<< <select multiple> >> and you pass a single
+C<$value>, then C<$value> will be added to the list of fields selected,
+without clearing the others.  However, if you pass an array reference,
+then all previously selected values will be cleared.
+
+Returns true on successfully setting the value. On failure, returns
+false and calls C<< $self>warn() >> with an error message.
+
+=cut
+
+sub select {
+    my ($self, $name, $value) = @_;
+    my ($field) = $self->_field_by_name(
+        node => $self->current_form,
+        name => $name,
+        #%options,
+    );
+    
+    if (ref $value) {
+        # clear all preselected values
+        for my $o ($self->xpath( './/option', node => $field)) {
+            $o->{selected} = 0;
+        }
+    } else {
+        $value = [$value];
+    };
+    
+    # Now, for each value passed, select the appropriate option
+    for my $v (@$value) {
+        my $option = $self->xpath( sprintf( './/option[@value="%s"]', $v) , node => $field, single => 1 );
+        $option->{selected} = 1;
+    }
+}
+
 =head2 C<< $mech->submit >>
 
   $mech->submit;
