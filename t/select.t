@@ -2,15 +2,25 @@
 
 #use warnings;
 use strict;
-use Test::More tests => 21;
-use Data::Dumper;
+use Test::More;
 
 BEGIN {
     delete @ENV{qw(PATH IFS CDPATH ENV BASH_ENV)};  # Placates taint-unsafe Cwd.pm in 5.6.1
     use_ok( 'WWW::Mechanize::Firefox' );
 }
 
-my $mech = WWW::Mechanize::Firefox->new();
+my $mech = eval { WWW::Mechanize::Firefox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 21;
+};
 isa_ok( $mech, 'WWW::Mechanize::Firefox' );
 
 #my $uri = URI::file->new_abs( 't/select.html' )->as_string;
@@ -34,8 +44,7 @@ $form = $mech->current_form();
 # pass multiple values to a multi select
 $mech->select('multilist', \@sendmulti);
 @return = $mech->value('multilist');
-is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti))
-    or diag Dumper \@return;
+is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti));
 
 $response = $mech->get_local( 'select.html' );
 ok( $response->is_success, "Fetched select.html" );
