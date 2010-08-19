@@ -2136,6 +2136,10 @@ The legacy form of
 is also still supported but will likely be deprecated
 in favour of the C<< ->field >> method.
 
+For fields that can have multiple values, like a C<select> field,
+the method is context sensitive and returns the first selected
+value in scalar context and all values in list context.
+
 =cut
 
 sub value {
@@ -2144,7 +2148,7 @@ sub value {
         return $self->field($name => $value);
     } else {
         my ($self,$name,%options) = @_;
-        $self->get_set_value(
+        return $self->get_set_value(
             node => $self->current_form,
             %options,
             name => $name,
