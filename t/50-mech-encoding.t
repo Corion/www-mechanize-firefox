@@ -25,5 +25,5 @@ for (
     my ($file,$encoding,$content_re) = @$_;
     $mech->get_local($file);
     is $mech->content_encoding, $encoding, "$file has encoding $encoding";
-    like $mech->content_utf8, $content_re, "Partial expression gets found in UTF-8 content";
+    like $mech->content, $content_re, "Partial expression gets found in UTF-8 content";
 };
