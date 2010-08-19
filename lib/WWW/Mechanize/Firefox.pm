@@ -994,6 +994,9 @@ sub response {
         if ($scheme and $scheme =~ /^https?/) {
             # We can only extract from a HTTP Response
             return $self->_extract_response( $js_res );
+        } elsif ($scheme and $scheme =~ /^file/) {
+            # We're cool!
+            return HTTP::Response->new(200,'',[],$self->content)
         } else {
             # make up a response, below
             warn "Making up response for unknown scheme '$scheme'";
