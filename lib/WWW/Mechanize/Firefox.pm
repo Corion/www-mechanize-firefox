@@ -2263,21 +2263,45 @@ sub select {
         #%options,
     );
     
-    warn Dumper $value;
-    if (ref $value) {
-        # clear all preselected values
-        for my $o ($self->xpath( './/option', node => $field)) {
-            $o->{selected} = 0;
+    my @options = $self->xpath( './/option', node => $field);
+    my @by_index;
+    my @by_value;
+    my $deselect;
+
+    if ('HASH' eq ref $value||'') {
+        for (keys %$value) {
+            $self->warn(qq{Unknown select value parameter "$_"})
+              unless $_ eq 'n';
         }
+        
+        $deselect = ref $value->{n};
+        
+        @by_index = ref $value->{n} ? @{ $value->{n} } : $value->{n};
+    } elsif ('ARRAY' eq ref $value||'') {
+        # clear all preselected values
+        $deselect = 1;
+        @by_value = @{ $value };
     } else {
-        $value = [$value];
+        @by_value = $value;
     };
     
-    # Now, for each value passed, select the appropriate option
-    for my $v (@$value) {
-        my $option = $self->xpath( sprintf( './/option[@value="%s"]', $v) , node => $field, single => 1 );
+    if ($deselect) {
+        for my $o (@options) {
+            $o->{selected} = 0;
+        }
+    };
+    
+    # Select the items, either by index or by value
+    for my $idx (@by_index) {
+        $options[$idx]->{selected} = 1;
+    };
+    
+    for my $v (@by_value) {
+        my $option = $self->xpath( sprintf( './/option[@value="%s"]', quote_xpath $v) , node => $field, single => 1 );
         $option->{selected} = 1;
-    }
+    };
+    
+    return @by_index + @by_value > 0;
 }
 
 =head2 C<< $mech->submit >>
