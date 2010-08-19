@@ -2,7 +2,7 @@
 
 #use warnings;
 use strict;
-use Test::More tests => 14;
+use Test::More tests => 21;
 use Data::Dumper;
 
 BEGIN {
@@ -65,13 +65,13 @@ $response = $mech->get_local( 'select.html' );
 ok( $response->is_success, "Fetched select.html" );
 $mech->select('singlelist', \@sendmulti);
 @return = $mech->value('singlelist');
-is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
+is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @singlereturn));
 
 $response = $mech->get_local( 'select.html' );
 ok( $response->is_success, "Fetched select.html" );
 $mech->select('singlelist', \%sendmulti);
 @return = $mech->value('singlelist');
-is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
+is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @singlereturn));
 
 
 # pass a single value to a single select
