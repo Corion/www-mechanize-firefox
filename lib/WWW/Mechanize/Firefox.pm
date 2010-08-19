@@ -3061,14 +3061,6 @@ This function is likely best implemented through C<< $mech->selector >>.
 
 =item *
 
-C<< ->field >>
-
-=item *
-
-C<< ->select >>
-
-=item *
-
 C<< ->tick >>
 
 =item *
