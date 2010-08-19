@@ -1,4 +1,4 @@
-0.33 To be released
+0.33 20100819
     . Add ->activateTab() for setting the currently displayed tab
     . Now needs MozRepl::RemoteObject 0.13 as a prerequisite
     . Add activate => 1 option to constructor
