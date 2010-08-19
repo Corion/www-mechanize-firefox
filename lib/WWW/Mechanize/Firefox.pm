@@ -996,7 +996,7 @@ sub response {
             return $self->_extract_response( $js_res );
         } elsif ($scheme and $scheme =~ /^file/) {
             # We're cool!
-            return HTTP::Response->new(200,'',[],$self->content)
+            return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
         } else {
             # make up a response, below
             warn "Making up response for unknown scheme '$scheme'";
@@ -1011,8 +1011,8 @@ sub response {
         return HTTP::Response->new(500)
     };   
 
-    # We're cool!
-    return HTTP::Response->new(200,'',[],$self->content)
+    # We're cool, except we don't know what we're doing here:
+    return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
 }
 *res = \&response;
 
