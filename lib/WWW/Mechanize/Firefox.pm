@@ -2226,11 +2226,16 @@ sub get_set_value {
             };
         };
         # What about 'checkbox'es/radioboxes?
-        if ('select' eq $tag) {
+        
+        # We could save some work here for the simple case of single-select
+        # dropdowns by not enumerating all options
+        if ('SELECT' eq uc $tag) {
+            my @options = $self->xpath('.//option', node => $fields[0] );
+            my @values = map { $_->{value} } grep { $_->{selected} } @options;
             if (wantarray) {
-                return map { $_->{value} } $self->xpath('.//option[@selected]', node => $fields[0]);
+                return @values
             } else {
-                return $self->xpath( './/option[@selected][1]', node => $fields[0], single => 1)->{value};
+                return $values[0];
             }
         } else {
             return $fields[0]->{value}
