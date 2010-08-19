@@ -32,7 +32,8 @@ $form = $mech->current_form();
 
 # pass multiple values to a multi select
 $mech->select('multilist', \@sendmulti);
-@return = $form->param('multilist');
+#@return = $form->param('multilist');
+@return = $mech->value('multilist');
 is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @return));
 
 $mech->select('multilist', \%sendmulti);

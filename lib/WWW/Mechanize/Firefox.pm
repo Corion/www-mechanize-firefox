@@ -1627,6 +1627,15 @@ use vars '%xpath_quote';
     #']' => '[\]]',
 );
 
+# Return the default limiter if no other limiting option is set:
+sub _default_limiter {
+    my ($default, $options) = @_;
+    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
+        $options->{ $default } = 1;
+    };
+    return ()
+};
+
 sub quote_xpath($) {
     local $_ = $_[0];
     #s/(['"\[\]])/\\$1/g;
@@ -2193,18 +2202,32 @@ sub get_set_value {
         if (! ref $post);
         
     if ($fields[0]) {
+        my $tag = $fields[0]->{tagName};
         if ($set_value) {
             for my $ev (@$pre) {
                 $fields[0]->__event($ev);
             };
 
-            $fields[0]->{value} = $value;
+            if ('select' eq $tag) {
+                $self->select($fields[0], $value);
+            } else {
+                $fields[0]->{value} = $value;
+            };
 
             for my $ev (@$post) {
                 $fields[0]->__event($ev);
             };
+        };
+        # What about 'checkbox'es/radioboxes?
+        if ('select' eq $tag) {
+            if (wantarray) {
+                map { $_->{value} } $self->xpath('.//option[@selected]', node => $fields[0]);
+            } else {
+                $self->xpath( './/option[@selected][1]', node => $fields[0], single => 1)->{value};
+            }
+        } else {
+            return $fields[0]->{value}
         }
-        return $fields[0]->{value}
     } else {
         return
     }
@@ -2241,6 +2264,7 @@ sub select {
         #%options,
     );
     
+    warn Dumper $value;
     if (ref $value) {
         # clear all preselected values
         for my $o ($self->xpath( './/option', node => $field)) {
@@ -2426,15 +2450,6 @@ sub set_visible {
         $visible_fields[ $idx ]->{value} = $values[ $idx ];
     }
 }
-
-# Return the default limiter if no other limiting option is set:
-sub _default_limiter {
-    my ($default, $options) = @_;
-    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
-        $options->{ $default } = 1;
-    };
-    return ()
-};
 
 =head2 C<< $mech->is_visible $element >>
 
