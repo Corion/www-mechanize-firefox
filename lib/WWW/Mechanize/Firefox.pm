@@ -2305,7 +2305,7 @@ sub select {
     
     # Select the items, either by index or by value
     for my $idx (@by_index) {
-        $options[$idx]->{selected} = 1;
+        $options[$idx-1]->{selected} = 1;
     };
     
     for my $v (@by_value) {
