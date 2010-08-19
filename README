@@ -36,6 +36,8 @@ METHODS
     *   `create' - will create a new tab if no existing tab matching the
         criteria given in `tab' can be found.
 
+    *   `activate' - make the tab the active tab
+
     *   `launch' - name of the program to launch if we can't connect to it
         on the first try.
 
@@ -385,30 +387,19 @@ CONTENT METHODS
 
       print $mech->content;
 
-    Returns the current content of the tab as a scalar. The content does not
-    decoded according to the encoding. It is returned as raw octets.
+    This always returns the content as a Unicode string. It tries to decode
+    the raw content according to its input encoding.
 
     This is likely not binary-safe.
 
     It also currently only works for HTML pages.
-
-  `$mech->content_utf8'
-
-        print $mech->content_utf8;
-
-    This always returns the content as a Unicode string. It tries to decode
-    the raw content according to its input encoding.
-
-    This method is very experimental.
-
-    Don't use this method when trying to get at binary data.
 
   `$mech->content_encoding'
 
         print "The content is encoded as ", $mech->content_encoding;
 
     Returns the encoding that the content is in. This can be used to convert
-    the content to UTF-8.
+    the content from UTF-8 back to its native encoding.
 
   `$mech->update_html( $html )'
 
@@ -696,30 +687,35 @@ FORM METHODS
 
     The returned elements are the DOM `<form>' elements.
 
-  `$mech->field $name, $value, [,\@pre_events [,\@post_events]]'
+  `$mech->field $selector, $value, [,\@pre_events [,\@post_events]]'
 
       $mech->field( user => 'joe' );
       $mech->field( not_empty => '', [], [] ); # bypass JS validation
 
-    Sets the field with the name to the given value. Returns the value.
+    Sets the field with the name given in `$selector' to the given value.
+    Returns the value.
 
-    Note that this uses the `name' attribute of the HTML, not the `id'
-    attribute.
+    The method understands very basic CSS selectors in the value for
+    `$selector', like the HTML::Form find_input() method.
 
-    By passing the array reference `PRE EVENTS', you can indicate which
+    A selector prefixed with '#' must match the id attribute of the input. A
+    selector prefixed with '.' matches the class attribute. A selector
+    prefixed with '^' or with no prefix matches the name attribute.
+
+    By passing the array reference `@pre_events', you can indicate which
     Javascript events you want to be triggered before setting the value.
-    `POST EVENTS' contains the events you want to be triggered after setting
-    the value.
+    `@post_events' contains the events you want to be triggered after
+    setting the value.
 
     By default, the events set in the constructor for `pre_events' and
     `post_events' are triggered.
 
-  `$mech->value( $name_or_element, [%options] )'
+  `$mech->value( $selector_or_element, [%options] )'
 
         print $mech->value( 'user' );
 
-    Returns the value of the field named `NAME' or of the DOM element passed
-    in.
+    Returns the value of the field given by `$selector_or_name' or of the
+    DOM element passed in.
 
     The legacy form of
 
@@ -727,6 +723,10 @@ FORM METHODS
 
     is also still supported but will likely be deprecated in favour of the
     `->field' method.
+
+    For fields that can have multiple values, like a `select' field, the
+    method is context sensitive and returns the first selected value in
+    scalar context and all values in list context.
 
   `$mech->get_set_value( %options )'
 
@@ -739,6 +739,24 @@ FORM METHODS
       value
 
     in addition to all keys that `$mech->xpath' supports.
+
+  `$mech->select( $name, $value )'
+
+  `$mech->select( $name, \@values )'
+
+    Given the name of a `select' field, set its value to the value
+    specified. If the field is not `<select multiple>' and the `$value' is
+    an array, only the first value will be set. Passing `$value' as a hash
+    with an `n' key selects an item by number (e.g. `{n => 3}' or `{n =>
+    [2,4]}'). The numbering starts at 1. This applies to the current form.
+
+    If you have a field with `<select multiple>' and you pass a single
+    `$value', then `$value' will be added to the list of fields selected,
+    without clearing the others. However, if you pass an array reference,
+    then all previously selected values will be cleared.
+
+    Returns true on successfully setting the value. On failure, returns
+    false and calls `$self>warn()' with an error message.
 
   `$mech->submit'
 
@@ -1094,6 +1112,14 @@ SEE ALSO
 REPOSITORY
     The public repository of this module is
     http://github.com/Corion/www-mechanize-firefox.
+
+SUPPORT
+    The public support forum of this module is http://perlmonks.org/.
+
+BUG TRACKER
+    Please report bugs in this module via the RT CPAN bug queue at
+    https://rt.cpan.org/Public/Dist/Display.html?Name=WWW-Mechanize-Firefox
+    or via mail to www-mechanize-firefox-Bugs@rt.cpan.org.
 
 AUTHOR
     Max Maischein `corion@cpan.org'
