@@ -2307,6 +2307,12 @@ sub select {
         }
     };
     
+    if ($single) {
+        # Only use the first element for single-element boxes
+        $#by_index = 0+@by_index ? 0 : -1;
+        $#by_value = 0+@by_value ? 0 : -1;
+    };
+    
     # Select the items, either by index or by value
     for my $idx (@by_index) {
         $options[$idx-1]->{selected} = 1;
