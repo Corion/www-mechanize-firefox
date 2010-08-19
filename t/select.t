@@ -3,6 +3,7 @@
 #use warnings;
 use strict;
 use Test::More tests => 14;
+use Data::Dumper;
 
 BEGIN {
     delete @ENV{qw(PATH IFS CDPATH ENV BASH_ENV)};  # Placates taint-unsafe Cwd.pm in 5.6.1
@@ -34,42 +35,50 @@ $form = $mech->current_form();
 $mech->select('multilist', \@sendmulti);
 #@return = $form->param('multilist');
 @return = $mech->value('multilist');
-is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @return));
+is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti)) or
+diag Dumper \@return;
 
 $mech->select('multilist', \%sendmulti);
-@return = $form->param('multilist');
-is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @return));
+#@return = $form->param('multilist');
+@return = $mech->value('multilist');
+is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti));
 
 # pass a single value to a multi select
 $mech->select('multilist', $sendsingle);
-$return = $form->param('multilist');
-is($return, $sendsingle, "single->multi value is '$return'");
+#$return = $form->param('multilist');
+$return = $mech->value('multilist');
+is($return, $sendsingle, "single->multi value is '$sendsingle'");
 
 $mech->select('multilist', \%sendsingle);
-$return = $form->param('multilist');
-is($return, $sendsingle, "single->multi value is '$return'");
+#$return = $form->param('multilist');
+$return = $mech->value('multilist');
+is($return, $sendsingle, "single->multi value is '$sendsingle'");
 
 
 # Single select
 
 # pass multiple values to a single select (only the _first_ should be set)
 $mech->select('singlelist', \@sendmulti);
-@return = $form->param('singlelist');
+#@return = $form->param('singlelist');
+@return = $mech->value('singlelist');
 is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
 
 $mech->select('singlelist', \%sendmulti);
-@return = $form->param('singlelist');
+#@return = $form->param('singlelist');
+@return = $mech->value('singlelist');
 is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
 
 
 # pass a single value to a single select
 $rv = $mech->select('singlelist', $sendsingle);
-$return = $form->param('singlelist');
-is($return, $sendsingle, "single->single value is '$return'");
+#$return = $form->param('singlelist');
+$return = $mech->value('singlelist');
+is($return, $sendsingle, "single->single value is '$sendsingle'");
 
 $rv = $mech->select('singlelist', \%sendsingle);
-$return = $form->param('singlelist');
-is($return, $sendsingle, "single->single value is '$return'");
+#$return = $form->param('singlelist');
+$return = $mech->value('singlelist');
+is($return, $sendsingle, "single->single value is '$sendsingle'");
 
 # test return value from $mech->select
 is($rv, 1, 'return 1 after successful select');
