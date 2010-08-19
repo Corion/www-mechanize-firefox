@@ -33,7 +33,7 @@ WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
   my $png = $mech->content_as_png();
 
 This module will let you automate Firefox through the
-Mozrepl plugin. You you need to have installed
+Mozrepl plugin. You need to have installed
 that plugin in your Firefox.
 
 For more examples see L<WWW::Mechanize::Firefox::Examples>.
