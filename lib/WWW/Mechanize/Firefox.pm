@@ -2239,9 +2239,8 @@ sub get_set_value {
 
 Given the name of a C<select> field, set its value to the value
 specified.  If the field is not C<< <select multiple> >> and the
-C<$value> is an array, only the B<first> value will be set.  [Note:
-the documentation previously claimed that only the last value would
-be set, but this was incorrect.]  Passing C<$value> as a hash with
+C<$value> is an array, only the B<first> value will be set. 
+Passing C<$value> as a hash with
 an C<n> key selects an item by number (e.g.
 C<< {n => 3} >> or C<< {n => [2,4]} >>).
 The numbering starts at 1.  This applies to the current form.
