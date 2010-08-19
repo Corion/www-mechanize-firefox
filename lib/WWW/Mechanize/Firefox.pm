@@ -1009,7 +1009,7 @@ sub response {
     };   
 
     # We're cool!
-    return HTTP::Response->new(200,'',[],$self->content_utf8)
+    return HTTP::Response->new(200,'',[],$self->content)
 }
 *res = \&response;
 
@@ -1627,6 +1627,15 @@ use vars '%xpath_quote';
     #']' => '[\]]',
 );
 
+# Return the default limiter if no other limiting option is set:
+sub _default_limiter {
+    my ($default, $options) = @_;
+    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
+        $options->{ $default } = 1;
+    };
+    return ()
+};
+
 sub quote_xpath($) {
     local $_ = $_[0];
     #s/(['"\[\]])/\\$1/g;
@@ -2073,20 +2082,24 @@ sub forms {
                      : \@res
 };
 
-=head2 C<< $mech->field $name, $value, [,\@pre_events [,\@post_events]] >>
+=head2 C<< $mech->field $selector, $value, [,\@pre_events [,\@post_events]] >>
 
   $mech->field( user => 'joe' );
   $mech->field( not_empty => '', [], [] ); # bypass JS validation
 
-Sets the field with the name to the given value.
+Sets the field with the name given in C<$selector> to the given value.
 Returns the value.
 
-Note that this uses the C<name> attribute of the HTML,
-not the C<id> attribute.
+The method understands very basic CSS selectors in the value for C<$selector>,
+like the L<HTML::Form> find_input() method.
 
-By passing the array reference C<PRE EVENTS>, you can indicate which
+A selector prefixed with '#' must match the id attribute of the input.
+A selector prefixed with '.' matches the class attribute. A selector
+prefixed with '^' or with no prefix matches the name attribute.
+
+By passing the array reference C<@pre_events>, you can indicate which
 Javascript events you want to be triggered before setting the value.
-C<POST EVENTS> contains the events you want to be triggered
+C<@post_events> contains the events you want to be triggered
 after setting the value.
 
 By default, the events set in the
@@ -2106,11 +2119,11 @@ sub field {
     );
 }
 
-=head2 C<< $mech->value( $name_or_element, [%options] ) >>
+=head2 C<< $mech->value( $selector_or_element, [%options] ) >>
 
     print $mech->value( 'user' );
 
-Returns the value of the field named C<NAME> or of the
+Returns the value of the field given by C<$selector_or_name> or of the
 DOM element passed in.
 
 The legacy form of
@@ -2150,44 +2163,121 @@ in addition to all keys that C<< $mech->xpath >> supports.
 
 =cut
 
-sub get_set_value {
+sub _field_by_name {
     my ($self,%options) = @_;
     my @fields;
     my $name  = delete $options{ name };
-    my $set_value = exists $options{ value };
-    my $value = delete $options{ value };
-    my $pre   = delete $options{pre}  || $self->{pre_value};
-    my $post  = delete $options{post} || $self->{post_value};
+    my $attr = 'name';
+    if ($name =~ s/^\^//) { # if it starts with ^, it's supposed to be a name
+        $attr = 'name'
+    } elsif ($name =~ s/^#//) {
+        $attr = 'id'
+    } elsif ($name =~ s/^\.//) {
+        $attr = 'class'
+    };
     if (blessed $name) {
         @fields = $name;
     } else {
         _default_limiter( single => \%options );
         @fields = $self->xpath(
-            sprintf( q{.//input[@name="%s"] | .//select[@name="%s"] | .//textarea[@name="%s"]}, 
-                                   $name,              $name,                 $name),
+            sprintf( q{.//input[@%s="%s"] | .//select[@%s="%s"] | .//textarea[@%s="%s"]}, 
+                               $attr,$name,          $attr,$name,          $attr,$name ),
             %options,
         );
     };
+    @fields
+}
+
+sub get_set_value {
+    my ($self,%options) = @_;
+    my $set_value = exists $options{ value };
+    my $value = delete $options{ value };
+    my $pre   = delete $options{pre}  || $self->{pre_value};
+    my $post  = delete $options{post} || $self->{post_value};
+    my $name  = delete $options{ name };
+    my @fields = $self->_field_by_name( name => $name, %options );
     $pre = [$pre]
         if (! ref $pre);
     $post = [$post]
-        if (! ref $pre);
+        if (! ref $post);
         
     if ($fields[0]) {
+        my $tag = $fields[0]->{tagName};
         if ($set_value) {
             for my $ev (@$pre) {
                 $fields[0]->__event($ev);
             };
 
-            $fields[0]->{value} = $value;
+            if ('select' eq $tag) {
+                $self->select($fields[0], $value);
+            } else {
+                $fields[0]->{value} = $value;
+            };
 
             for my $ev (@$post) {
                 $fields[0]->__event($ev);
             };
+        };
+        # What about 'checkbox'es/radioboxes?
+        if ('select' eq $tag) {
+            if (wantarray) {
+                map { $_->{value} } $self->xpath('.//option[@selected]', node => $fields[0]);
+            } else {
+                $self->xpath( './/option[@selected][1]', node => $fields[0], single => 1)->{value};
+            }
+        } else {
+            return $fields[0]->{value}
         }
-        return $fields[0]->{value}
     } else {
         return
+    }
+}
+
+=head2 C<< $mech->select( $name, $value ) >>
+
+=head2 C<< $mech->select( $name, \@values ) >>
+
+Given the name of a C<select> field, set its value to the value
+specified.  If the field is not C<< <select multiple> >> and the
+C<$value> is an array, only the B<first> value will be set.  [Note:
+the documentation previously claimed that only the last value would
+be set, but this was incorrect.]  Passing C<$value> as a hash with
+an C<n> key selects an item by number (e.g.
+C<< {n => 3} >> or C<< {n => [2,4]} >>).
+The numbering starts at 1.  This applies to the current form.
+
+If you have a field with C<< <select multiple> >> and you pass a single
+C<$value>, then C<$value> will be added to the list of fields selected,
+without clearing the others.  However, if you pass an array reference,
+then all previously selected values will be cleared.
+
+Returns true on successfully setting the value. On failure, returns
+false and calls C<< $self>warn() >> with an error message.
+
+=cut
+
+sub select {
+    my ($self, $name, $value) = @_;
+    my ($field) = $self->_field_by_name(
+        node => $self->current_form,
+        name => $name,
+        #%options,
+    );
+    
+    warn Dumper $value;
+    if (ref $value) {
+        # clear all preselected values
+        for my $o ($self->xpath( './/option', node => $field)) {
+            $o->{selected} = 0;
+        }
+    } else {
+        $value = [$value];
+    };
+    
+    # Now, for each value passed, select the appropriate option
+    for my $v (@$value) {
+        my $option = $self->xpath( sprintf( './/option[@value="%s"]', $v) , node => $field, single => 1 );
+        $option->{selected} = 1;
     }
 }
 
@@ -2360,15 +2450,6 @@ sub set_visible {
         $visible_fields[ $idx ]->{value} = $values[ $idx ];
     }
 }
-
-# Return the default limiter if no other limiting option is set:
-sub _default_limiter {
-    my ($default, $options) = @_;
-    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
-        $options->{ $default } = 1;
-    };
-    return ()
-};
 
 =head2 C<< $mech->is_visible $element >>
 

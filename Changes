@@ -3,6 +3,10 @@
     . Now needs MozRepl::RemoteObject 0.13 as a prerequisite
     . Add activate => 1 option to constructor
     . Remove ->content_utf8 , as ->content() already always returns utf8
+    + Bring ->field() and ->value() in line with the HTML::Form API
+      (and thus the WWW::Mechanize API). Now, very simple CSS
+      selectors like #id and .class get accepted in addition
+      to 'name' and '^name'.
 
 0.32 20100810
     . Add WWW::Mechanize::Firefox::FAQ as a list of frequently asked
