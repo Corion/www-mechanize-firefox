@@ -2275,9 +2275,14 @@ sub select {
         #%options,
     );
     
+    if (! $field) {
+        return
+    };
+    
     my @options = $self->xpath( './/option', node => $field);
     my @by_index;
     my @by_value;
+    my $single = $field->{type} eq "select-one";
     my $deselect;
 
     if ('HASH' eq ref $value||'') {
@@ -2287,7 +2292,6 @@ sub select {
         }
         
         $deselect = ref $value->{n};
-        
         @by_index = ref $value->{n} ? @{ $value->{n} } : $value->{n};
     } elsif ('ARRAY' eq ref $value||'') {
         # clear all preselected values
