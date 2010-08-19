@@ -3,10 +3,10 @@
 #use warnings;
 use strict;
 use Test::More;
+use WWW::Mechanize::Firefox;
 
 BEGIN {
     delete @ENV{qw(PATH IFS CDPATH ENV BASH_ENV)};  # Placates taint-unsafe Cwd.pm in 5.6.1
-    use_ok( 'WWW::Mechanize::Firefox' );
 }
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
@@ -19,7 +19,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 21;
+    plan tests => 20;
 };
 isa_ok( $mech, 'WWW::Mechanize::Firefox' );
 
