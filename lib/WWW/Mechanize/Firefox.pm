@@ -2221,9 +2221,9 @@ sub get_set_value {
         # What about 'checkbox'es/radioboxes?
         if ('select' eq $tag) {
             if (wantarray) {
-                map { $_->{value} } $self->xpath('.//option[@selected]', node => $fields[0]);
+                return map { $_->{value} } $self->xpath('.//option[@selected]', node => $fields[0]);
             } else {
-                $self->xpath( './/option[@selected][1]', node => $fields[0], single => 1)->{value};
+                return $self->xpath( './/option[@selected][1]', node => $fields[0], single => 1)->{value};
             }
         } else {
             return $fields[0]->{value}
