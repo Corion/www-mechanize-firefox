@@ -33,24 +33,27 @@ $form = $mech->current_form();
 
 # pass multiple values to a multi select
 $mech->select('multilist', \@sendmulti);
-#@return = $form->param('multilist');
 @return = $mech->value('multilist');
-is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti)) or
-diag Dumper \@return;
+is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti))
+    or diag Dumper \@return;
 
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $mech->select('multilist', \%sendmulti);
-#@return = $form->param('multilist');
 @return = $mech->value('multilist');
 is_deeply(\@return, \@sendmulti, 'multi->multi value is ' . join(' ', @sendmulti));
 
 # pass a single value to a multi select
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $mech->select('multilist', $sendsingle);
 #$return = $form->param('multilist');
 $return = $mech->value('multilist');
 is($return, $sendsingle, "single->multi value is '$sendsingle'");
 
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $mech->select('multilist', \%sendsingle);
-#$return = $form->param('multilist');
 $return = $mech->value('multilist');
 is($return, $sendsingle, "single->multi value is '$sendsingle'");
 
@@ -58,25 +61,29 @@ is($return, $sendsingle, "single->multi value is '$sendsingle'");
 # Single select
 
 # pass multiple values to a single select (only the _first_ should be set)
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $mech->select('singlelist', \@sendmulti);
-#@return = $form->param('singlelist');
 @return = $mech->value('singlelist');
 is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
 
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $mech->select('singlelist', \%sendmulti);
-#@return = $form->param('singlelist');
 @return = $mech->value('singlelist');
 is_deeply(\@return, \@singlereturn, 'multi->single value is ' . join(' ', @return));
 
 
 # pass a single value to a single select
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $rv = $mech->select('singlelist', $sendsingle);
-#$return = $form->param('singlelist');
 $return = $mech->value('singlelist');
 is($return, $sendsingle, "single->single value is '$sendsingle'");
 
+$response = $mech->get_local( 'select.html' );
+ok( $response->is_success, "Fetched select.html" );
 $rv = $mech->select('singlelist', \%sendsingle);
-#$return = $form->param('singlelist');
 $return = $mech->value('singlelist');
 is($return, $sendsingle, "single->single value is '$sendsingle'");
 
