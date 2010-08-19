@@ -74,6 +74,40 @@ so many of the recipes in L<WWW::Mechanize::Cookbook> apply to it as well.
   $mech->get('http://google.com');
   $mech->save_content('google_com.html', 'google_com files');
 
+=head1 Advanced HTML interaction
+
+=head2 Wait until an element appears
+
+Some sites generate content after the C<DOMContentLoaded>
+event has fired. To wait until an element becomes available,
+use the following code:
+
+    # The submit button is generated after the page has loaded
+
+    my $retries = 10;
+    while ($retries-- and ! $mech->is_visible( xpath => '//*[@id="submit"]' )) {
+          sleep 1;
+    };
+    die "Timeout" unless $retries;
+    
+    # Now the element exists
+    $mech->click({xpath => '//*[@id="submit"]'});
+
+=head2 Wait until an element disappears
+
+Some sites display an hourglass or some other indicator to
+tell you to wait. 
+To wait until such an element becomes invisible,
+use the following code:
+
+    my $retries = 10;
+    while ($retries-- and $mech->is_visible( xpath => '//*[@id="hourglass"]' )) {
+          sleep 1;
+    };
+    die "Timeout while waiting for application" unless $retries;
+    
+    # Now the hourglass is not visible anymore
+
 =head1 UI interaction
 
 =head2 Keep the tab open after your program quits
