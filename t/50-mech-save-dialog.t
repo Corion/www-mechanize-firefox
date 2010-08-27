@@ -21,30 +21,51 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
+# This is if we implement our own "overlay" for the SaveAs dialog
+#    // Now, "close" the dialog
+#    document.documentElement.removeAttribute('ondialogaccept');
+#    document.documentElement.cancelDialog();
+
+
 $mech->repl->expr(<<'JS');
-this.oldGetTargetFile = getTargetFile;
-alert(getTargetFile);
-alert(this.getTargetFile);
-/*
-getTargetFile = function (aFpP, skipPrompt) {
-    alert(aFpP);
-    alert(aFpP.fileInfo);
-    alert(aFpP.fileInfo.fileExt);
-    alert(aFpP.contentType);
-    // Fill in aFpP with our canned data
-    aFpP.saveAsType = 1; // raw
-    aFpP.file = 'C:/Dokumente und Einstellungen/Corion/Desktop/test.html';
-    aFpP.fileUri = 'C:/Dokumente und Einstellungen/Corion/Desktop/test.html';
-    return true;
-}
-*/
+var observer = {
+  observe: function(subject,topic,data){
+   if (topic != "http-on-examine-response") {
+       return
+   };
+
+   var httpChannel =
+   subject.QueryInterface(Components.interfaces.nsIHttpChannel);
+   var contentType = httpChannel.getResponseHeader("Content-Type");
+
+   var channel = subject.QueryInterface(Components.interfaces.nsIChannel);
+   var url = channel.URI.spec;
+   url = url.toString();
+   
+   // alert(topic + " | " + url);
+      
+   if ( contentType.indexOf("html") == -1 ){
+
+       channel.cancel();
+       alert("Wait a moment!\n"+ url );
+   }
+   
+  }
+};
+
+var observerService =
+    Components.classes["@mozilla.org/observer-service;1"]
+    .getService(Components.interfaces.nsIObserverService);
+observerService.addObserver(observer,"http-on-examine-response",false);
+
 JS
+
 
 my ($site,$estatus) = ('http://www.firefox-start.com/download/Firefox%20Setup%203.0.3.exe',200);
 my $res = $mech->get($site);
+sleep 10;
 
-$mech->repl->expr(<<'JS');
-/*
-getTargetFile = this.oldGetTargetFile;
-*/
-JS
+#$mech->repl->expr(<<'JS');
+#    unregisterMockFilePickerFactory();
+#//window.getTargetFile = this.oldGetTargetFile;
+#JS
