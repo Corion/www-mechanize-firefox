@@ -8,12 +8,15 @@ use vars '$mech';
 BEGIN {
     require WWW::Mechanize::Firefox::DSL;
     
-    eval { 
+    my $ok = eval { 
         WWW::Mechanize::Firefox::DSL->import(
             autodie => 0,
             #log => [qw[debug]]
         );
+        1
     };
+    die "Import failure: $@"
+        unless $ok;
 };
 
 if (! $mech) {

@@ -1,6 +1,7 @@
 package WWW::Mechanize::Firefox::DSL;
 use strict;
 use WWW::Mechanize::Firefox;
+use Carp qw(croak);
 
 =head1 NAME
 
@@ -8,7 +9,7 @@ WWW::Mechanize::Firefox::DSL - Domain Specific Language for short scripts
 
 =head1 SYNOPSIS
 
-    use WWW::Mechanize::Firefox::DSL 'mech';
+    use WWW::Mechanize::Firefox::DSL '$mech';
 
     get 'http://google.de';
     
@@ -22,8 +23,11 @@ WWW::Mechanize::Firefox::DSL - Domain Specific Language for short scripts
 sub import {
     my $target = caller;
     my ($class, %options) = @_;
-    my $name = delete $options{ name } || 'mech';
+    my $name = delete $options{ name } || '$mech';
     my $mech = WWW::Mechanize::Firefox->new(%options);
+    
+    $name =~ s/^[\$]//
+        or croak 'Variable name must start with $';
     {
         no strict 'refs';
         *{"$target\::$name"} = \$mech;
