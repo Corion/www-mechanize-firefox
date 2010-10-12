@@ -40,7 +40,8 @@ sub import {
 
 package # hide from CPAN indexer
     Object::Wrapobj;
-our $VERSION = 1.000;
+our $VERSION # hide from my standard VERSION test
+  = 1.000;
 use Scalar::Util "blessed";
 use mro;
 sub import {
