@@ -1,4 +1,4 @@
-0.34 201010xx
+0.34 20101013
     . Make ->follow_link() also respect C<synchronize> by making ->follow_link()
       mostly synonymous with ->click()
     . Document the C<dom> option to ->click() (noted by M. Schwern)
