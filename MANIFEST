@@ -14,11 +14,13 @@ examples/README
 examples/screenshot.pl
 examples/tail-console.pl
 examples/urlbar.pl
+inc/IO/Catch.pm
 INSTALL
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
 lib/WWW/Mechanize/Firefox/Cookbook.pod
+lib/WWW/Mechanize/Firefox/DSL.pm
 lib/WWW/Mechanize/Firefox/Examples.pm
 lib/WWW/Mechanize/Firefox/FAQ.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
@@ -28,12 +30,14 @@ MANIFEST.skip
 README
 README.mkdn
 t/01-mech-destroy.t
+t/401-server
 t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/49-mech-reuse.t
 t/50-click.html
 t/50-click.t
+t/50-follow-link.t
 t/50-form-with-fields.t
 t/50-form2.html
 t/50-form2.t
@@ -46,6 +50,7 @@ t/50-mech-encoding.t
 t/50-mech-event.t
 t/50-mech-get.t
 t/50-mech-multi-event.t
+t/50-mech-new-dsl.t
 t/50-mech-new.t
 t/50-mech-save-dialog.t
 t/50-mech-status.t
@@ -71,6 +76,7 @@ t/52-subframe.html
 t/53-mech-capture-js-error.html
 t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html
+t/55-basic-auth.t
 t/60-mech-cookies.t
 t/65-is_visible.t
 t/65-is_visible_hidden.html
