@@ -3,6 +3,9 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Carp qw(croak);
 
+use vars qw($VERSION);
+$VERSION = '0.34';
+
 =head1 NAME
 
 WWW::Mechanize::Firefox::DSL - Domain Specific Language for short scripts

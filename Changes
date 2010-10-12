@@ -1,6 +1,7 @@
 0.34 201010xx
     . Make ->follow_link() also respect C<synchronize> by making ->follow_link()
       mostly synonymous with ->click()
+    . Document the C<dom> option to ->click() (noted by M. Schwern)
 
 0.33 20100819
     . Add ->activateTab() for setting the currently displayed tab

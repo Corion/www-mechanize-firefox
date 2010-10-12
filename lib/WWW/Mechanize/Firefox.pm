@@ -17,7 +17,7 @@ use Encode qw(encode decode);
 use Carp qw(carp croak);
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.33';
+$VERSION = '0.34';
 
 =head1 NAME
 
@@ -1880,6 +1880,10 @@ C<selector> - Find the element to click by the CSS selector
 =item *
 
 C<xpath> - Find the element to click by the XPath query
+
+=item *
+
+C<dom> - Click on the passed DOM element
 
 =item *
 
