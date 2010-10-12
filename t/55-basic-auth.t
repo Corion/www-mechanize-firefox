@@ -12,6 +12,7 @@ use WWW::Mechanize::Firefox;
 tie *STDOUT, 'IO::Catch', '_STDOUT_' or die $!;
 
 use Test::More;
+plan skip_all => "presetting auth does not work yet";
 
 if (! eval { require HTTP::Daemon; 1 }) {
     plan skip_all => "HTTP::Daemon required to test basic authentication";
@@ -104,6 +105,12 @@ for (0..$count-1) {
     diag $logins->[$_]->{username};
     diag $logins->[$_]->{usernameField};
 };
+
+# Now, prepare to override the dialog:
+
+$mech->repl->expr(<<'JS');
+    netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
+JS
 
 # This is an ugly interactive test :/
 # Now try without credentials
