@@ -1835,22 +1835,25 @@ sub find_all_links_dom {
   $mech->follow_link( xpath => '//a[text() = "Click here!"]' );
 
 Follows the given link. Takes the same parameters that C<find_link_dom>
-uses.
+uses. In addition, C<synchronize> can be passed to (not) force
+waiting for a new page to be loaded.
+
+Note that C<< ->follow_link >> will only try to follow link-like
+things like C<A> tags.
 
 =cut
 
 sub follow_link {
     my ($self,$link,%opts);
     if (@_ == 2) { # assume only a link parameter
-        ($self,$link) = @_
+        ($self,$link) = @_;
+        $self->click($link);
     } else {
         ($self,%opts) = @_;
         _default_limiter( one => \%opts );
         $link = $self->find_link_dom(%opts);
+        $self->click({ dom => $link, %opts });
     }
-    $self->synchronize( sub {
-        $link->__click();
-    });
 }
 
 =head2 C<< $mech->click $name [,$x ,$y] >>
@@ -1935,7 +1938,7 @@ sub click {
         @buttons = $self->_option_query(%options);
     };
     #warn "Clicking id $buttons[0]->{id}";
-    
+        
     if ($options{ synchronize }) {
         $self->synchronize($self->events, sub { # ,'abort'
             $buttons[0]->__click();
