@@ -10,7 +10,7 @@ SYNOPSIS
       my $png = $mech->content_as_png();
 
     This module will let you automate Firefox through the Mozrepl plugin.
-    You you need to have installed that plugin in your Firefox.
+    You need to have installed that plugin in your Firefox.
 
     For more examples see WWW::Mechanize::Firefox::Examples.
 
@@ -591,7 +591,11 @@ EXTRACTION METHODS
       $mech->follow_link( xpath => '//a[text() = "Click here!"]' );
 
     Follows the given link. Takes the same parameters that `find_link_dom'
-    uses.
+    uses. In addition, `synchronize' can be passed to (not) force waiting
+    for a new page to be loaded.
+
+    Note that `->follow_link' will only try to follow link-like things like
+    `A' tags.
 
   `$mech->click $name [,$x ,$y]'
 
@@ -1031,10 +1035,6 @@ INCOMPATIBILITIES WITH WWW::Mechanize
     *   `->find_all_images'
 
         This function is likely best implemented through `$mech->selector'.
-
-    *   `->field'
-
-    *   `->select'
 
     *   `->tick'
 
