@@ -19,7 +19,7 @@ BEGIN {
     #    unless $ok;
 };
 
-if (! $mech) {
+if (!$mech || $@) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
