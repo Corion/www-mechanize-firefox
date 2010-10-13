@@ -15,8 +15,8 @@ BEGIN {
         );
         1
     };
-    die "Import failure: $@"
-        unless $ok;
+    #die "Import failure: $@"
+    #    unless $ok;
 };
 
 if (! $mech) {

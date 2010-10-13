@@ -138,6 +138,7 @@ $mech->get("${url}exit"); # shut down server
 sleep 1;
 # Kill it if it's still alive:
 END {
-    kill 9 => $server_pid;
+    kill 9 => $server_pid
+        if $server_pid;
 };
 #close SERVER; # boom
