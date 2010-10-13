@@ -2235,7 +2235,10 @@ sub get_set_value {
             };
         };
         # What about 'checkbox'es/radioboxes?
-        
+
+        # Don't bother to fetch the field's value if it's not wanted
+        return unless defined wantarray;
+
         # We could save some work here for the simple case of single-select
         # dropdowns by not enumerating all options
         if ('SELECT' eq uc $tag) {
