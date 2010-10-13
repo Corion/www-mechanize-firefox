@@ -1909,7 +1909,9 @@ sub click {
     my %options;
     my @buttons;
     
-    if (ref $name and blessed($name) and $name->can('__click')) {
+    if (! defined $name) {
+        croak("->click called with undef link");
+    } elsif (ref $name and blessed($name) and $name->can('__click')) {
         $options{ dom } = $name;
     } elsif (ref $name eq 'HASH') { # options
         %options = %$name;

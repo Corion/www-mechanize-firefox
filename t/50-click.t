@@ -104,8 +104,8 @@ like $msg, qr/No elements found for CSS selector 'foobar'/,
     
 # Click with undef
 $mech->get_local('50-click.html');
-my $lives = eval { $mech->click(undef); 1 };
-my $msg = $@;
+$lives = eval { $mech->click(undef); 1 };
+$msg = $@;
 ok !$lives, "->click(undef) fails correctly";
 like $msg, qr/->click called with undef link/,
     "... with the right error message";
