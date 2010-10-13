@@ -135,6 +135,29 @@ directly.
 
 There is no workaround.
 
+=head1 Scripting
+
+=head2 Clicking on a link makes the Perl script wait forever
+
+If you have something like the following code:
+
+  $mech->click('#a_link');
+
+WWW::Mechanize::Firefox expects a HTTP interaction ("a web request") to
+ensue and will wait until a new page is loaded. If the element your
+script clicks on only changes some aspect of the Javascript page, like
+acknowledging a message, then no HTTP interaction will occur and
+your script will wait forever.
+
+=head3 Solution
+
+For those requests, pass the C<< synchronize => 0 >> option:
+
+  $mech->click({ selector => '#a_link', synchronize => 0 });
+
+This will tell WWW::Mechanize::Firefox not to wait for any response
+from the webserver.
+
 =head1 Known Problems
 
 =head2 Page Encoding Versus Perl Encoding
