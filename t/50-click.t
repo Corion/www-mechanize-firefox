@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 14;
+    plan tests => 16;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -31,7 +31,7 @@ eval {
 };
 
 if (! $clicked) {
-    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 13; };
+    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 15; };
     exit;
 };
 
@@ -101,3 +101,12 @@ $msg = $@;
 ok !$lives, "->click() on non-existing parameter fails correctly";
 like $msg, qr/No elements found for CSS selector 'foobar'/,
     "... with the right error message";
+    
+# Click with undef
+$mech->get_local('50-click.html');
+my $lives = eval { $mech->click(undef); 1 };
+my $msg = $@;
+ok !$lives, "->click(undef) fails correctly";
+like $msg, qr/->click called with undef link/,
+    "... with the right error message";
+
