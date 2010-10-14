@@ -1943,7 +1943,6 @@ sub click {
     } else {
         @buttons = $self->_option_query(%options);
     };
-    #warn "Clicking id $buttons[0]->{id}";
         
     if ($options{ synchronize }) {
         $self->synchronize($self->events, sub { # ,'abort'
