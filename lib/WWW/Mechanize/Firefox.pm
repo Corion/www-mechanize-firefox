@@ -2253,7 +2253,7 @@ sub get_set_value {
             }
         } else {
             return $fields[0]->{value}
-        }
+        };
     } else {
         return
     }
