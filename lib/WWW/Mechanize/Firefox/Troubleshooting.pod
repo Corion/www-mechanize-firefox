@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-WWW::Mechanize::Firefox::Troubleshooting - things to watch out for
+WWW::Mechanize::Firefox::Troubleshooting - Things to watch out for
 
 =head1 Installation
 
