@@ -2362,7 +2362,6 @@ sub tick {
     my ($self, $name, $value, $set) = @_;
     $set = 1
         if (@_ < 4);
-    # XXX Merge with ->click parameter setup?
     my %options;
     my @boxes;
     
@@ -2394,7 +2393,7 @@ sub tick {
                        ? sprintf( q{//input[@type="checkbox" and @%s="%s" and @value="%s"]}, $attr, $name, $value)
                        : sprintf( q{//input[@type="checkbox" and @%s="%s"]}, $attr, $name)
         ];
-        $options{ user_info } =         defined $value
+        $options{ user_info } =  defined $value
                               ? "Checkbox with name '$name' and value '$value'"
                               : "Checkbox with name '$name'";
     };
