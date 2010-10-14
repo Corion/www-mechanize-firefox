@@ -1,3 +1,7 @@
+0.35 to be released
+    . Improve the error message of ->value() when no element is found
+    . Implement ->tick() and ->untick()
+
 0.34 20101013
     . Make ->follow_link() also respect C<synchronize> by making ->follow_link()
       mostly synonymous with ->click()
