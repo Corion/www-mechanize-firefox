@@ -1,4 +1,4 @@
-0.35 to be released
+0.35 20101014
     . Improve the error message of ->value() when no element is found
     . Implement ->tick() and ->untick()
 
