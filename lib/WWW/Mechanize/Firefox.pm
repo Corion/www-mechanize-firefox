@@ -3164,14 +3164,6 @@ C<< ->find_all_images >>
 
 This function is likely best implemented through C<< $mech->selector >>.
 
-=item *
-
-C<< ->tick >>
-
-=item *
-
-C<< ->untick >>
-
 =back
 
 =head2 Functions that will likely never be implemented
@@ -3232,10 +3224,6 @@ when searching through frames.
 
 Implement download progress via C<nsIWebBrowserPersist.progressListener>
 and our own C<nsIWebProgressListener>.
-
-=item *
-
-Make C<< ->click >> use C<< ->click_with_options >>
 
 =item *
 
@@ -3309,6 +3297,14 @@ L<http://github.com/Corion/www-mechanize-firefox>.
 
 The public support forum of this module is
 L<http://perlmonks.org/>.
+
+=head1 TALKS
+
+I've given two talks about this module at Perl conferences:
+
+L<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html|German Perl Workshop, German>
+
+L<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html|YAPC::Europe 2010, English>
 
 =head1 BUG TRACKER
 
