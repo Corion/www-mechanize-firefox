@@ -617,6 +617,8 @@ EXTRACTION METHODS
 
     *   `xpath' - Find the element to click by the XPath query
 
+    *   `dom' - Click on the passed DOM element
+
     *   `synchronize' - Synchronize the click (default is 1)
 
         Synchronizing means that WWW::Mechanize::Firefox will wait until one
@@ -761,6 +763,30 @@ FORM METHODS
 
     Returns true on successfully setting the value. On failure, returns
     false and calls `$self>warn()' with an error message.
+
+  `$mech->tick( $name, $value [, $set ] )'
+
+        $mech->tick("confirmation_box", 'yes');
+
+    "Ticks" the first checkbox that has both the name and value associated
+    with it on the current form. Dies if there is no named check box for
+    that value. Passing in a false value as the third optional argument will
+    cause the checkbox to be unticked.
+
+    (Un)ticking the checkbox is done by sending a click event to it if
+    needed. If `$value' is `undef', the first checkbox matching `$name' will
+    be (un)ticked.
+
+    If `$name' is a reference to a hash, that hash will be used as the
+    options to `->find_link_dom' to find the element.
+
+  `$mech->untick($name, $value)'
+
+      $mech->untick('spam_confirm','yes',undef)
+
+    Causes the checkbox to be unticked. Shorthand for
+
+      $mech->tick($name,$value,undef)
 
   `$mech->submit'
 
@@ -1036,10 +1062,6 @@ INCOMPATIBILITIES WITH WWW::Mechanize
 
         This function is likely best implemented through `$mech->selector'.
 
-    *   `->tick'
-
-    *   `->untick'
-
   Functions that will likely never be implemented
 
     These functions are unlikely to be implemented because they make little
@@ -1072,8 +1094,6 @@ TODO
     *   Implement download progress via
         `nsIWebBrowserPersist.progressListener' and our own
         `nsIWebProgressListener'.
-
-    *   Make `->click' use `->click_with_options'
 
     *   Rip out parts of Test::HTML::Content and graft them onto the
         `links()' and `find_link()' methods here. Firefox is a conveniently
@@ -1115,6 +1135,14 @@ REPOSITORY
 
 SUPPORT
     The public support forum of this module is http://perlmonks.org/.
+
+TALKS
+    I've given two talks about this module at Perl conferences:
+
+    http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html
+
+    http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.h
+    tml
 
 BUG TRACKER
     Please report bugs in this module via the RT CPAN bug queue at

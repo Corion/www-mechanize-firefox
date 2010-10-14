@@ -699,6 +699,10 @@ the following keys are recognized:
 
 - *
 
+`dom` - Click on the passed DOM element
+
+- *
+
 `synchronize` - Synchronize the click (default is 1)
 
 Synchronizing means that WWW::Mechanize::Firefox will wait until
@@ -853,6 +857,30 @@ then all previously selected values will be cleared.
 
 Returns true on successfully setting the value. On failure, returns
 false and calls `$self>warn()` with an error message.
+
+## C<< $mech->tick( $name, $value [, $set ] ) >>
+
+    $mech->tick("confirmation_box", 'yes');
+
+"Ticks" the first checkbox that has both the name and value associated with it
+on the current form. Dies if there is no named check box for that value.
+Passing in a false value as the third optional argument will cause the
+checkbox to be unticked.
+
+(Un)ticking the checkbox is done by sending a click event to it if needed.
+If `$value` is `undef`, the first checkbox matching `$name` will 
+be (un)ticked.
+
+If `$name` is a reference to a hash, that hash will be used
+as the options to `->find_link_dom` to find the element.
+
+## C<< $mech->untick($name, $value) >>
+
+  $mech->untick('spam_confirm','yes',undef)
+
+Causes the checkbox to be unticked. Shorthand for 
+
+  $mech->tick($name,$value,undef)
 
 ## C<< $mech->submit >>
 
@@ -1167,14 +1195,6 @@ This function is likely best implemented through `$mech->selector`.
 
 This function is likely best implemented through `$mech->selector`.
 
-- *
-
-`->tick`
-
-- *
-
-`->untick`
-
 ## Functions that will likely never be implemented
 
 These functions are unlikely to be implemented because
@@ -1227,10 +1247,6 @@ when searching through frames.
 
 Implement download progress via `nsIWebBrowserPersist.progressListener`
 and our own `nsIWebProgressListener`.
-
-- *
-
-Make `->click` use `->click_with_options`
 
 - *
 
@@ -1294,6 +1310,14 @@ The public repository of this module is
 
 The public support forum of this module is
 <http://perlmonks.org/>.
+
+# TALKS
+
+I've given two talks about this module at Perl conferences:
+
+<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html|German Perl Workshop, German>
+
+<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html|YAPC::Europe 2010, English>
 
 # BUG TRACKER
 
