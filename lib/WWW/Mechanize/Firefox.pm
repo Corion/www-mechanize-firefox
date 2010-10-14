@@ -2210,7 +2210,10 @@ sub get_set_value {
     my $pre   = delete $options{pre}  || $self->{pre_value};
     my $post  = delete $options{post} || $self->{post_value};
     my $name  = delete $options{ name };
-    my @fields = $self->_field_by_name( name => $name, %options );
+    my @fields = $self->_field_by_name(
+                     name => $name, 
+                     user_info => "input with name '$name'",
+                     %options );
     $pre = [$pre]
         if (! ref $pre);
     $post = [$post]
