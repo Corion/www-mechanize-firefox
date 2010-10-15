@@ -28,14 +28,14 @@ BEGIN {
         plan skip_all => "Couldn't connect to MozRepl: $@";
         exit
     } else {
-        plan tests => 1;
+        plan tests => 2;
     };
 };
 
 
 get_local '49-mech-get-file.html';
 is title, '49-mech-get-file.html', 'We opened the right page';
-diag ct;
+is ct, 'text/html';
 diag uri;
 
 undef $mech;
