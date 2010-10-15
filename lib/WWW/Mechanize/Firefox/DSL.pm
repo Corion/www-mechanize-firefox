@@ -36,7 +36,12 @@ again if I find that it is useless.
 
 sub import {
     my $target = caller;
-    my ($class, %options) = @_;
+    my ($class, %options);
+    if (@_ == 2) {
+        ($class, $options{ name }) = @_;
+    } else {
+        ($class, %options) = @_;
+    };
     my $name = delete $options{ name } || '$mech';
     my $mech = WWW::Mechanize::Firefox->new(%options);
     
