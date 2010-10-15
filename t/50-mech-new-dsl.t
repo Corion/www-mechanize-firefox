@@ -6,20 +6,25 @@ use vars '$mech';
 
 #use WWW::Mechanize::Firefox::DSL;
 BEGIN {
-    require WWW::Mechanize::Firefox::DSL;
-    
-    my $ok = eval { 
-        WWW::Mechanize::Firefox::DSL->import(
-            autodie => 0,
-            #log => [qw[debug]]
-        );
+    my $err;
+    my $ok = eval {
+        require mro;
         1
     };
-    #die "Import failure: $@"
-    #    unless $ok;
-
-    if (!$mech || $@) {
-        my $err = $@;
+    $err = $@;
+    if ($ok) {
+        require WWW::Mechanize::Firefox::DSL;
+        $ok = eval { 
+            WWW::Mechanize::Firefox::DSL->import(
+                autodie => 0,
+                #log => [qw[debug]]
+            );
+            1
+        };
+        $err ||= $@;
+    };
+    
+    if (!$ok || $err) {
         plan skip_all => "Couldn't connect to MozRepl: $@";
         exit
     } else {
