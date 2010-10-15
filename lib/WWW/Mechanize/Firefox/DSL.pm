@@ -3,8 +3,12 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Carp qw(croak);
 
-use vars qw($VERSION);
+use vars qw($VERSION @CARP_NOT);
 $VERSION = '0.35';
+
+@CARP_NOT = (qw[
+    WWW::Mechanize::Firefox
+]);
 
 =head1 NAME
 
