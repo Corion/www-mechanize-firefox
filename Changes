@@ -1,3 +1,11 @@
+0.36 2010
+    . Fix the mro.pm 5.10+ prerequisite by using the additional prerequisite
+      MRO::Compat, which provides a transparent switch between mro.pm and its 
+      own implementation for versions <5.9.x.
+    . Make `use WWW::Mechanize::Firefox::DSL '$mech'` work silently
+    . JS Errors when using ::DSL now get raised in the user code and not
+      in ::Firefox or ::DSL
+
 0.35 20101014
     . Improve the error message of ->value() when no element is found
     . Implement ->tick() and ->untick()
