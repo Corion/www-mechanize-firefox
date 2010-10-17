@@ -4,7 +4,7 @@ use WWW::Mechanize::Firefox;
 use Carp qw(croak);
 
 use vars qw($VERSION @CARP_NOT);
-$VERSION = '0.35';
+$VERSION = '0.36';
 
 @CARP_NOT = (qw[
     WWW::Mechanize::Firefox
