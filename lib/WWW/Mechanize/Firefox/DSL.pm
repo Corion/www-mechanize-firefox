@@ -59,7 +59,7 @@ package # hide from CPAN indexer
 our $VERSION # hide from my standard VERSION test
   = 1.000;
 use Scalar::Util "blessed";
-use mro;
+use MRO::Compat;
 sub import {
     my($_u, $o_r, $en) = @_;
     $en ||= caller;
