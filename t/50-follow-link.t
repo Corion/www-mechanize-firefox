@@ -31,7 +31,7 @@ eval {
 };
 
 if (! $clicked) {
-    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 13; };
+    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 8; };
     exit;
 };
 

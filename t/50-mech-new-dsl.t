@@ -8,7 +8,7 @@ use vars '$mech';
 BEGIN {
     my $err;
     require WWW::Mechanize::Firefox::DSL;
-    $ok = eval { 
+    my $ok = eval { 
         WWW::Mechanize::Firefox::DSL->import(
             autodie => 0,
             #log => [qw[debug]]
