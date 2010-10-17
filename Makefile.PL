@@ -32,6 +32,7 @@ WriteMakefile1(
                         'Shell::Command' => 0, # just for cleanup of a test
                         'parent' => 0,
                         'Scalar::Util' => 1.14,
+                        'MRO::Compat'  => 0, # needed to provide mro.pm under <5.9.x, for ::DSL.pm
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/Firefox.pm', # retrieve abstract from module
     AUTHOR          => 'Max Maischein <corion@cpan.org>',
