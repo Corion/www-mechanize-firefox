@@ -1,3 +1,8 @@
+0.37 201010xx
+    . Switch out the code in WWW::Mechanize::Firefox::DSL
+      in favour of Object::Import, which is the same codebase
+      but intended for a wider audience.
+
 0.36 20101017
     . Fix the mro.pm 5.10+ prerequisite by using the additional prerequisite
       MRO::Compat, which provides a transparent switch between mro.pm and its 

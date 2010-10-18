@@ -1,6 +1,7 @@
 package WWW::Mechanize::Firefox::DSL;
 use strict;
 use WWW::Mechanize::Firefox;
+use Object::Import;
 use Carp qw(croak);
 
 use vars qw($VERSION @CARP_NOT);
@@ -24,6 +25,8 @@ WWW::Mechanize::Firefox::DSL - Domain Specific Language for short scripts
     print $_->{innerHTML},"\n" for @links;
     
     click($links[0]);
+    
+    print content;
 
 This module exports all methods of one WWW::Mechanize::Firefox
 object as subroutines. That way, you can write short scripts without
@@ -35,13 +38,13 @@ again if I find that it is useless.
 =cut
 
 sub import {
-    my $target = caller;
     my ($class, %options);
     if (@_ == 2) {
         ($class, $options{ name }) = @_;
     } else {
         ($class, %options) = @_;
     };
+    my $target = delete $options{ target } || caller;
     my $name = delete $options{ name } || '$mech';
     my $mech = WWW::Mechanize::Firefox->new(%options);
     
@@ -50,44 +53,22 @@ sub import {
     {
         no strict 'refs';
         *{"$target\::$name"} = \$mech;
-        Object::Wrapobj->import( \${"$target\::$name"}, $target );
+        import Object::Import \${"$target\::$name"},
+                              deref => 1,
+                              target => $target,
+                              ;
     };
 };
-
-package # hide from CPAN indexer
-    Object::Wrapobj;
-our $VERSION # hide from my standard VERSION test
-  = 1.000;
-use Scalar::Util "blessed";
-use MRO::Compat;
-sub import {
-    my($_u, $o_r, $en) = @_;
-    $en ||= caller;
-    my $ens = $en . "::";
-    my $ep = do {no strict 'refs'; \%{ +$ens } };
-    my $c = blessed($$o_r) || $$o_r;
-    for my $n (@{mro::get_linear_isa($c)}) {
-        my $p = do { no strict 'refs'; \%{ $n . "::" }};
-        for my $s (sort keys %$p) {
-            if (exists(&{$$p{$s}})) {
-                if (!$$ep{$s} || !exists(&{$$ep{$s}})) {
-                    no strict 'refs';
-                    *{$ens . $s} = sub (@) { ${$o_r}->${\$s}(@_) };
-                }
-            }
-        }
-    }
-}
 
 1;
 
 =head1 AUTHORS
 
-Max Maischein C<corion@cpan.org> and Zsban Ambrus
+Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009-2010 by Max Maischein C<corion@cpan.org> and Zsban Ambrus.
+Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
