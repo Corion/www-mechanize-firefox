@@ -2410,7 +2410,7 @@ sub tick {
         if ($set) {
             $target->{checked}= 'checked';
         } else {
-            $target->{checked}= undef;
+            delete $target->{checked};
         };
     };
 };
