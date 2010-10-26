@@ -753,6 +753,7 @@ with L<WWW::Mechanize>.
 sub get {
     my ($self,$url, %options) = @_;
     my $b = $self->tab->{linkedBrowser};
+    $self->clear_current_form;
 
     if (my $target = delete $options{":content_file"}) {
         $self->save_url($url => $target, %options);
@@ -1969,10 +1970,25 @@ This method is incompatible with L<WWW::Mechanize>.
 It returns the DOM C<< <form> >> object and not
 a L<HTML::Form> instance.
 
+Note that WWW::Mechanize::Firefox has little way to know
+that the current form is not displayed in the browser
+anymore, so it often holds on to the last value. If
+you want to make sure that a fresh or no form is used,
+remove it:
+
+    $mech->clear_current_form;
+    
+The current form will be reset by WWW::Mechanize::Firefox
+on calls to C<< ->get() >> and C<< ->get_local() >>,
+and on calls to C<< ->submit() >> and C<< ->submit_with_fields >>.
+
 =cut
 
 sub current_form {
     $_[0]->{current_form}
+};
+sub clear_current_form {
+    undef $_[0]->{current_form};
 };
 
 =head2 C<< $mech->form_name $name [, %options] >>
@@ -2445,6 +2461,7 @@ sub submit {
     $dom_form ||= $self->current_form;
     if ($dom_form) {
         $dom_form->submit();
+        $self->clear_current_form;
         1;
     } else {
         croak "I don't know which form to submit, sorry.";
