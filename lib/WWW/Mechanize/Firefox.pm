@@ -1856,6 +1856,180 @@ sub follow_link {
     }
 }
 
+=head2 C<< $mech->xpath $query, %options >>
+
+    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+    # croaks if there is no link or more than one link found
+
+    my @para = $mech->xpath('//p');
+    # Collects all paragraphs
+
+Runs an XPath query in Firefox against the current document.
+
+The options allow the following keys:
+
+=over 4
+
+=item *
+
+C<< document >> - document in which the query is to be executed. Use this to
+search a node within a specific subframe of C<< $mech->document >>.
+
+=item *
+
+C<< frames >> - if true, search all documents in all frames and iframes.
+This may or may not conflict with C<node>. This will default to the
+C<frames> setting of the WWW::Mechanize::Firefox object.
+
+=item *
+
+C<< node >> - node relative to which the query is to be executed
+
+=item *
+
+C<< single >> - If true, ensure that only one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
+
+=item *
+
+C<< one >> - If true, ensure that at least one element is found. Otherwise croak
+or carp, depending on the C<autodie> parameter.
+
+=item *
+
+C<< maybe >> - If true, ensure that at most one element is found. Otherwise
+croak or carp, depending on the C<autodie> parameter.
+
+=item *
+
+C<< all >> - If true, return all elements found. This is the default.
+You can use this option if you want to use C<< ->xpath >> in scalar context
+to count the number of matched elements, as it will otherwise emit a warning
+for each usage in scalar context without any of the above restricting options.
+
+=back
+
+Returns the matched nodes.
+
+You can pass in a list of queries as an array reference for the first parameter.
+
+This is a method that is not implemented in WWW::Mechanize.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub xpath {
+    my ($self,$query,%options) = @_;
+    if ('ARRAY' ne (ref $query||'')) {
+        $query = [$query];
+    };
+    
+    if ($options{ node }) {
+        $options{ document } ||= $options{ node }->{ownerDocument};
+        #warn "Have node, searching below node";
+    } else {
+        $options{ document } ||= $self->document;
+        #$options{ node } = $options{ document };
+    };
+    
+    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
+    my $single = delete $options{ single };
+    my $first  = delete $options{ one };
+    my $maybe  = delete $options{ maybe };
+    
+    # Construct some helper variables
+    my $zero_allowed = not ($single or $first);
+    my $two_allowed  = not( $single or $maybe );
+    my $return_first = ($single or $first or $maybe);
+    #warn "Zero: $zero_allowed";
+    #warn "Two : $two_allowed";
+    #warn "Ret : $return_first";
+    
+    # Sanity check for the common error of
+    # my $item = $mech->xpath("//foo");
+    if (! exists $options{ all } and not ($return_first)) {
+        $self->signal_condition(join "\n",
+            "You asked for many elements but seem to only want a single item.",
+            "Did you forget to pass the 'single' option with a true value?",
+            "Pass 'all => 1' to suppress this message and receive the count of items.",
+        ) if defined wantarray and !wantarray;
+    };
+    
+    if (not exists $options{ frames }) {
+        $options{frames} = $self->{frames};
+    };
+    
+    my @res;
+    
+    DOCUMENTS: {            
+        my @documents = $options{ document };
+        #warn "Invalid root document" unless $options{ document };
+        
+        # recursively join the results of sub(i)frames if wanted
+        # This should maybe go into the loop to expand every frame as we descend
+        # into the available subframes
+
+        while (@documents) {
+            my $doc = shift @documents;
+            #warn "Invalid document" unless $doc;
+
+            my $n = $options{ node } || $doc;
+            #warn "$nesting>Searching @$query in $doc->{title}";
+            push @res, map { $doc->__xpath($_, $n) } @$query;
+            
+            # A small optimization to return if we already have enough elements
+            # We can't do this on $return_first as there might be more elements
+            last DOCUMENTS if @res and $first;        
+            
+            if ($options{ frames } and not $options{ node }) {
+                #warn "$nesting>Expanding below " . $doc->{title};
+                #local $nesting .= "--";
+                my @d = $self->expand_frames( $options{ frames }, $doc );
+                #warn "Found $_->{title}" for @d;
+                push @documents, @d;
+            };
+        };
+    };
+    
+    if (! $zero_allowed and @res == 0) {
+        $self->signal_condition( "No elements found for $options{ user_info }" );
+    };
+    
+    if (! $two_allowed and @res > 1) {
+        $self->highlight_node(@res);
+        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
+    };
+    
+    return $return_first ? $res[0] : @res;
+};
+
+=head2 C<< $mech->selector $css_selector, %options >>
+
+  my @text = $mech->selector('p.content');
+
+Returns all nodes matching the given CSS selector. If
+$css_selector is an array reference, it returns
+all nodes matched by any of the CSS selectors in the array.
+
+This takes the same options that C<< ->xpath >> does.
+
+In the long run, this should go into a general plugin for
+L<WWW::Mechanize>.
+
+=cut
+
+sub selector {
+    my ($self,$query,%options) = @_;
+    $options{ user_info } ||= "CSS selector '$query'";
+    if ('ARRAY' ne (ref $query || '')) {
+        $query = [$query];
+    };
+    my @q = map { selector_to_xpath($_); } @$query;
+    $self->xpath(\@q, %options);
+};
+
 =head2 C<< $mech->click $name [,$x ,$y] >>
 
   $mech->click( 'go' );
@@ -2791,180 +2965,6 @@ with an C<onclick> attribute.
 sub clickables {
     my ($self, %options) = @_;
     $self->xpath('//*[@onclick]', %options);
-};
-
-=head2 C<< $mech->xpath $query, %options >>
-
-    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
-    # croaks if there is no link or more than one link found
-
-    my @para = $mech->xpath('//p');
-    # Collects all paragraphs
-
-Runs an XPath query in Firefox against the current document.
-
-The options allow the following keys:
-
-=over 4
-
-=item *
-
-C<< document >> - document in which the query is to be executed. Use this to
-search a node within a specific subframe of C<< $mech->document >>.
-
-=item *
-
-C<< frames >> - if true, search all documents in all frames and iframes.
-This may or may not conflict with C<node>. This will default to the
-C<frames> setting of the WWW::Mechanize::Firefox object.
-
-=item *
-
-C<< node >> - node relative to which the query is to be executed
-
-=item *
-
-C<< single >> - If true, ensure that only one element is found. Otherwise croak
-or carp, depending on the C<autodie> parameter.
-
-=item *
-
-C<< one >> - If true, ensure that at least one element is found. Otherwise croak
-or carp, depending on the C<autodie> parameter.
-
-=item *
-
-C<< maybe >> - If true, ensure that at most one element is found. Otherwise
-croak or carp, depending on the C<autodie> parameter.
-
-=item *
-
-C<< all >> - If true, return all elements found. This is the default.
-You can use this option if you want to use C<< ->xpath >> in scalar context
-to count the number of matched elements, as it will otherwise emit a warning
-for each usage in scalar context without any of the above restricting options.
-
-=back
-
-Returns the matched nodes.
-
-You can pass in a list of queries as an array reference for the first parameter.
-
-This is a method that is not implemented in WWW::Mechanize.
-
-In the long run, this should go into a general plugin for
-L<WWW::Mechanize>.
-
-=cut
-
-sub xpath {
-    my ($self,$query,%options) = @_;
-    if ('ARRAY' ne (ref $query||'')) {
-        $query = [$query];
-    };
-    
-    if ($options{ node }) {
-        $options{ document } ||= $options{ node }->{ownerDocument};
-        #warn "Have node, searching below node";
-    } else {
-        $options{ document } ||= $self->document;
-        #$options{ node } = $options{ document };
-    };
-    
-    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
-    my $single = delete $options{ single };
-    my $first  = delete $options{ one };
-    my $maybe  = delete $options{ maybe };
-    
-    # Construct some helper variables
-    my $zero_allowed = not ($single or $first);
-    my $two_allowed  = not( $single or $maybe );
-    my $return_first = ($single or $first or $maybe);
-    #warn "Zero: $zero_allowed";
-    #warn "Two : $two_allowed";
-    #warn "Ret : $return_first";
-    
-    # Sanity check for the common error of
-    # my $item = $mech->xpath("//foo");
-    if (! exists $options{ all } and not ($return_first)) {
-        $self->signal_condition(join "\n",
-            "You asked for many elements but seem to only want a single item.",
-            "Did you forget to pass the 'single' option with a true value?",
-            "Pass 'all => 1' to suppress this message and receive the count of items.",
-        ) if defined wantarray and !wantarray;
-    };
-    
-    if (not exists $options{ frames }) {
-        $options{frames} = $self->{frames};
-    };
-    
-    my @res;
-    
-    DOCUMENTS: {            
-        my @documents = $options{ document };
-        #warn "Invalid root document" unless $options{ document };
-        
-        # recursively join the results of sub(i)frames if wanted
-        # This should maybe go into the loop to expand every frame as we descend
-        # into the available subframes
-
-        while (@documents) {
-            my $doc = shift @documents;
-            #warn "Invalid document" unless $doc;
-
-            my $n = $options{ node } || $doc;
-            #warn "$nesting>Searching @$query in $doc->{title}";
-            push @res, map { $doc->__xpath($_, $n) } @$query;
-            
-            # A small optimization to return if we already have enough elements
-            # We can't do this on $return_first as there might be more elements
-            last DOCUMENTS if @res and $first;        
-            
-            if ($options{ frames } and not $options{ node }) {
-                #warn "$nesting>Expanding below " . $doc->{title};
-                #local $nesting .= "--";
-                my @d = $self->expand_frames( $options{ frames }, $doc );
-                #warn "Found $_->{title}" for @d;
-                push @documents, @d;
-            };
-        };
-    };
-    
-    if (! $zero_allowed and @res == 0) {
-        $self->signal_condition( "No elements found for $options{ user_info }" );
-    };
-    
-    if (! $two_allowed and @res > 1) {
-        $self->highlight_node(@res);
-        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
-    };
-    
-    return $return_first ? $res[0] : @res;
-};
-
-=head2 C<< $mech->selector $css_selector, %options >>
-
-  my @text = $mech->selector('p.content');
-
-Returns all nodes matching the given CSS selector. If
-$css_selector is an array reference, it returns
-all nodes matched by any of the CSS selectors in the array.
-
-This takes the same options that C<< ->xpath >> does.
-
-In the long run, this should go into a general plugin for
-L<WWW::Mechanize>.
-
-=cut
-
-sub selector {
-    my ($self,$query,%options) = @_;
-    $options{ user_info } ||= "CSS selector '$query'";
-    if ('ARRAY' ne (ref $query || '')) {
-        $query = [$query];
-    };
-    my @q = map { selector_to_xpath($_); } @$query;
-    $self->xpath(\@q, %options);
 };
 
 =head2 C<< $mech->expand_frames $spec >>
