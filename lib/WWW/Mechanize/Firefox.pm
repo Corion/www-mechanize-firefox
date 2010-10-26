@@ -2178,7 +2178,7 @@ sub form_name {
     $name = quote_xpath $name;
     _default_limiter( single => \%options );
     $self->{current_form} = $self->selector("form[name='$name']",
-        user_info => "form id '$name'",
+        user_info => "form name '$name'",
         %options
     );
 };
