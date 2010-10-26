@@ -1828,7 +1828,6 @@ sub find_all_links_dom {
     return \@matches;
 };
 
-
 =head2 C<< $mech->follow_link $link >>
 
 =head2 C<< $mech->follow_link %options >>
