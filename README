@@ -597,6 +597,65 @@ EXTRACTION METHODS
     Note that `->follow_link' will only try to follow link-like things like
     `A' tags.
 
+  `$mech->xpath $query, %options'
+
+        my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+        # croaks if there is no link or more than one link found
+
+        my @para = $mech->xpath('//p');
+        # Collects all paragraphs
+
+    Runs an XPath query in Firefox against the current document.
+
+    The options allow the following keys:
+
+    *   `document' - document in which the query is to be executed. Use this
+        to search a node within a specific subframe of `$mech->document'.
+
+    *   `frames' - if true, search all documents in all frames and iframes.
+        This may or may not conflict with `node'. This will default to the
+        `frames' setting of the WWW::Mechanize::Firefox object.
+
+    *   `node' - node relative to which the query is to be executed
+
+    *   `single' - If true, ensure that only one element is found. Otherwise
+        croak or carp, depending on the `autodie' parameter.
+
+    *   `one' - If true, ensure that at least one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
+
+    *   `maybe' - If true, ensure that at most one element is found.
+        Otherwise croak or carp, depending on the `autodie' parameter.
+
+    *   `all' - If true, return all elements found. This is the default. You
+        can use this option if you want to use `->xpath' in scalar context
+        to count the number of matched elements, as it will otherwise emit a
+        warning for each usage in scalar context without any of the above
+        restricting options.
+
+    Returns the matched nodes.
+
+    You can pass in a list of queries as an array reference for the first
+    parameter.
+
+    This is a method that is not implemented in WWW::Mechanize.
+
+    In the long run, this should go into a general plugin for
+    WWW::Mechanize.
+
+  `$mech->selector $css_selector, %options'
+
+      my @text = $mech->selector('p.content');
+
+    Returns all nodes matching the given CSS selector. If $css_selector is
+    an array reference, it returns all nodes matched by any of the CSS
+    selectors in the array.
+
+    This takes the same options that `->xpath' does.
+
+    In the long run, this should go into a general plugin for
+    WWW::Mechanize.
+
   `$mech->click $name [,$x ,$y]'
 
       $mech->click( 'go' );
@@ -641,6 +700,17 @@ FORM METHODS
 
     This method is incompatible with WWW::Mechanize. It returns the DOM
     `<form>' object and not a HTML::Form instance.
+
+    Note that WWW::Mechanize::Firefox has little way to know that the
+    current form is not displayed in the browser anymore, so it often holds
+    on to the last value. If you want to make sure that a fresh or no form
+    is used, remove it:
+
+        $mech->clear_current_form;
+    
+    The current form will be reset by WWW::Mechanize::Firefox on calls to
+    `->get()' and `->get_local()', and on calls to `->submit()' and
+    `->submit_with_fields'.
 
   `$mech->form_name $name [, %options]'
 
@@ -915,65 +985,6 @@ FORM METHODS
 
     Returns all clickable elements, that is, all elements with an `onclick'
     attribute.
-
-  `$mech->xpath $query, %options'
-
-        my $link = $mech->xpath('//a[id="clickme"]', one => 1);
-        # croaks if there is no link or more than one link found
-
-        my @para = $mech->xpath('//p');
-        # Collects all paragraphs
-
-    Runs an XPath query in Firefox against the current document.
-
-    The options allow the following keys:
-
-    *   `document' - document in which the query is to be executed. Use this
-        to search a node within a specific subframe of `$mech->document'.
-
-    *   `frames' - if true, search all documents in all frames and iframes.
-        This may or may not conflict with `node'. This will default to the
-        `frames' setting of the WWW::Mechanize::Firefox object.
-
-    *   `node' - node relative to which the query is to be executed
-
-    *   `single' - If true, ensure that only one element is found. Otherwise
-        croak or carp, depending on the `autodie' parameter.
-
-    *   `one' - If true, ensure that at least one element is found.
-        Otherwise croak or carp, depending on the `autodie' parameter.
-
-    *   `maybe' - If true, ensure that at most one element is found.
-        Otherwise croak or carp, depending on the `autodie' parameter.
-
-    *   `all' - If true, return all elements found. This is the default. You
-        can use this option if you want to use `->xpath' in scalar context
-        to count the number of matched elements, as it will otherwise emit a
-        warning for each usage in scalar context without any of the above
-        restricting options.
-
-    Returns the matched nodes.
-
-    You can pass in a list of queries as an array reference for the first
-    parameter.
-
-    This is a method that is not implemented in WWW::Mechanize.
-
-    In the long run, this should go into a general plugin for
-    WWW::Mechanize.
-
-  `$mech->selector $css_selector, %options'
-
-      my @text = $mech->selector('p.content');
-
-    Returns all nodes matching the given CSS selector. If $css_selector is
-    an array reference, it returns all nodes matched by any of the CSS
-    selectors in the array.
-
-    This takes the same options that `->xpath' does.
-
-    In the long run, this should go into a general plugin for
-    WWW::Mechanize.
 
   `$mech->expand_frames $spec'
 
