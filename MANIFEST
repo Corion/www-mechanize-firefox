@@ -35,6 +35,7 @@ t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
 t/49-mech-reuse.t
+t/50-allow-js.t
 t/50-click.html
 t/50-click.t
 t/50-follow-link.t
