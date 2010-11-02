@@ -796,7 +796,7 @@ sub _addEventListener {
     $events = [$events]
         unless ref $events;
 
-# This registers multiple events for a one-shot event
+    # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
     var lock = {};
