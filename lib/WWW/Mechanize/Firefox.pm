@@ -2821,6 +2821,10 @@ C<xpath> - the XPath query
 
 C<selector> - the CSS selector
 
+=item *
+
+C<dom> - a DOM node
+
 =back
 
 The remaining options are passed through to either the
