@@ -35,7 +35,7 @@ if (! $triggered) {
     plan skip_all => "Couldn't get at 'timer'. Do you have a Javascript blocker?";
     exit;
 } else {
-    plan tests => 0+@files*11;
+    plan tests => 0+@files*12;
 };
 
 for my $file (@files) {
@@ -47,6 +47,8 @@ for my $file (@files) {
     ok $mech->is_visible(selector => 'body'), "We can see the body";
 
     ok !$mech->is_visible(selector => '#standby'), "We can't see #standby";
+    my @status = 
+    ok !$mech->is_visible(selector => '.status', any => 1), "We can't see .status even though there exist multiple such elements";
     $mech->click({ selector => '#start', synchronize => 0 });
     ok $mech->is_visible(selector => '#standby'), "We can see #standby";
     my $ok = eval {

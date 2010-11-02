@@ -1634,7 +1634,7 @@ use vars '%xpath_quote';
 # Return the default limiter if no other limiting option is set:
 sub _default_limiter {
     my ($default, $options) = @_;
-    if (! grep { exists $options->{ $_ } } qw(single one maybe all)) {
+    if (! grep { exists $options->{ $_ } } qw(single one maybe all any)) {
         $options->{ $default } = 1;
     };
     return ()
@@ -1907,6 +1907,10 @@ You can use this option if you want to use C<< ->xpath >> in scalar context
 to count the number of matched elements, as it will otherwise emit a warning
 for each usage in scalar context without any of the above restricting options.
 
+=item *
+
+C<< any >> - no error is raised, no matter if an item is found or not.
+
 =back
 
 Returns the matched nodes.
@@ -1938,11 +1942,12 @@ sub xpath {
     my $single = delete $options{ single };
     my $first  = delete $options{ one };
     my $maybe  = delete $options{ maybe };
+    my $any    = delete $options{ any };
     
     # Construct some helper variables
     my $zero_allowed = not ($single or $first);
-    my $two_allowed  = not( $single or $maybe );
-    my $return_first = ($single or $first or $maybe);
+    my $two_allowed  = not( $single or $maybe);
+    my $return_first = ($single or $first or $maybe or $any);
     #warn "Zero: $zero_allowed";
     #warn "Two : $two_allowed";
     #warn "Ret : $return_first";
@@ -2869,7 +2874,7 @@ sub is_visible {
         return false
     }
 JS
-    $_is_visible->($options{dom});
+    !!$_is_visible->($options{dom});
 };
 
 =head2 C<< $mech->wait_until_invisible $element >>
