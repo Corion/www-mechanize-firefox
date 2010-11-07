@@ -23,9 +23,10 @@ if (! eval { require HTTP::Daemon; 1 }) {
 delete @ENV{qw(HTTP_PROXY http_proxy CGI_HTTP_PROXY)};
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
-    autodie => 0,
-    #log => [qw[debug]],
-)};
+        autodie => 0,
+        #log => [qw[debug]],
+    )
+};
 
 if (! $mech) {
     my $err = $@;
@@ -91,7 +92,7 @@ if (0) {
         var pm = Components.classes["@mozilla.org/login-manager;1"].
             getService(Components.interfaces.nsILoginManager);
         pm.getAllLogins({});
-    JS
+JS
     my $count = $logins->{length};
     diag "Logins: $count";
     for (0..$count-1) {
