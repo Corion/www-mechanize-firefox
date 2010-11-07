@@ -633,6 +633,8 @@ EXTRACTION METHODS
         warning for each usage in scalar context without any of the above
         restricting options.
 
+    *   `any' - no error is raised, no matter if an item is found or not.
+
     Returns the matched nodes.
 
     You can pass in a list of queries as an array reference for the first
@@ -953,6 +955,8 @@ FORM METHODS
     *   `xpath' - the XPath query
 
     *   `selector' - the CSS selector
+
+    *   `dom' - a DOM node
 
     The remaining options are passed through to either the /$mech->xpath or
     /$mech->selector method.

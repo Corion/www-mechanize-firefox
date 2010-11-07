@@ -723,6 +723,10 @@ You can use this option if you want to use `->xpath` in scalar context
 to count the number of matched elements, as it will otherwise emit a warning
 for each usage in scalar context without any of the above restricting options.
 
+- *
+
+`any` - no error is raised, no matter if an item is found or not.
+
 Returns the matched nodes.
 
 You can pass in a list of queries as an array reference for the first parameter.
@@ -1068,6 +1072,10 @@ pairs to search the document for the element you want.
 - *
 
 `selector` - the CSS selector
+
+- *
+
+`dom` - a DOM node
 
 The remaining options are passed through to either the
 L</$mech->xpath|xpath> or L</$mech->selector|selector> method.
