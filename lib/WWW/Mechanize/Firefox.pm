@@ -2604,7 +2604,7 @@ sub tick {
         if ($set) {
             $target->{checked}= 'checked';
         } else {
-            delete $target->{checked};
+            $target->{checked} = 0;
         };
     };
 };
