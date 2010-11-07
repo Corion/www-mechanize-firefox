@@ -3,6 +3,7 @@
 <title>50-click.html</title>
 <script>
 var clicked="<nothing>";
+var w;
 </script>
 </head>
 <body>
@@ -14,5 +15,6 @@ var clicked="<nothing>";
 </form>
 <a href="#" id="a_link" onclick="javascript:clicked='a_link';return false">A link</a>
 <div id="a_div" onclick="javascript:clicked='a_div';return false">Some div</div>
+<a href="#" id="open_window" onclick="javascript:w=window.open('50-form2.html');return false">Open a window (or tab)</a>
 </body>
 </html>
