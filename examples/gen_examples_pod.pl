@@ -28,6 +28,7 @@ sub main {
     my $examples_dir = $ARGV[0] || './examples';
 
     # Get the version from the local WWW::Mechanize::Firefox.pm.
+    push @INC, '../lib';
     require "$examples_dir/../lib/WWW/Mechanize/Firefox.pm";
     my $version = WWW::Mechanize::Firefox->VERSION();
 
