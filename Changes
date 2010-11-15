@@ -1,4 +1,4 @@
-0.37 201011xx
+0.37 20101115
     . Switch out the code in WWW::Mechanize::Firefox::DSL
       in favour of Object::Import, which is the same codebase
       but intended for a wider audience than just W:M:F.
