@@ -10,7 +10,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 6;
+    plan tests => 8;
 };
 
 $mech->get('http://google.de');
@@ -19,15 +19,18 @@ my $response = $mech->response;
 isn't $response, undef, "We identified a response";
 is $response->code, 200, 'We got a good response';
 
+undef $mech->{response};
 $mech->get('http://doesnotexist.example');
 $response = $mech->response;
 
 isn't $response, undef, "We identified a response";
-is $response->code, 500, 'We got a good response for a nonexistent domain';
+like $response->code, qr/^(404|500)$/, 'We got a good response for a nonexistent domain';
+ok ! $mech->success, "And the response is not considered a success";
 
 $response = $mech->get('http://doesnotexist.example');
 
 isn't $response, undef, "We identified a response, directly";
-is $response->code, 500, 'We got a good response for a nonexistent domain, directly';
+like $response->code, qr/^(404|500)$/, 'We got a good response for a nonexistent domain';
+ok ! $mech->success, "And the response is not considered a success";
 
 undef $mech;
