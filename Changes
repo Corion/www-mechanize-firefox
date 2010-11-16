@@ -1,3 +1,15 @@
+0.38 to be released
+    . Fix test for checking whether JS is enabled and whether it can be
+      disabled to also work when the NoScript add-on is not installed.
+    ! Fix test and code for ->response (and ->get()) when a HTTP proxy
+      is set. This means that if you have a proxy, some of the response
+      codes may differ from what you saw before. Some responses are now
+      404 or 500 responses where they returned undef before.
+    ! The response code should now more closely correspond to the first
+      response actually fetched.
+    . Always store (a reference to) the Javascript response even if we
+      don't fetch it immediately.
+
 0.37 20101115
     . Switch out the code in WWW::Mechanize::Firefox::DSL
       in favour of Object::Import, which is the same codebase
