@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 3;
+    plan tests => 4;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -27,11 +27,15 @@ eval {
     ($clicked, $type) = $mech->eval_in_page('clicked');
     $end = 1;
 };
-like $@, qr//, "JS is disallowed";
+like $@, qr/clicked is not defined/, "JS is disallowed";
 
+$end = undef;
 $mech->allow('javascript' => 1);
+$mech->get_local('50-click.html');
 eval {
     ($clicked, $type) = $mech->eval_in_page('clicked');
     $end = 1;
 };
+ok $end, "No exception"
+    or diag $@;
 ok $clicked, "We found 'clicked'";
