@@ -14,7 +14,7 @@ use WWW::Mechanize::Link;
 use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
-use Carp qw(carp croak);
+use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec';
 $VERSION = '0.37';
@@ -880,14 +880,17 @@ sub _install_response_header_listener {
 
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
-        #printf "State     : <progress> <request> %08x %08x\n", $flags, $status;
-        #printf "                                 %08x\n", $STATE_STOP;
+        #warn sprintf "State     : <progress> <request> %08x %08x\n", $flags, $status;
+        #warn sprintf "                                 %08x\n", $STATE_STOP | $STATE_IS_DOCUMENT;
+        #warn "".$request->{URI}->{asciiSpec};
         
         if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
             if ($status == 0) {
                 #warn "Storing request to response";
-                $self->{ response } = $request;
+                #warn "URI ".$request->{URI}->{asciiSpec};
+                $self->{ response } ||= $request;
             } else {
+                #warn "Erasing response";
                 undef $self->{ response };
             };
             #if ($status) {
@@ -895,11 +898,11 @@ sub _install_response_header_listener {
             #};
         };
     };
-    my $status_change = sub {
-        my ($progress,$request,$status,$msg) = @_;
-        #printf "Status     : <progress> <request> %08x %s\n", $status, $msg;
-        #printf "                                 %08x\n", $STATE_STOP;
-    };
+    #my $status_change = sub {
+    #    my ($progress,$request,$status,$msg) = @_;
+    #    warn sprintf "Status     : <progress> <request> %08x %s\n", $status, $msg;
+    #    warn sprintf "                                 %08x\n", $STATE_STOP;
+    #};
 
     my $browser = $self->tab->{linkedBrowser};
 
@@ -927,9 +930,9 @@ sub synchronize {
     
     my $need_response = defined wantarray;
     my $response_catcher;
-    if ($need_response) {
+    #if ($need_response) {
         $response_catcher = $self->_install_response_header_listener();
-    };
+    #};
     
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
@@ -939,6 +942,7 @@ sub synchronize {
     $self->_wait_while_busy($load_lock);
     
     if ($need_response) {
+        #warn "Returning response";
         return $self->response
     };
 };
@@ -965,20 +969,16 @@ sub _extract_response {
     my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
     
-    if (my $status = $httpChannel->{requestSucceeded}) {
-        my @headers;
-        my $v = $self->_headerVisitor(sub{push @headers, @_});
-        $httpChannel->visitResponseHeaders($v);
-        my $res = HTTP::Response->new(
-            $httpChannel->{responseStatus},
-            $httpChannel->{responseStatusText},
-            \@headers,
-            undef, # no body so far
-        );
-        return $res;
-    };
-    #warn "Couldn't extract status from request...";
-    undef
+    my @headers;
+    my $v = $self->_headerVisitor(sub{push @headers, @_});
+    $httpChannel->visitResponseHeaders($v);
+    my $res = HTTP::Response->new(
+        $httpChannel->{responseStatus},
+        $httpChannel->{responseStatusText},
+        \@headers,
+        undef, # no body so far
+    );
+    return $res;
 };
 
 sub response {
@@ -987,20 +987,24 @@ sub response {
     # If we still have a valid JS response,
     # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
-        my $ouri = $js_res->{originalURI};
-        my $scheme;
+        #my $ouri = $js_res->{originalURI};
+        my $ouri = $js_res->{URI};
+        my $scheme = '<no scheme>';
+        #warn "Reading response for ".$js_res->{URI}->{asciiSpec};
+        #warn "            original ".$js_res->{originalURI}->{asciiSpec};
         if ($ouri) {
             $scheme = $ouri->{scheme};
         };
         if ($scheme and $scheme =~ /^https?/) {
             # We can only extract from a HTTP Response
             return $self->_extract_response( $js_res );
-        } elsif ($scheme and $scheme =~ /^file/) {
+        } elsif ($scheme and $scheme =~ /^(file|data)\b/) {
             # We're cool!
             return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
         } else {
             # make up a response, below
-            warn "Making up response for unknown scheme '$scheme'";
+            my $url = $self->document->{documentURI};
+            carp "Making up a response for unknown URL scheme '$scheme' (from '$url')";
         };
     };
     
@@ -1013,6 +1017,7 @@ sub response {
     };   
 
     # We're cool, except we don't know what we're doing here:
+    #warn "Huh?";
     return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
 }
 *res = \&response;
