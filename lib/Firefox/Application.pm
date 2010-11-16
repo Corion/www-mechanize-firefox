@@ -22,7 +22,7 @@ Firefox::Application - inspect and automate the Firefox UI
   use Firefox::Application;
   my $ff = Firefox::Application->new();
 
-This module  will let you automate Firefox through the
+This module will let you automate Firefox through the
 Mozrepl plugin. You need to have installed
 that plugin in your Firefox.
 
