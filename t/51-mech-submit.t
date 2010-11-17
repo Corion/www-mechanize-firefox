@@ -4,7 +4,7 @@ use Test::More;
 use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
-    autodie => 0,
+    autodie => 1,
     #log => [qw[debug]],
 )};
 
@@ -62,6 +62,7 @@ is $r->{value}, 'Hello Firefox', "We set the new value";
 
 $mech->get_local('51-mech-submit.html');
 $mech->allow('javascript' => 1);
+$mech->form_number(1);
 $mech->submit_form();
 ($triggered,$type) = $mech->eval_in_page('myevents');
 ok $triggered, "We can submit an empty form";
