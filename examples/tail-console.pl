@@ -1,6 +1,5 @@
 #!perl -w
 use strict;
-use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
 use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Getopt::Long;

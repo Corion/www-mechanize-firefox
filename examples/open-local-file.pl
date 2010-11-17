@@ -1,3 +1,4 @@
+#!perl -w
 use strict;
 use WWW::Mechanize::Firefox;
 
