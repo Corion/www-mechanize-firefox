@@ -9,6 +9,8 @@
       response actually fetched.
     . Always store (a reference to) the Javascript response even if we
       don't fetch it immediately.
+    . The examples now have a common hashbang line
+    . The examples don't use a private library directory anymore
 
 0.37 20101115
     . Switch out the code in WWW::Mechanize::Firefox::DSL
