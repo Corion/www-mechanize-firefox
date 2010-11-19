@@ -11,6 +11,7 @@ use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
+use Firefox::Application;
 use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
@@ -108,8 +109,12 @@ waiting for a reply
 
 =item * 
 
+C<app> - a premade L<Firefox::Application>
+
+=item * 
+
 C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
-suitable for initializing one.
+suitable for initializing one
 
 =item * 
 
@@ -127,25 +132,34 @@ value is changed. By default this is C<[blur, change]>.
 
 sub new {
     my ($class, %args) = @_;
-    my $loglevel = delete $args{ log } || [qw[ error ]];
-    if (! ref $args{ repl }) {
-        my $ff = delete $args{ launch };
-        $args{ repl } = MozRepl::RemoteObject->install_bridge(
-            repl   => $args{ repl } || undef,
-            launch => $ff,
-            log => $loglevel,
+    #my $loglevel = delete $args{ log } || [qw[ error ]];
+    
+    if (! ref $args{ app }) {
+        my @passthrough = qw(launch repl bufsize log);
+        my %options; @options{ @passthrough } = delete @args{ @passthrough };
+        $args{ app } = Firefox::Application->new(
+            %options
         );
     };
+    
+    #if (! ref $args{ repl }) {
+    #    my $ff = delete $args{ launch };
+    #    $args{ repl } = MozRepl::RemoteObject->install_bridge(
+    #        repl   => $args{ repl } || undef,
+    #        launch => $ff,
+    #        log => $loglevel,
+    #    );
+    #};
     
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
             if ($tabname eq 'current') {
-                $args{ tab } = $class->selectedTab($args{ repl });
+                $args{ tab } = $class->selectedTab($args{ app }->repl);
             } else {
                 croak "Don't know what to do with tab '$tabname'. Did you mean qr{$tabname}?";
             };
         } else {
-            ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ repl });
+            ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ app }->repl);
             if (! $args{ tab }) {
                 if (! delete $args{ create }) {
                     croak "Couldn't find a tab matching /$tabname/";
@@ -159,7 +173,7 @@ sub new {
     };
     if (! $args{ tab }) {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
-        $args{ tab } = $class->addTab( repl => $args{ repl }, @autoclose );
+        $args{ tab } = $class->addTab( repl => $args{ app }->repl, @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     };
@@ -168,10 +182,6 @@ sub new {
         $class->autoclose_tab($args{ tab });
     };
     
-    if (my $bufsize = delete $args{ bufsize }) {
-        $args{ repl }->repl->client->telnet->max_buffer_length($bufsize);
-    };
-
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
@@ -181,7 +191,7 @@ sub new {
         unless $args{tab};
         
     if (delete $args{ activate }) {
-        $class->activateTab( $args{ tab }, $args{ repl });
+        $class->activateTab( $args{ tab }, $args{ app }->repl);
     };
     
     $args{ response } ||= undef;
@@ -414,6 +424,17 @@ sub unsafe_page_property_access {
 };
 
 =head1 UI METHODS
+
+=head2 C<< $mech->application() >>
+
+    my $ff = $mech->application();
+
+Returns the L<Firefox::Application> object for manipulating
+more parts of the Firefox UI and application.
+
+=cut
+
+sub application { $_[0]->{app} };
 
 =head2 C<< $mech->browser( [$repl] ) >>
 
@@ -673,7 +694,7 @@ This method is special to WWW::Mechanize::Firefox.
 
 =cut
 
-sub repl { $_[0]->{repl} };
+sub repl { $_[0]->application->repl };
 
 =head2 C<< $mech->events >>
 

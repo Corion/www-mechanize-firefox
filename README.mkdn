@@ -195,6 +195,13 @@ this function, edit the source code.
 
 # UI METHODS
 
+## C<< $mech->application() >>
+
+    my $ff = $mech->application();
+
+Returns the [Firefox::Application](http://search.cpan.org/search?mode=module&query=Firefox::Application) object for manipulating
+more parts of the Firefox UI and application.
+
 ## C<< $mech->browser( [$repl] ) >>
 
     my $b = $mech->browser();

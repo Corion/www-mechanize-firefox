@@ -155,6 +155,13 @@ JAVASCRIPT METHODS
     function, edit the source code.
 
 UI METHODS
+  `$mech->application()'
+
+        my $ff = $mech->application();
+
+    Returns the Firefox::Application object for manipulating more parts of
+    the Firefox UI and application.
+
   `$mech->browser( [$repl] )'
 
         my $b = $mech->browser();
