@@ -26,7 +26,6 @@ sub save {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-#$mech->get('http://corion.net');
 $mech->update_html(<<'HTML');
 <html>
 <head><title>Hello PNG!</title></head>
@@ -41,13 +40,9 @@ my $pngData = $mech->content_as_png();
 
 like $pngData, '/^.PNG/', "The result looks like a PNG format file";
 
-#save( $pngData, 'page.png' );
-
 my $pngName = $mech->selector("#my_name", single => 1);
 $pngData = $mech->element_as_png($pngName);
 like $pngData, '/^.PNG/', "The result looks like a PNG format file";
-
-#save( $pngData, 'element.png' );
 
 my $rect = { left  =>    0,
     top   =>    0,
@@ -56,5 +51,3 @@ my $rect = { left  =>    0,
 };
 my $topleft = $mech->content_as_png(undef, $rect);
 like $topleft, '/^.PNG/', "The result looks like a PNG format file";
-
-#save( $topleft, 'topleft.png' );
