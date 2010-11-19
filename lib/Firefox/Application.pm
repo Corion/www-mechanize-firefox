@@ -121,14 +121,42 @@ See L<http://www.oxymoronical.com/experiments/apidocs/interface/nsIUpdateItem>
 =cut
 
 sub addons {
+    my $self = shift;
+    $self->updateitems(type => 'ADDON', @_);
+};
+
+=head2 C<< $ff->locales( %args ) >>
+
+  for my $addon ($ff->locales) {
+      print sprintf "Name: %s\n", $addon->{name};
+      print sprintf "Version: %s\n", $addon->{version};
+      print sprintf "GUID: %s\n", $addon->{id};
+  };
+
+Returns the list of installed locales as C<nsIUpdateItem>s.
+
+=cut
+
+sub locales {
+    my $self = shift;
+    $self->updateitems(type => 'LOCALE', @_);
+};
+
+sub themes {
+    my $self = shift;
+    $self->updateitems(type => 'THEME', @_);
+};
+
+sub updateitems {
     my ($self, %options) = @_;
     my $repl = delete $options{ repl } || $self->repl;
     # XXX make type a parameter
-    my $addons_js = $repl->declare(<<'JS');
+    my $type = $options{type} || 'ANY';
+    my $addons_js = $repl->declare(sprintf <<'JS', $type);
     function () {
         var em = Components.classes["@mozilla.org/extensions/manager;1"]
                     .getService(Components.interfaces.nsIExtensionManager);
-        var type = Components.interfaces.nsIUpdateItem.TYPE_EXTENSION;
+        var type = Components.interfaces.nsIUpdateItem.TYPE_%s;
         var count = {};
         var list = em.getItemList(type, count);
         return list
