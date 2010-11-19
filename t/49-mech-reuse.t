@@ -18,7 +18,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 6;
+    plan tests => 7;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -34,6 +34,7 @@ $mech = eval { WWW::Mechanize::Firefox->new(
     autoclose => 1,
     #log => [qw[debug]]
 )};
+is $@, '';
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 undef $mech;
 

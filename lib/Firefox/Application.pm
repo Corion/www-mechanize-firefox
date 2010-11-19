@@ -139,9 +139,9 @@ JS
 
 =head1 UI METHODS
 
-=head2 C<< $mech->addTab( %options ) >>
+=head2 C<< $ff->addTab( %options ) >>
 
-    my $new = $mech->addTab();
+    my $new = $ff->addTab();
 
 Creates a new tab and returns it.
 The tab will be automatically closed upon program exit.
@@ -155,7 +155,7 @@ The recognized options are:
 
 =item *
 
-C<repl> - the repl to use. By default it will use C<< $mech->repl >>.
+C<repl> - the repl to use. By default it will use C<< $ff->repl >>.
 
 =item *
 
@@ -180,9 +180,9 @@ sub addTab {
     $tab
 };
 
-=head2 C<< $mech->addTab( %options ) >>
+=head2 C<< $ff->addTab( %options ) >>
 
-    my $curr = $mech->selectedTab();
+    my $curr = $ff->selectedTab();
 
 Returns the currently active tab.
 
@@ -194,9 +194,9 @@ sub selectedTab {
     return $self->browser( $repl )->{tabContainer}->{selectedItem};
 }
 
-=head2 C<< $mech->closeTab( $tab [,$repl] ) >>
+=head2 C<< $ff->closeTab( $tab [,$repl] ) >>
 
-    $mech->closeTab( $tab );
+    $ff->closeTab( $tab );
 
 Close the given tab.
 
@@ -218,9 +218,9 @@ JS
     return $close_tab->($tab);
 }
 
-=head2 C<< $mech->openTabs( [$repl] ) >>
+=head2 C<< $ff->openTabs( [$repl] ) >>
 
-    my @tab_info = $mech->openTabs();
+    my @tab_info = $ff->openTabs();
     print "$_->{title}, $_->{location}, \n"
         for @tab_info;
 
@@ -264,21 +264,61 @@ JS
     return @$tabs
 }
 
-=head2 C<< $mech->activateTab( [ $tab [, $repl ]] ) >>
+=head2 C<< $ff->activateTab( [ $tab [, $repl ]] ) >>
 
-    $mech->activateTab( $mytab ); # bring to foreground
+    $ff->activateTab( $mytab ); # bring to foreground
     
-Activates the tab passed in. The tab defaults to the tab associated
-with the C<$mech> object.
+Activates the tab passed in.
 
 =cut
 
 sub activateTab {
     my ($self, $tab, $repl ) = @_;
-    $tab ||= $self->tab;
     $repl ||= $self->repl;
-    #$self->browser( $repl )->{selectedItem} = $tab;
+    croak "No tab given"
+        unless $tab;
     $self->browser( $repl )->{tabContainer}->{selectedItem} = $tab;
+};
+
+=head2 C<< $ff->browser( [$repl] ) >>
+
+    my $b = $ff->browser();
+
+Returns the current Firefox browser instance, or opens a new browser
+window if none is available, and returns its browser instance.
+
+If you need to call this as a class method, pass in the L<MozRepl::RemoteObject>
+bridge to use.
+
+=cut
+
+sub browser {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    return $repl->declare(<<'JS')->();
+    function() {
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        var win = wm.getMostRecentWindow('navigator:browser');
+        if (! win) {
+          // No browser windows are open, so open a new one.
+          win = window.open('about:blank');
+        };
+        return win.getBrowser()
+    }
+JS
+};
+
+sub autoclose_tab {
+    my ($self,$tab) = @_;
+    my $release = join "",
+        q<var p=self.parentNode;>,
+        q<while(p && p.tagName != "tabbrowser") {>,
+            q<p = p.parentNode>,
+        q<};>,
+        q<if(p){p.removeTab(self)};>,
+    ;
+    $tab->__release_action($release);
 };
 
 

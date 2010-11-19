@@ -20,13 +20,13 @@ if (! $mech) {
 
 my $repl = $mech->repl;
 
-my @tabs = WWW::Mechanize::Firefox->openTabs($repl);
+my @tabs = Firefox::Application->openTabs($repl);
 
 sleep 1;
 
 undef $mech; # our own tab should now close automatically
 
-my @new_tabs = WWW::Mechanize::Firefox->openTabs($repl);
+my @new_tabs = Firefox::Application->openTabs($repl);
 
 if (! is scalar @new_tabs, @tabs-1, "Our tab was presumably closed") {
     for (@new_tabs) {
@@ -55,7 +55,7 @@ $mech = WWW::Mechanize::Firefox->new(
 );
 my $c = $mech->content;
 like $mech->content, qr/\Q$magic/, "We selected the existing tab"
-    or do { diag $_->{title} for $mech->openTabs() };
+    or do { diag $_->{title} for $mech->application->openTabs() };
 $mech->autoclose_tab($mech->tab);
 
 undef $mech; # and close that tab

@@ -132,7 +132,6 @@ value is changed. By default this is C<[blur, change]>.
 
 sub new {
     my ($class, %args) = @_;
-    #my $loglevel = delete $args{ log } || [qw[ error ]];
     
     if (! ref $args{ app }) {
         my @passthrough = qw(launch repl bufsize log);
@@ -145,12 +144,13 @@ sub new {
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
             if ($tabname eq 'current') {
-                $args{ tab } = $class->selectedTab($args{ app }->repl);
+                $args{ tab } = $args{ app }->selectedTab();
             } else {
                 croak "Don't know what to do with tab '$tabname'. Did you mean qr{$tabname}?";
             };
         } else {
-            ($args{ tab }) = grep { $_->{title} =~ /$tabname/ } $class->openTabs($args{ app }->repl);
+            ($args{ tab }) = grep { $_->{title} =~ /$tabname/ }
+                $args{ app }->openTabs();
             if (! $args{ tab }) {
                 if (! delete $args{ create }) {
                     croak "Couldn't find a tab matching /$tabname/";
@@ -164,13 +164,13 @@ sub new {
     };
     if (! $args{ tab }) {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
-        $args{ tab } = $class->addTab( repl => $args{ app }->repl, @autoclose );
+        $args{ tab } = $args{ app }->addTab( repl => $args{ app }->repl, @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     };
 
     if (delete $args{ autoclose }) {
-        $class->autoclose_tab($args{ tab });
+        $args{ app }->autoclose_tab($args{ tab });
     };
     
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
@@ -430,45 +430,9 @@ more parts of the Firefox UI and application.
 
 sub application { $_[0]->{app} };
 
-=head2 C<< $mech->browser( [$repl] ) >>
-
-    my $b = $mech->browser();
-
-Returns the current Firefox browser instance, or opens a new browser
-window if none is available, and returns its browser instance.
-
-If you need to call this as a class method, pass in the L<MozRepl::RemoteObject>
-bridge to use.
-
-=cut
-
-sub browser {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    return $repl->declare(<<'JS')->();
-    function() {
-        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                           .getService(Components.interfaces.nsIWindowMediator);
-        var win = wm.getMostRecentWindow('navigator:browser');
-        if (! win) {
-          // No browser windows are open, so open a new one.
-          win = window.open('about:blank');
-        };
-        return win.getBrowser()
-    }
-JS
-};
-
 sub autoclose_tab {
-    my ($self,$tab) = @_;
-    my $release = join "",
-        q<var p=self.parentNode;>,
-        q<while(p && p.tagName != "tabbrowser") {>,
-            q<p = p.parentNode>,
-        q<};>,
-        q<if(p){p.removeTab(self)};>,
-    ;
-    $tab->__release_action($release);
+    my $self = shift;
+    $self->application->autoclose_tab(@_);
 };
 
 =head2 C<< $mech->tab >>
