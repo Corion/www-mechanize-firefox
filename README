@@ -65,8 +65,10 @@ METHODS
     *   `events' - the set of default Javascript events to listen for while
         waiting for a reply
 
+    *   `app' - a premade Firefox::Application
+
     *   `repl' - a premade MozRepl::RemoteObject instance or a connection
-        string suitable for initializing one.
+        string suitable for initializing one
 
     *   `pre_events' - the events that are sent to an input field before its
         value is changed. By default this is `[focus]'.

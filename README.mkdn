@@ -85,8 +85,12 @@ waiting for a reply
 
 - * 
 
+`app` - a premade [Firefox::Application](http://search.cpan.org/search?mode=module&query=Firefox::Application)
+
+- * 
+
 `repl` - a premade [MozRepl::RemoteObject](http://search.cpan.org/search?mode=module&query=MozRepl::RemoteObject) instance or a connection string
-suitable for initializing one.
+suitable for initializing one
 
 - * 
 
