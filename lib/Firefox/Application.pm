@@ -102,6 +102,25 @@ Gets the L<MozRepl::RemoteObject> instance that is used.
 
 sub repl { $_[0]->{repl} };
 
+=head1 APPLICATION INFORMATION
+
+=cut
+
+=head2 C<< $ff->appinfo >>
+
+    my $info = $ff->appinfo;
+    print 'ID      : ', $info->{ID};
+    print 'name    : ', $info->{name};
+    print 'version : ', $info->{version};
+
+Returns information about Firefox.
+
+=cut
+
+sub appinfo {
+    $_[0]->repl->appinfo
+};
+
 =head2 C<< $ff->addons( %args ) >>
 
   for my $addon ($ff->addons) {
@@ -122,10 +141,10 @@ sub addons {
 
 =head2 C<< $ff->locales( %args ) >>
 
-  for my $addon ($ff->locales) {
-      print sprintf "Name: %s\n", $addon->{name};
-      print sprintf "Version: %s\n", $addon->{version};
-      print sprintf "GUID: %s\n", $addon->{id};
+  for my $locale ($ff->locales) {
+      print sprintf "Name: %s\n", $locale->{name};
+      print sprintf "Version: %s\n", $locale->{version};
+      print sprintf "GUID: %s\n", $locale->{id};
   };
 
 Returns the list of installed locales as C<nsIUpdateItem>s.
@@ -136,6 +155,18 @@ sub locales {
     my $self = shift;
     $self->updateitems(type => 'LOCALE', @_);
 };
+
+=head2 C<< $ff->themes( %args ) >>
+
+  for my $theme ($ff->themes) {
+      print sprintf "Name: %s\n", $theme->{name};
+      print sprintf "Version: %s\n", $theme->{version};
+      print sprintf "GUID: %s\n", $theme->{id};
+  };
+
+Returns the list of installed locales as C<nsIUpdateItem>s.
+
+=cut
 
 sub themes {
     my $self = shift;

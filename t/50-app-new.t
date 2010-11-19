@@ -21,6 +21,9 @@ if (! $ff) {
 my $lives;
 my @addons;
 
+diag $ff->appinfo->{name};
+diag $ff->appinfo->{version};
+
 eval { @addons = $ff->addons; $lives++ };
 ok $lives, "We can query the addons"
     or diag $@;
@@ -38,7 +41,6 @@ diag $_->{name} for @locales;
 
 my @themes = $ff->themes;
 ok 1, "We can ask for ->themes";
-diag $_->{id},$_->{name} for @themes;
 my ($standard_theme) = grep { $_->{id} eq '{972ce4c6-7e08-4474-a285-3208198ce6fd}' } @themes;
 isn't $standard_theme, undef, "We find the Standard theme";
 is $standard_theme->{name}, 'Standard', 'The name is "Standard"';
