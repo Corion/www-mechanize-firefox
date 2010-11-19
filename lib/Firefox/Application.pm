@@ -173,10 +173,35 @@ sub themes {
     $self->updateitems(type => 'THEME', @_);
 };
 
+=head2 C<< $ff->updateitems( %args ) >>
+
+  for my $item ($ff->updateitems) {
+      print sprintf "Name: %s\n", $item->{name};
+      print sprintf "Version: %s\n", $item->{version};
+      print sprintf "GUID: %s\n", $item->{id};
+  };
+
+Returns the list of updateable items. The type of item
+can be restricted by the C<type> option.
+
+=over 4
+
+=item * C<type> - type of items to fetch
+
+C<ANY> - fetch any item
+
+C<ADDON> - fetch add-ons
+
+C<LOCALE> - fetch locales
+
+C<THEME> - fetch themes
+
+=back
+
+=cut
 sub updateitems {
     my ($self, %options) = @_;
     my $repl = delete $options{ repl } || $self->repl;
-    # XXX make type a parameter
     my $type = $options{type} || 'ANY';
     my $addons_js = $repl->declare(sprintf <<'JS', $type);
     function () {
