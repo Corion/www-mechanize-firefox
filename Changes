@@ -9,6 +9,7 @@
           $mech->addTab( ... )
       to 
           $mech->application->addTab( ... )
+    ! ->set_tab_content has been moved to Firefox::Application
       
 
 0.38 20101119

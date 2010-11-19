@@ -1086,23 +1086,6 @@ sub update_html {
     return
 };
 
-=head2 C<< $mech->set_tab_content $tab, $html [,$repl] >>
-
-This is a more general method that allows you to replace
-the HTML of an arbitrary tab, and not only the tab that
-WWW::Mechanize::Firefox is associated with.
-
-=cut
-
-sub set_tab_content {
-    my ($self, $tab, $content, $repl) = @_;
-    $tab ||= $self->tab;
-    $repl ||= $self->repl;
-    my $data = encode_base64($content,'');
-    my $url = qq{data:text/html;base64,$data};
-    $tab->{linkedBrowser}->loadURI($url);
-};
-
 =head2 C<< $mech->save_content( $localname [, $resource_directory] [, %options ] ) >>
 
   $mech->get('http://google.com');
