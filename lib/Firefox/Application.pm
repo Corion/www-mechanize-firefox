@@ -130,7 +130,9 @@ sub appinfo {
   };
 
 Returns the list of installed addons as C<nsIUpdateItem>s.
-See L<http://www.oxymoronical.com/experiments/apidocs/interface/nsIUpdateItem>
+See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIUpdateItem>.
+
+These functions will need fixing for Firefox 4.
 
 =cut
 
