@@ -1,13 +1,8 @@
 package Firefox::Application;
-use 5.006; #weaken
 use strict;
 
 use MozRepl::RemoteObject;
-use URI;
-use Cwd;
-use File::Basename;
 use MIME::Base64;
-use Scalar::Util qw'blessed weaken';
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
