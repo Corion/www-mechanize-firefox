@@ -1,3 +1,9 @@
+0.39 to be released
+    . Add Firefox::Application to contain UI manipulation things.
+      The ->repl element is now not a hash element of WWW::Mechanize::Firefox
+      anymore, but you shouldn't access the guts of an object anyway.
+      Use ->repl instead.
+
 0.38 20101119
     . Fix test for checking whether JS is enabled and whether it can be
       disabled to also work when the NoScript add-on is not installed.

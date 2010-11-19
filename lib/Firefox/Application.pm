@@ -11,7 +11,7 @@ use Scalar::Util qw'blessed weaken';
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
-$VERSION = '0.37';
+$VERSION = '0.39';
 
 =head1 NAME
 

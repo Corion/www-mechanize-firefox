@@ -18,7 +18,7 @@ use Encode qw(encode decode);
 use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.38';
+$VERSION = '0.39';
 
 =head1 NAME
 
@@ -141,16 +141,7 @@ sub new {
             %options
         );
     };
-    
-    #if (! ref $args{ repl }) {
-    #    my $ff = delete $args{ launch };
-    #    $args{ repl } = MozRepl::RemoteObject->install_bridge(
-    #        repl   => $args{ repl } || undef,
-    #        launch => $ff,
-    #        log => $loglevel,
-    #    );
-    #};
-    
+        
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
             if ($tabname eq 'current') {
