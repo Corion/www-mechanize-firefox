@@ -164,7 +164,7 @@ sub new {
     };
     if (! $args{ tab }) {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
-        $args{ tab } = $args{ app }->addTab( repl => $args{ app }->repl, @autoclose );
+        $args{ tab } = $args{ app }->addTab( @autoclose );
         my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     };
@@ -182,7 +182,7 @@ sub new {
         unless $args{tab};
         
     if (delete $args{ activate }) {
-        $class->activateTab( $args{ tab }, $args{ app }->repl);
+        $args{ app }->activateTab( $args{ tab });
     };
     
     $args{ response } ||= undef;
@@ -193,16 +193,16 @@ sub new {
 
 sub DESTROY {
     my ($self) = @_;
-    #warn "Cleaning up mech";
     local $@;
-    my $repl = delete $self->{ repl };
-    if ($repl) {
+    my $app = delete $self->{ app };
+    if ($app) {
         undef $self->{tab};
         %$self = (); # wipe out all references we keep
-        # but keep $repl alive until we can dispose of it
+        # but keep $app alive until we can dispose of it
         # as the last thing, now:
-        $repl = undef;
+        $app = undef;
     };
+    #warn "FF cleaned up";
 }
 
 =head1 JAVASCRIPT METHODS
