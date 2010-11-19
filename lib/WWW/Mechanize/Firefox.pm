@@ -1,12 +1,12 @@
 package WWW::Mechanize::Firefox;
 use 5.006; #weaken
 use strict;
-use Time::HiRes;
+use Time::HiRes; # hires sleep()
 
 use MozRepl::RemoteObject;
 use URI;
 use Cwd;
-use File::Basename;
+use File::Basename qw(dirname);
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
