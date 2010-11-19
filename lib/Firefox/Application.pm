@@ -417,4 +417,18 @@ sub set_tab_content {
     $tab->{linkedBrowser}->loadURI($url);
 };
 
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+=head1 COPYRIGHT (c)
+
+Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
+
+=head1 LICENSE
+
+This module is released under the same terms as Perl itself.
+
+=cut
+
 1;
