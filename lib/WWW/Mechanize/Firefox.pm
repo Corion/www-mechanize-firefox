@@ -955,7 +955,7 @@ sub back {
 
     $mech->forward();
 
-Goes one page back in the page history.
+Goes one page forward in the page history.
 
 Returns the (new) response.
 
