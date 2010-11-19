@@ -70,6 +70,7 @@ The following is a list of the 12 example programs that are included in the WWW:
 
 =head2 Example: open-local-file.pl
 
+    #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
     
@@ -82,6 +83,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: open-url.pl
 
+    #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
     
@@ -167,6 +169,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: dump-links.pl
 
+    #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
     
@@ -315,6 +318,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: manipulate-javascript.pl
 
+    #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
     
@@ -353,6 +357,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: javascript.pl
 
+    #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
     
@@ -386,7 +391,6 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
     #!perl -w
     use strict;
-    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
     use WWW::Mechanize::Firefox;
     use Time::HiRes;
     use Getopt::Long;
@@ -471,7 +475,6 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
     #!perl -w
     use strict;
-    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
     use WWW::Mechanize::Firefox;
     use Time::HiRes;
     use Getopt::Long;
@@ -590,8 +593,8 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: urlbar.pl
 
+    #!perl -w
     use strict;
-    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
     use WWW::Mechanize::Firefox;
     use Time::HiRes;
     
@@ -701,8 +704,8 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 
 =head2 Example: fullscreen.pl
 
+    #!perl -w
     use strict;
-    use lib 'C:/Projekte/MozRepl-RemoteObject/lib';
     use WWW::Mechanize::Firefox;
     use Time::HiRes;
     
