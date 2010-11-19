@@ -416,6 +416,9 @@ sub unsafe_page_property_access {
 
 =head1 UI METHODS
 
+See also L<Firefox::Application> for how to add more than one tab
+and how to manipulate windows and tabs.
+
 =head2 C<< $mech->application() >>
 
     my $ff = $mech->application();
@@ -456,47 +459,6 @@ sub browser {
 JS
 };
 
-=head2 C<< $mech->addTab( %options ) >>
-
-    my $new = $mech->addTab();
-
-Creates a new tab and returns it.
-The tab will be automatically closed upon program exit.
-
-If you want the tab to remain open, pass a false value to the the C< autoclose >
-option.
-
-The recognized options are:
-
-=over 4
-
-=item *
-
-C<repl> - the repl to use. By default it will use C<< $mech->repl >>.
-
-=item *
-
-C<autoclose> - whether to automatically close the tab at program exit. Default is
-to close the tab.
-
-=back
-
-=cut
-
-sub addTab {
-    my ($self, %options) = @_;
-    my $repl = $options{ repl } || $self->repl;
-    my $rn = $repl->name;
-
-    my $tab = $self->browser( $repl )->addTab;
-
-    if (not exists $options{ autoclose } or $options{ autoclose }) {
-        $self->autoclose_tab($tab)
-    };
-    
-    $tab
-};
-
 sub autoclose_tab {
     my ($self,$tab) = @_;
     my $release = join "",
@@ -507,89 +469,6 @@ sub autoclose_tab {
         q<if(p){p.removeTab(self)};>,
     ;
     $tab->__release_action($release);
-};
-
-# This should maybe become MozRepl::Firefox::Util?
-# or MozRepl::Firefox::UI ?
-sub selectedTab {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    return $self->browser( $repl )->{tabContainer}->{selectedItem};
-}
-
-=head2 C<< $mech->closeTab( $tab [,$repl] ) >>
-
-Close the given tab.
-
-=cut
-
-sub closeTab {
-    my ($self,$tab,$repl) = @_;
-    $repl ||= $self->repl;
-    my $close_tab = $repl->declare(<<'JS');
-function(tab) {
-    // find containing browser
-    var p = tab.parentNode;
-    while (p.tagName != "tabbrowser") {
-        p = p.parentNode;
-    };
-    if(p){p.removeTab(tab)};
-}
-JS
-    return $close_tab->($tab);
-}
-
-sub openTabs {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    my $open_tabs = $repl->declare(<<'JS');
-function() {
-    var idx = 0;
-    var tabs = [];
-    
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                       .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    if (win) {
-        var browser = win.getBrowser();
-        Array.prototype.forEach.call(
-            browser.tabContainer.childNodes, 
-            function(tab) {
-                var d = tab.linkedBrowser.contentWindow.document;
-                tabs.push({
-                    location: d.location.href,
-                    document: d,
-                    title:    d.title,
-                    "id":     d.id,
-                    index:    idx++,
-                    panel:    tab.linkedPanel,
-                    tab:      tab,
-                });
-            });
-    };
-
-    return tabs;
-}
-JS
-    my $tabs = $open_tabs->();
-    return @$tabs
-}
-
-=head2 C<< $mech->activateTab( [ $tab [, $repl ]] ) >>
-
-    $mech->activateTab( $mytab ); # bring to foreground
-    
-Activates the tab passed in. The tab defaults to the tab associated
-with the C<$mech> object.
-
-=cut
-
-sub activateTab {
-    my ($self, $tab, $repl ) = @_;
-    $tab ||= $self->tab;
-    $repl ||= $self->repl;
-    #$self->browser( $repl )->{selectedItem} = $tab;
-    $self->browser( $repl )->{tabContainer}->{selectedItem} = $tab;
 };
 
 =head2 C<< $mech->tab >>

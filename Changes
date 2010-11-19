@@ -3,6 +3,13 @@
       The ->repl element is now not a hash element of WWW::Mechanize::Firefox
       anymore, but you shouldn't access the guts of an object anyway.
       Use ->repl instead.
+    ! ->addTab , ->createTab and selectedTab have been moved to
+      Firefox::Application.
+      If you used these functions before, change:
+          $mech->addTab( ... )
+      to 
+          $mech->application->addTab( ... )
+      
 
 0.38 20101119
     . Fix test for checking whether JS is enabled and whether it can be
