@@ -84,12 +84,12 @@ sub DESTROY {
     my ($self) = @_;
     local $@;
     if (my $repl = delete $self->{ repl }) {
-        undef $self->{tab};
         %$self = (); # wipe out all references we keep
         # but keep $repl alive until we can dispose of it
         # as the last thing, now:
         $repl = undef;
     };
+    #warn "App cleaned up";
 }
 
 =head2 C<< $ff->repl >>
