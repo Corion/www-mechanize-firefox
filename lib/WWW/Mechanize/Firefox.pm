@@ -2730,9 +2730,9 @@ JS
     !!$_is_visible->($options{dom});
 };
 
-=head2 C<< $mech->wait_until_invisible $element >>
+=head2 C<< $mech->wait_until_invisible( $element ) >>
 
-=head2 C<< $mech->wait_until_invisible %options >>
+=head2 C<< $mech->wait_until_invisible( %options ) >>
 
   $mech->wait_until_invisible( $please_wait );
 
@@ -2862,19 +2862,27 @@ sub expand_frames {
 
 =head1 IMAGE METHODS
 
-=head2 C<< $mech->content_as_png [$tab, \%coordinates ] >>
+=head2 C<< $mech->content_as_png( [$tab, \%coordinates ] ) >>
 
     my $png_data = $mech->content_as_png();
 
 Returns the given tab or the current page rendered as PNG image.
 
 All parameters are optional. 
- 
-TAB defaults to current TAB.
+
+=over 4
+
+=item *
+
+C<$tab> defaults to the current tab.
+
+=item *
 
 If the coordinates are given, that rectangle will be cut out.
 The coordinates should be a hash with the four usual entries,
 C<left>,C<top>,C<width>,C<height>.
+
+=back
 
 This is specific to WWW::Mechanize::Firefox.
 
@@ -2924,7 +2932,7 @@ JS
     return decode_base64($screenshot->($tab, $rect))
 };
 
-=head2 C<< $mech->element_as_png $element >>
+=head2 C<< $mech->element_as_png( $element ) >>
 
     my $shiny = $mech->selector('#shiny', single => 1);
     my $i_want_this = $mech->element_as_png($shiny);
@@ -2941,7 +2949,7 @@ sub element_as_png {
     return $self->content_as_png($tab, $pos);
 };
 
-=head2 C<< $mech->element_coordinates $element >>
+=head2 C<< $mech->element_coordinates( $element ) >>
 
     my $shiny = $mech->selector('#shiny', single => 1);
     my ($pos) = $mech->element_coordinates($shiny);
