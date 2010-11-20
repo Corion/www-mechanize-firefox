@@ -116,6 +116,11 @@ C<app> - a premade L<Firefox::Application>
 C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
 suitable for initializing one
 
+=item *
+
+C<use_queue> - whether to use the command queueing of L<MozRepl::RemoteObject>.
+Default is 1.
+
 =item * 
 
 C<pre_events> - the events that are sent to an input field before its
@@ -134,7 +139,7 @@ sub new {
     my ($class, %args) = @_;
     
     if (! ref $args{ app }) {
-        my @passthrough = qw(launch repl bufsize log);
+        my @passthrough = qw(launch repl bufsize log use_queue);
         my %options; @options{ @passthrough } = delete @args{ @passthrough };
         $args{ app } = Firefox::Application->new(
             %options

@@ -57,6 +57,10 @@ C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
 C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
 suitable for initializing one.
 
+=item * 
+
+C<use_queue> - whether to enable L<MozRepl::RemoteObject> command queueing
+
 =back
 
 =cut
@@ -64,12 +68,14 @@ suitable for initializing one.
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
+    my $use_queue = exists $args{ use_queue } ? delete $args{ use_queue } : 1;
     if (! ref $args{ repl }) {
         my $exe = delete $args{ launch };
         $args{ repl } = MozRepl::RemoteObject->install_bridge(
             repl   => $args{ repl } || undef,
             launch => $exe,
             log => $loglevel,
+            use_queue => $use_queue,
         );
     };
     
