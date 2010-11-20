@@ -44,3 +44,25 @@ for my $idx (0..$#mech) {
     ok $mech->success;
     like $mech->uri, qr!/\Q$pages[ $idx ]\E$!i, "We navigated to the right file";
 };
+
+# Check that our destructors get called:
+my %destroyed = (
+    mech => 0,
+    repl => 0,
+);
+{ no warnings 'redefine';
+  my $old_repl = \&MozRepl::RemoteObject::DESTROY;
+  *MozRepl::RemoteObject::DESTROY = sub {
+      $destroyed{ repl }++;
+      goto &$old_repl;
+  };
+  my $old_mech = \&WWW::Mechanize::Firefox::DESTROY;
+  *WWW::Mechanize::Firefox::DESTROY = sub {
+      $destroyed{ mech }++;
+      goto &$old_mech;
+  };
+};
+
+@mech = ();
+is $destroyed{ repl }, 3, "All three repl instances got released";
+is $destroyed{ mech }, 3, "All three mech instances got released";
