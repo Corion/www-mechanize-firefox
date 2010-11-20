@@ -408,7 +408,9 @@ sub autoclose_tab {
     $tab->__release_action($release);
 };
 
-=head2 C<< $ff->set_tab_content $tab, $html [,$repl] >>
+=head2 C<< $ff->set_tab_content( $tab, $html [,$repl] ) >>
+
+    $ff->set_tab_content('<html><h1>Hello</h1></html>');
 
 This is a more general method that allows you to replace
 the HTML of an arbitrary tab, and not only the tab that
