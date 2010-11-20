@@ -6,6 +6,7 @@ use WWW::Mechanize::Firefox;
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     bufsize => 10_000_000,
+    #log => ['debug'],
 )};
 
 if (! $mech) {
