@@ -517,6 +517,7 @@ JS
     $lsn->__release_action('self.source.removeProgressListener(self)');
     $lsn->__on_destroy(sub {
         # Clean up some memory leaks
+        #warn "Listener removed";
         $_[0]->bridge->remove_callback(values %handlers);
     });
     $source->addProgressListener($lsn,$NOTIFY_STATE_DOCUMENT);

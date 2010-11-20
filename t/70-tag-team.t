@@ -18,7 +18,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 9;
+    plan tests => 11;
 };
 undef $mech;
 
@@ -64,5 +64,5 @@ my %destroyed = (
 };
 
 @mech = ();
-is $destroyed{ repl }, 3, "All three repl instances got released";
-is $destroyed{ mech }, 3, "All three mech instances got released";
+is $destroyed{ repl }, 0+@pages, "All three repl instances got released";
+is $destroyed{ mech }, 0+@pages, "All three mech instances got released";
