@@ -1,10 +1,10 @@
-0.39 to be released
+0.39 20101120
     . Add Firefox::Application to contain UI manipulation things.
-      The ->repl element is now not a hash element of WWW::Mechanize::Firefox
+      The ->{repl} element is now not a hash element of WWW::Mechanize::Firefox
       anymore, but you shouldn't access the guts of an object anyway.
       Use ->repl instead.
-    ! ->addTab , ->createTab and selectedTab have been moved to
-      Firefox::Application.
+    ! ->addTab , ->createTab, ->activateTab and ->selectedTab have been moved
+      to Firefox::Application.
       If you used these functions before, change:
           $mech->addTab( ... )
       to 
