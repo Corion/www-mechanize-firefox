@@ -1,12 +1,12 @@
 #!perl -w
 use strict;
 use Getopt::Long;
-use WWW::Mechanize::Firefox;
+use Firefox::Application;
 
-my $mech = WWW::Mechanize::Firefox->new();
+my $ff = Firefox::Application->new();
 
 # Check the network proxy settings
-my $prefs = $mech->repl->expr(<<'JS');
+my $prefs = $ff->repl->expr(<<'JS');
   Components.classes["@mozilla.org/preferences-service;1"]
     .getService(Components.interfaces.nsIPrefBranch);
 JS
