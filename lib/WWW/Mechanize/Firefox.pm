@@ -12,6 +12,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use Firefox::Application;
+use MozRepl::RemoteObject 'as_list';
 use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
@@ -307,7 +308,7 @@ sub js_errors {
     };
 JS
     my $m = $getErrorMessages->($console);
-    @$m
+    as_list $m
 }
 
 =head2 C<< $mech->clear_js_errors >>
@@ -397,7 +398,7 @@ JS
     };
 JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
-    return @{ $eval_in_sandbox->($window,$doc,$str,$js_env) };
+    return as_list $eval_in_sandbox->($window,$doc,$str,$js_env);
 };
 *eval = \&eval_in_page;
 
@@ -1048,7 +1049,7 @@ function(d){
 }
 JS
     # We return the raw bytes here.
-    my ($content,$encoding) = @{ $html->($d) };
+    my ($content,$encoding) = as_list $html->($d);
     if (! utf8::is_utf8($content)) {
         # Switch on UTF-8 flag
         # This should never happen, as JSON::XS (and JSON) should always
