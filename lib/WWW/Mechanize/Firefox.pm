@@ -300,15 +300,14 @@ JS
 sub js_errors {
     my ($self,$page) = @_;
     my $console = $self->js_console;
-    my $getErrorMessages = $self->repl->declare(<<'JS');
+    my $getErrorMessages = $self->repl->declare(<<'JS', 'list');
     function (consoleService) {
         var out = {};
         consoleService.getMessageArray(out, {});
         return out.value || []
     };
 JS
-    my $m = $getErrorMessages->($console);
-    as_list $m
+    $getErrorMessages->($console);
 }
 
 =head2 C<< $mech->clear_js_errors >>
@@ -380,13 +379,13 @@ JS
         };
     };
     
-    my $eval_in_sandbox = $self->repl->declare(<<'JS');
+    my $eval_in_sandbox = $self->repl->declare(<<'JS', 'list');
     function (w,d,str,env) {
         var unsafeWin = w.wrappedJSObject;
         var safeWin = XPCNativeWrapper(unsafeWin);
         var sandbox = Components.utils.Sandbox(safeWin);
         sandbox.window = safeWin;
-        sandbox.document = d; // sandbox.window.document;
+        sandbox.document = d;
         // Transfer the environment
         for (var e in env) {
             sandbox[e] = env[e]
@@ -398,7 +397,7 @@ JS
     };
 JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
-    return as_list $eval_in_sandbox->($window,$doc,$str,$js_env);
+    return $eval_in_sandbox->($window,$doc,$str,$js_env);
 };
 *eval = \&eval_in_page;
 
