@@ -1,5 +1,7 @@
-0.40 to be released
-    + HTTP::Cookies::MozRepl now fetchs cookies more quickly
+0.40 20101122
+    + HTTP::Cookies::MozRepl now fetches cookies more quickly
+    + Other functions also use bulk fetching for quicker
+      information retrieval
 
 0.39 20101120
     . Add Firefox::Application to contain UI manipulation things.
