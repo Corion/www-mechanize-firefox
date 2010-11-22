@@ -5,7 +5,7 @@ use Object::Import;
 use Carp qw(croak);
 
 use vars qw($VERSION @CARP_NOT);
-$VERSION = '0.39';
+$VERSION = '0.40';
 
 @CARP_NOT = (qw[
     WWW::Mechanize::Firefox
