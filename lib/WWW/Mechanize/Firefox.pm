@@ -12,7 +12,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64;
 use WWW::Mechanize::Link;
 use Firefox::Application;
-use MozRepl::RemoteObject 'as_list';
+use MozRepl::RemoteObject ();
 use HTTP::Cookies::MozRepl;
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
@@ -1040,7 +1040,7 @@ sub content {
     my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     
-    my $html = $self->repl->declare(<<'JS');
+    my $html = $self->repl->declare(<<'JS', 'list');
 function(d){
     var e = d.createElement("div");
     e.appendChild(d.documentElement.cloneNode(true));
@@ -1048,7 +1048,7 @@ function(d){
 }
 JS
     # We return the raw bytes here.
-    my ($content,$encoding) = as_list $html->($d);
+    my ($content,$encoding) = $html->($d);
     if (! utf8::is_utf8($content)) {
         # Switch on UTF-8 flag
         # This should never happen, as JSON::XS (and JSON) should always
