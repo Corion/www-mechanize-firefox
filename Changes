@@ -1,3 +1,6 @@
+0.40 to be released
+    + HTTP::Cookies::MozRepl now fetchs cookies more quickly
+
 0.39 20101120
     . Add Firefox::Application to contain UI manipulation things.
       The ->{repl} element is now not a hash element of WWW::Mechanize::Firefox

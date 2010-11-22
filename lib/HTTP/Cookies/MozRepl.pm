@@ -1,6 +1,6 @@
 package HTTP::Cookies::MozRepl;
 use strict;
-use MozRepl::RemoteObject;
+use MozRepl::RemoteObject 'as_list';
 use parent 'HTTP::Cookies';
 use Carp qw[croak];
 
@@ -59,14 +59,31 @@ JS
     $cookie_manager = $cookie_manager->QueryInterface($nsICookieManager);
     
     my $e = $cookie_manager->{enumerator};
-    $e->bridge->queued(sub{
-        while ($e->hasMoreElements) {
-            my $cookie = $e->getNext()->QueryInterface($nsICookie);
-            
-            my @values = map { $cookie->{$_} } (qw(name value path host                      isSecure expires));
-            $self->set_cookie( undef,       @values[0,   1,    2,   3, ], undef, undef, $values[ 4 ],    time-$values[5], 0 );
+    my $fetch_cookies = $e->bridge->declare(<<'JS', 'list');
+    function(e,nsiCookie) {
+        var r=[];
+        while (e.hasMoreElements()) {
+            var cookie = e.getNext().QueryInterface(nsiCookie);
+            r.push([null,cookie.name,cookie.value,cookie.path,cookie.host,null,null,cookie.isSecure,cookie.expires]);
         };
-    });
+        return r
+    };
+JS
+    # This could be even more efficient by fetching the whole result
+    # as one huge data structure
+    for my $c ($fetch_cookies->($e,$nsICookie)) {
+        $self->set_cookie(as_list $c);
+    };
+
+    # This code is in Perl, but involves far too many roundtrips :-(
+    #$e->bridge->queued(sub{
+    #    while ($e->hasMoreElements) {
+    #        my $cookie = $e->getNext()->QueryInterface($nsICookie);
+    #        
+    #        my @values = map { $cookie->{$_} } (qw(name value path host                      isSecure expires));
+    #        $self->set_cookie( undef,       @values[0,   1,    2,   3, ], undef, undef, $values[ 4 ],    time-$values[5], 0 );
+    #    };
+    #});
 }
 
 sub save {
