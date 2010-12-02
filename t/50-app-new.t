@@ -15,7 +15,7 @@ if (! $ff) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 8;
+    plan tests => 7;
 };
 
 my $lives;
@@ -43,4 +43,5 @@ my @themes = $ff->themes;
 ok 1, "We can ask for ->themes";
 my ($standard_theme) = grep { $_->{id} eq '{972ce4c6-7e08-4474-a285-3208198ce6fd}' } @themes;
 isn't $standard_theme, undef, "We find the Standard theme";
-is $standard_theme->{name}, 'Standard', 'The name is "Standard"';
+# is $standard_theme->{name}, 'Standard', 'The name is "Standard"';
+# This test fails, as the name is localized. Duh.
