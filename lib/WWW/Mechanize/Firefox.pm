@@ -668,11 +668,16 @@ function(browser,events) {
         var evname = events[i];
         var callback = (function(listeners,evname){
             return function(e) {
-                lock.busy++;
-                lock.event = evname;
-                lock.js_event = {};
-                lock.js_event.target = e.originalTarget;
-                lock.js_event.type = e.type;
+                if (! lock.busy) {
+                    lock.busy++;
+                    lock.event = evname;
+                    lock.js_event = {};
+                    lock.js_event.target = e.originalTarget;
+                    lock.js_event.type = e.type;
+                    //alert("Caught first event " + e.type + " " + e.message);
+                } else {
+                    //alert("Caught duplicate event " + e.type + " " + e.message);
+                };
                 for( var j = 0; j < listeners.length; j++) {
                     b.removeEventListener(listeners[j][0],listeners[j][1],true);
                 };
@@ -690,6 +695,8 @@ JS
 sub _wait_while_busy {
     my ($self,@elements) = @_;
     # Now do the busy-wait
+    # Should this also include a ->poll()
+    # and a callback?
     while (1) {
         for my $element (@elements) {
             if ((my $s = $element->{busy} || 0) >= 1) {
@@ -800,7 +807,8 @@ sub synchronize {
     my $b = $self->tab->{linkedBrowser};
     my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
-    $self->_wait_while_busy($load_lock);
+    my $ev = $self->_wait_while_busy($load_lock);
+    #warn "$load_lock->{id} caught $load_lock->{event} ($ev->{event})";
     
     if ($need_response) {
         #warn "Returning response";
@@ -1036,8 +1044,6 @@ It also currently only works for HTML pages.
 
 sub content {
     my ($self) = @_;
-    
-    my $rn = $self->repl->repl;
     my $d = $self->document; # keep a reference to it!
     
     my $html = $self->repl->declare(<<'JS', 'list');
@@ -1050,6 +1056,7 @@ JS
     # We return the raw bytes here.
     my ($content,$encoding) = $html->($d);
     if (! utf8::is_utf8($content)) {
+        warn "Switching on UTF-8 (from $encoding)";
         # Switch on UTF-8 flag
         # This should never happen, as JSON::XS (and JSON) should always
         # already return proper UTF-8

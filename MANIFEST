@@ -64,6 +64,8 @@ t/51-empty-page.html
 t/51-mech-field-frameset.html
 t/51-mech-field.t
 t/51-mech-form-with-fields.t
+t/51-mech-links-base.html
+t/51-mech-links-nobase.html
 t/51-mech-links.t
 t/51-mech-sandbox.html
 t/51-mech-sandbox.t
@@ -111,6 +113,7 @@ t/99-todo.t
 t/99-unix-text.t
 t/99-versions.t
 t/mixi_jp_index.html
+t/pm875128.pl
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
