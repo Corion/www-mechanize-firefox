@@ -60,6 +60,7 @@ t/50-mech-status.t
 t/50-popup.t
 t/50-tick.html
 t/50-tick.t
+t/51-empty-page.html
 t/51-mech-field-frameset.html
 t/51-mech-field.t
 t/51-mech-form-with-fields.t
