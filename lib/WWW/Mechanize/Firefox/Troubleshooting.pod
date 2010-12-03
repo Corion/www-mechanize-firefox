@@ -66,6 +66,13 @@ No test should fail
 
 =back
 
+=item *
+
+If tests fail with an error from Firefox that a file could not
+be found, check that the test suite and the Firefox process are
+run using the same user. Otherwise, the Firefox process might not
+have the permissions to access the files created by the test suite.
+
 =back
 
 =head1 Dialogs that break your application
