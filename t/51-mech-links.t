@@ -18,55 +18,20 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-my $content = <<HTML;
-<html>
-<head>
-<title>Hello Firefox!</title>
-</head>
-<body>
-<h1>Hello World!</h1>
-<p>Hello <b>WWW::Mechanize::Firefox</b></p>
-<h1>Links</h1>
-<a href="#">#</a>
-<a name="foo">#</a>
-<a href="http://corion.net/">http://corion.net</a>
-<a href="relative">relative</a>
-<a href="/absolute">/absolute</a>
-<iframe src="51-empty-page.html"></iframe>
-<frame src="51-empty-page.html"></frame>
-</body>
-</html>
-HTML
-
-$mech->update_html($content);
-
-{ local $TODO = "data: URLs don't play well with FRAMEs";
-    my @found_links = $mech->links;
-    is scalar @found_links, 7, 'All 7 links were found';
-};
-
-$content = <<HTML;
-<html>
-<head>
-<title>Hello Firefox!</title>
-<base href="http://somewhere.example/" />
-</head>
-<body>
-<h1>Hello World!</h1>
-<p>Hello <b>WWW::Mechanize::Firefox</b></p>
-<h1>Links</h1>
-<a href="relative">relative</a>
-<iframe src="myiframe" />
-<frameset>
-<frame src="http://google.de/" /><!-- my frame -->
-</frameset>
-</body>
-</html>
-HTML
-
-$mech->update_html($content);
+$mech->get_local('51-mech-links-nobase.html');
 
 my @found_links = $mech->links;
+# There is a FRAME tag, but FRAMES are exclusive elements
+# so Firefox ignores it while WWW::Mechanize picks it up
+if (! is scalar @found_links, 6, 'All 6 links were found') {
+    diag sprintf "%s => %s", $_->tag, $_->url
+        for @found_links;
+};
+
+# If you use ->set_content, Firefox doesn't want to load (I)FRAME content
+$mech->get_local('51-mech-links-base.html');
+
+@found_links = $mech->links;
 is scalar @found_links, 2, 'The two links were found'
     or diag $_->url for @found_links;
 is $found_links[0]->url, 'http://somewhere.example/relative',
@@ -74,12 +39,11 @@ is $found_links[0]->url, 'http://somewhere.example/relative',
 is $found_links[1]->url, 'http://somewhere.example/myiframe',
     'BASE tags get respected for iframes';
     
-{
-    local $TODO = "FRAME tags don't play well with data: URLs";
-    my @frames = $mech->selector('frame');
-    is @frames, 1, "FRAME tag"
-        or diag $mech->content;
-}
+# There is a FRAME tag, but FRAMES are exclusive elements
+# so Firefox ignores it while WWW::Mechanize picks it up
+my @frames = $mech->selector('frame');
+is @frames, 0, "FRAME tag"
+    or diag $mech->content;
 
 my @frames = $mech->selector('iframe');
 is @frames, 1, "IFRAME tag";

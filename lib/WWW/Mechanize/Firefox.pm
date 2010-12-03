@@ -1830,8 +1830,10 @@ sub xpath {
             #warn "Invalid document" unless $doc;
 
             my $n = $options{ node } || $doc;
-            #warn "$nesting>Searching @$query in $doc->{title}";
-            push @res, map { $doc->__xpath($_, $n) } @$query;
+            #warn ">Searching @$query in $doc->{title}";
+            my @found = map { $doc->__xpath($_, $n) } @$query;
+            #warn "Found $_->{tagName}" for @found;
+            push @res, @found;
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
