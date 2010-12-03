@@ -32,8 +32,8 @@ my $content = <<HTML;
 <a href="http://corion.net/">http://corion.net</a>
 <a href="relative">relative</a>
 <a href="/absolute">/absolute</a>
-<iframe src="myframe"></iframe>
-<frame src="myframe"></frame>
+<iframe src="51-empty-page.html"></iframe>
+<frame src="51-empty-page.html"></frame>
 </body>
 </html>
 HTML
