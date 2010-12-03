@@ -3013,6 +3013,12 @@ to be present on links, even if it's empty. This is in
 difference to WWW::Mechanize, where the C<name> attribute
 can be C<undef>.
 
+=head2 Frame tags
+
+Firefox is much less lenient than WWW::Mechanize when it comes
+to FRAME tags. A page will not contain a FRAME tag if it contains
+content other than the FRAMESET. WWW::Mechanize has no such restriction.
+
 =head2 Unsupported Methods
 
 =over 4
