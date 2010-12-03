@@ -24,13 +24,13 @@ $mech->get('http://doesnotexist.example');
 $response = $mech->response;
 
 isn't $response, undef, "We identified a response";
-like $response->code, qr/^(404|500)$/, 'We got a good response for a nonexistent domain';
+like $response->code, qr/^(404|5\d\d)$/, 'We got a good response for a nonexistent domain';
 ok ! $mech->success, "And the response is not considered a success";
 
 $response = $mech->get('http://doesnotexist.example');
 
 isn't $response, undef, "We identified a response, directly";
-like $response->code, qr/^(404|500)$/, 'We got a good response for a nonexistent domain';
+like $response->code, qr/^(404|5\d\d)$/, 'We got a good response for a nonexistent domain';
 ok ! $mech->success, "And the response is not considered a success";
 
 undef $mech;

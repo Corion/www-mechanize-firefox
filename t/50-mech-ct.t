@@ -18,9 +18,5 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-#my ($site,$estatus) = ('http://doesnotexit.example',500);
-#\my ($site,$estatus) = ('http://corion.net/test',200);
-#my $status = $mech->get($site);
-
 is $mech->ct, 'text/html', "Content-type";
 

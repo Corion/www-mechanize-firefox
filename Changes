@@ -2,6 +2,8 @@
     + HTTP::Cookies::MozRepl now fetches cookies more quickly
     + Other functions also use bulk fetching for quicker
       information retrieval
+    . The tests are now more resilient for proxies that return other
+      "no DNS" errors than 500.
 
 0.39 20101120
     . Add Firefox::Application to contain UI manipulation things.

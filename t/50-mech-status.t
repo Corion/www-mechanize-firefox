@@ -27,7 +27,7 @@ if( ! isa_ok $res, 'HTTP::Response', 'The response') {
     SKIP: { skip "No response returned", 1 };
 } else {
     my $c = $res->code;
-    like $res->code, qr/^(404|500)$/, "GETting $site gives a 500 (no proxy) or 404 (proxy)"
+    like $res->code, qr/^(404|5\d\d)$/, "GETting $site gives a 5xx (no proxy) or 404 (proxy)"
         or diag $mech->content;
 };
 
