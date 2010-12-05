@@ -1056,10 +1056,11 @@ JS
     # We return the raw bytes here.
     my ($content,$encoding) = $html->($d);
     if (! utf8::is_utf8($content)) {
-        warn "Switching on UTF-8 (from $encoding)";
+        #warn "Switching on UTF-8 (from $encoding)";
         # Switch on UTF-8 flag
         # This should never happen, as JSON::XS (and JSON) should always
         # already return proper UTF-8
+        # But it does happen.
         $content = Encode::decode($encoding, $content);
     };
     return $content
