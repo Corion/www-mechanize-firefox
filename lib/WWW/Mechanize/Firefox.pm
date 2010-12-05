@@ -479,7 +479,7 @@ in different progress listeners at the same time.
 
 sub progress_listener {
     my ($mech,$source,%handlers) = @_;
-    my $NOTIFY_STATE_DOCUMENT = $mech->repl->expr('Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT');
+    my $NOTIFY_STATE_DOCUMENT = $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT');
     my ($obj) = $mech->repl->expr('new Object');
     for my $key (keys %handlers) {
         $obj->{$key} = $handlers{$key};
@@ -742,9 +742,9 @@ sub _install_response_header_listener {
     weaken $self;
     
     # These should be cached and optimized into one hash query
-    my $STATE_STOP = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_STOP');
-    my $STATE_IS_DOCUMENT = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
-    my $STATE_IS_WINDOW = $self->repl->expr('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
+    my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
+    my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
+    my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
 
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
@@ -835,7 +835,7 @@ sub _extract_response {
     my ($self,$request) = @_;
     
     #warn $request->{name};
-    my $nsIHttpChannel = $self->repl->expr('Components.interfaces.nsIHttpChannel');
+    my $nsIHttpChannel = $self->repl->constant('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
     
     my @headers;
@@ -941,7 +941,7 @@ sub reload {
     my ($self, $bypass_cache) = @_;
     $bypass_cache ||= 0;
     if ($bypass_cache) {
-        $bypass_cache = $self->repl->expr('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
+        $bypass_cache = $self->repl->constant('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
     };
     $self->synchronize( sub {
         $self->tab->{linkedBrowser}->reloadWithFlags($bypass_cache);
