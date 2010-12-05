@@ -662,8 +662,7 @@ sub _addEventListener {
     # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
-    var lock = {};
-    lock.busy = 0;
+    var lock = { "busy": 0 };
     var b = browser;
     var listeners = [];
     // XXX We only need one callback function,
