@@ -45,5 +45,5 @@ my @frames = $mech->selector('frame');
 is @frames, 0, "FRAME tag"
     or diag $mech->content;
 
-my @frames = $mech->selector('iframe');
+@frames = $mech->selector('iframe');
 is @frames, 1, "IFRAME tag";
