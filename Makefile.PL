@@ -22,7 +22,7 @@ WriteMakefile1(
     'NAME'          => 'WWW::Mechanize::Firefox',
     'LICENSE'       => 'perl',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/Firefox.pm', # finds $VERSION
-    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.18, # v18 implements bulk fetching
+    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.19, # v19 implements constant caching
                         'URI' => 0,
                         'HTTP::Response' => 0, # for interface compatibility with WWW::Mechanize
                         'HTML::Selector::XPath' => 0,
