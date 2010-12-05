@@ -653,6 +653,8 @@ sub get_local {
 # Should this become part of MozRepl::RemoteObject?
 sub _addEventListener {
     my ($self,$browser,$events) = @_;
+    # XXX Convert this to a loop over pairs of object/events in @_
+    #     resp. pass all elements on downwards to JS
     $events ||= $self->events;
     $events = [$events]
         unless ref $events;
@@ -664,6 +666,9 @@ function(browser,events) {
     lock.busy = 0;
     var b = browser;
     var listeners = [];
+    // XXX We only need one callback function,
+    //     as the event name can be retrieved from e.type
+    // XXX We need unit tests checking that we can capture any event.
     for( var i = 0; i < events.length; i++) {
         var evname = events[i];
         var callback = (function(listeners,evname){
@@ -804,6 +809,7 @@ sub synchronize {
     
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
+    # Can we add more listeners to one existing lock?
     my $b = $self->tab->{linkedBrowser};
     my $load_lock = $self->_addEventListener($b,$events);
     $callback->();
