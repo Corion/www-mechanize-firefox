@@ -57,7 +57,7 @@ t/50-mech-new-dsl.t
 t/50-mech-new.t
 t/50-mech-save-dialog.t
 t/50-mech-set-fields-875912.htm
-t/50-mech-set-fields-875912.pl
+t/50-mech-set-fields-875912.t
 t/50-mech-status.t
 t/50-popup.t
 t/50-tick.html
