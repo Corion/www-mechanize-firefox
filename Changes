@@ -3,7 +3,17 @@ TO DO:
     . Add test for ->forms in scalar context
     . Add test for ->forms in list context
     . Add test for ->value with 3-args (setting)
-    . Add
+    . Add test for ->highlight_node()
+    . Add test for ->set_visible()
+    . Add test for ->clickables()
+    . Add test for getting/setting ->autodie()
+    . Add test for getting/setting ->events()
+    . Add 2-arg test for ->synchronize()
+    . Add test for ->reload()
+    . Add test for ->back()
+    . Add test for ->forward()
+    . Add test for ->is_html()
+    . Add test for ->set_fields()
 
 0.40 20101122
     + HTTP::Cookies::MozRepl now fetches cookies more quickly
