@@ -2607,7 +2607,7 @@ sub set_fields {
     if (! $f) {
         croak "Can't set fields: No current form set.";
     };
-    $self->do_set_fields($self, form => $f, fields => \%fields);
+    $self->do_set_fields(form => $f, fields => \%fields);
 };
 
 sub do_set_fields {
