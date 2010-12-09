@@ -5,8 +5,9 @@ use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
-    #log => [qw[debug]],
-    autoclose => 1,
+    log => [qw[debug]],
+    #use_queue => 1,
+    #autoclose => 1,
 )};
 
 if (! $mech) {
@@ -74,11 +75,8 @@ JS
     $event = $mech->repl->expr(<<JS);
         var b = $rn.getLink($tab_id);
         var br = $rn.getLink($browser_id);
-        //var ev = b.createEvent('Events');
         var ev = br.contentWindow.content.document.createEvent('Events');
         ev.initEvent("$name", true, true);
-        //, window,
-        // 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         b.dispatchEvent(ev);
 JS
     is $listener->{busy}, 1, 'Event was fired';
@@ -86,4 +84,4 @@ JS
     is_object $listener->{js_event}->{target}, $tab, "... on the tab";
 };
 
-#undef $mech;
+undef $mech;
