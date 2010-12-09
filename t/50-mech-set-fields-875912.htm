@@ -1,0 +1,83 @@
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+<title>Antibody epitope prediction</title>
+</head>
+<body>
+<div id='header'>
+<a class='headline' href='/'><h1>IEDB Analysis Resource</h1></a>
+</div>
+<div id='menu'>
+<ul>
+<li class='active'><a href='iedb_input'>Antibody Epitope Prediction</a></li>
+<li><a href='example.jsp'>Example Sequences</a></li>
+<li><a href='tutorial.jsp'>Tutorial</a></li>
+<li><a href='http://iedb.org/links.php'>External Links</a></li>
+<li><a href='javaScript:openWindowAttribute("disclaimer.jsp","Disclaimer", "location=no,menubar=no,resizable=yes,scrollbars=yes,status=no,toolbar=no,height=200,width=300")'>Disclaimer</a></li>
+<li><a href='reference.jsp'>Reference</a></li>
+<li><a href='contact.jsp'>Contact</a></li>
+</ul>
+</div>
+<div id='container'>
+<div id='primarycontainer'>
+<SCRIPT LANGUAGE='JavaScript' SRC='../javaScript/openWindow.js'></SCRIPT>
+<tr><td class="iedbBodyTD">
+<h2>Antibody Epitope Prediction</h2>
+<form action='bcell_Prediction' method='post' name='form1' target='_self'>
+<table cellspacing=1>
+<tr>
+<th><div align='left'>Enter a Swiss-Prot Id:</div></th>
+<td><div align='left'><input type=text size=12 name='swId' value=''> (example: P02185)</div></td>
+</tr>
+<tr>
+<th colspan=2><div align='left'>Or enter a protein sequence in plain format (50000 residues maximum): </div></th>
+</tr>
+<tr>
+<td colspan=2><textarea name='sequence' cols='60' rows='8' id='sequence'></textarea></td>
+<td colspan=2><textarea name='sequence2' cols='60' rows='8' id='sequence2'></textarea></td>
+</tr>
+<tr>
+<th colspan=2><div align='left'>Choose a method: </div></th>
+</tr>
+<tr>
+<td  colspan=2><div align='left'>
+<input name='method' type='radio' value='49' 
+><a href='javaScript:openWindow("ScaleInformation?ID=49", "BcellScaleInformation")'>Chou & Fasman Beta-Turn Prediction</a></td>
+</tr>
+<tr>
+<td class='even_row' colspan=2><div align='left'>
+<input name='method' type='radio' value='85' 
+><a href='javaScript:openWindow("ScaleInformation?ID=85", "BcellScaleInformation")'>Emini Surface Accessibility Prediction</a></td>
+</tr>
+<tr>
+<td  colspan=2><div align='left'>
+<input name='method' type='radio' value='65' 
+><a href='javaScript:openWindow("ScaleInformation?ID=65", "BcellScaleInformation")'>Karplus & Schulz Flexibility Prediction</a></td>
+</tr>
+<tr>
+<td class='even_row' colspan=2><div align='left'>
+<input name='method' type='radio' value='69' 
+><a href='javaScript:openWindow("ScaleInformation?ID=69", "BcellScaleInformation")'>Kolaskar & Tongaonkar Antigenicity</a></td>
+</tr>
+<tr>
+<td  colspan=2><div align='left'>
+<input name='method' type='radio' value='5' 
+><a href='javaScript:openWindow("ScaleInformation?ID=5", "BcellScaleInformation")'>Parker Hydrophilicity Prediction</a></td>
+</tr>
+<tr>
+<td class='even_row' colspan='2'><div align='left'>
+<input name='method' value='bepipred' type='radio'><a href='javaScript:openWindow("ScaleInformation?ID=6", "BcellScaleInformation")'>Bepipred Linear Epitope Prediction</a></div></td>
+</tr>
+<tr>
+<th colspan=2><div align = 'left'>
+<input type = 'submit' name = 'Submit' value = 'Submit'>
+<input type = 'reset' name = 'Reset' value = 'Reset'>
+</div></th>
+</tr>
+</table>
+</form>
+</td></tr>
+</div>
+</div>
+</body>
+</html>
