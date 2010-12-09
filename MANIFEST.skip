@@ -12,3 +12,4 @@ CVS/
 ^cvstest$
 ^blibdirs$
 .bak$
+^cover_db/
