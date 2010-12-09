@@ -13,7 +13,9 @@ TO DO:
     . Add test for ->back()
     . Add test for ->forward()
     . Add test for ->is_html()
-    . Add test for ->set_fields()
+
+0.41 201012xx
+    . ->set_fields() now actually works
 
 0.40 20101122
     + HTTP::Cookies::MozRepl now fetches cookies more quickly
