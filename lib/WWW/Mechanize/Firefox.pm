@@ -662,7 +662,7 @@ sub _addEventListener {
     # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function(browser,events) {
-    var lock = { "busy": 0 };
+    var lock = { "busy": 0, "event" : null };
     var b = browser;
     var listeners = [];
     // XXX We only need one callback function,
@@ -674,7 +674,8 @@ function(browser,events) {
             return function(e) {
                 if (! lock.busy) {
                     lock.busy++;
-                    lock.event = evname;
+                    // lock.event = evname;
+                    lock.event = e.type;
                     lock.js_event = {};
                     lock.js_event.target = e.originalTarget;
                     lock.js_event.type = e.type;
@@ -683,6 +684,8 @@ function(browser,events) {
                     //alert("Caught duplicate event " + e.type + " " + e.message);
                 };
                 for( var j = 0; j < listeners.length; j++) {
+                    // XXX Use arguments.callee to find where to remove ourselves from
+                    //     instead of passing it around in listeners[...][1]
                     b.removeEventListener(listeners[j][0],listeners[j][1],true);
                 };
             };
