@@ -141,7 +141,8 @@ sub new {
     
     if (! ref $args{ app }) {
         my @passthrough = qw(launch repl bufsize log use_queue);
-        my %options; @options{ @passthrough } = delete @args{ @passthrough };
+        my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () } 
+                      @passthrough;
         $args{ app } = Firefox::Application->new(
             %options
         );
