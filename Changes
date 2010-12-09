@@ -13,6 +13,11 @@ TO DO:
     . Add test for ->back()
     . Add test for ->forward()
     . Add test for ->is_html()
+    . Make ->set_visible actually use ->field()
+      so it can also set select fields?!
+    . Make ->set_visible also support select+option inputs
+    . Investigate where a memory cycle comes from that causes test failures
+      Likely in MozRepl::RemoteObject...
 
 0.41 201012xx
     . ->set_fields() now actually works
