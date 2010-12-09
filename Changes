@@ -1,3 +1,10 @@
+TO DO:
+    . Coverage of methods
+    . Add test for ->forms in scalar context
+    . Add test for ->forms in list context
+    . Add test for ->value with 3-args (setting)
+    . Add
+
 0.40 20101122
     + HTTP::Cookies::MozRepl now fetches cookies more quickly
     + Other functions also use bulk fetching for quicker
