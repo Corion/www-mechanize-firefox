@@ -651,52 +651,64 @@ sub get_local {
 
 # Should I port this to Perl?
 # Should this become part of MozRepl::RemoteObject?
+# This should get passed 
 sub _addEventListener {
-    my ($self,$browser,$events) = @_;
-    # XXX Convert this to a loop over pairs of object/events in @_
-    #     resp. pass all elements on downwards to JS
-    $events ||= $self->events;
-    $events = [$events]
-        unless ref $events;
+    my ($self,@args) = @_;
+    if (@args <= 2 and ref($args[0]) eq 'MozRepl::RemoteObject::Instance') {
+        @args = [@args];
+    };
+    #use Data::Dumper;
+    #local $Data::Dumper::Maxdepth = 2;
+    #print Dumper \@args;
+    for (@args) {
+        $_->[1] ||= $self->events;
+        $_->[1] = [$_->[1]]
+            unless ref $_->[1];
+    };
+    # Now, flatten the arg list again...
+    @args = map { @$_ } @args;
 
     # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
-function(browser,events) {
+function() {
     var lock = { "busy": 0, "event" : null };
-    var b = browser;
     var listeners = [];
-    // XXX We only need one callback function,
-    //     as the event name can be retrieved from e.type
-    // XXX We need unit tests checking that we can capture any event.
-    for( var i = 0; i < events.length; i++) {
-        var evname = events[i];
-        var callback = (function(listeners,evname){
-            return function(e) {
-                if (! lock.busy) {
-                    lock.busy++;
-                    // lock.event = evname;
-                    lock.event = e.type;
-                    lock.js_event = {};
-                    lock.js_event.target = e.originalTarget;
-                    lock.js_event.type = e.type;
-                    //alert("Caught first event " + e.type + " " + e.message);
-                } else {
-                    //alert("Caught duplicate event " + e.type + " " + e.message);
+    var pairs = arguments;
+    for( var k = 0; k < pairs.length ; k++) {
+        var b = pairs[k];
+        k++;
+        var events = pairs[k];
+        
+        // XXX We only need one callback function,
+        //     as the event name can be retrieved from e.type
+        for( var i = 0; i < events.length; i++) {
+            var evname = events[i];
+            var callback = (function(listeners,evname){
+                return function(e) {
+                    if (! lock.busy) {
+                        lock.busy++;
+                        lock.event = e.type;
+                        lock.js_event = {};
+                        lock.js_event.target = e.originalTarget;
+                        lock.js_event.type = e.type;
+                        //alert("Caught first event " + e.type + " " + e.message);
+                    } else {
+                        //alert("Caught duplicate event " + e.type + " " + e.message);
+                    };
+                    for( var j = 0; j < listeners.length; j++) {
+                        listeners[j][0].removeEventListener(listeners[j][1],listeners[j][2],true);
+                    };
                 };
-                for( var j = 0; j < listeners.length; j++) {
-                    // XXX Use arguments.callee to find where to remove ourselves from
-                    //     instead of passing it around in listeners[...][1]
-                    b.removeEventListener(listeners[j][0],listeners[j][1],true);
-                };
-            };
-        })(listeners,evname);
-        listeners.push([evname,callback]);
-        b.addEventListener(evname,callback,true);
+            })(listeners,evname);
+            listeners.push([b,evname,callback]);
+            b.addEventListener(evname,callback,true);
+        };
     };
     return lock
 }
 JS
-    return $make_semaphore->($browser,$events);
+    # $browser,$events
+    return $make_semaphore->(@args);
 };
 
 sub _wait_while_busy {

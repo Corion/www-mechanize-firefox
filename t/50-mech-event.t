@@ -5,7 +5,8 @@ use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
-    #log => [qw[debug]]
+    #log => [qw[debug]],
+    autoclose => 1,
 )};
 
 if (! $mech) {
@@ -13,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 3;
+    plan tests => 21;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -51,14 +52,11 @@ JS
 # that listens on several objects for more than one event
 # and check that it triggers for every object/event combination
 my @events = (qw(load DOMContentLoaded error));
-for my $name (@events) {
-    my $browser = $mech->tab->{linkedBrowser};
-    my $tab = $mech->tab;
-    
-    my $listener = $mech->_addEventListener($browser,\@events, $tab, \@events);
+my $tab = $mech->tab;
+my $tab_id = $tab->__id;
 
-    my $rn = $mech->repl->name;
-    my $browser_id = $browser->__id;
+for my $name (@events) {    
+    $listener = $mech->_addEventListener([$browser,\@events], [$tab, \@events]);
 
     # Now fire the event
     my $event = $mech->repl->expr(<<JS);
@@ -70,18 +68,22 @@ for my $name (@events) {
 JS
     is $listener->{busy}, 1, 'Event was fired';
     is $listener->{event}, $name, "... and it was $name";
-    is_object $listener->{js_event}->{target}, $browser, "... on the right target";
+    is_object $listener->{js_event}->{target}, $browser, "... on the browser";
 
-    my $tab_id = $tab->__id;
-    # Now fire the event
+    $listener = $mech->_addEventListener([$browser,\@events], [$tab, \@events]);
     $event = $mech->repl->expr(<<JS);
         var b = $rn.getLink($tab_id);
-        var ev = b.createEvent('Events');
-        ev.initEvent("$name", true, true, window,
-        0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        var br = $rn.getLink($browser_id);
+        //var ev = b.createEvent('Events');
+        var ev = br.contentWindow.content.document.createEvent('Events');
+        ev.initEvent("$name", true, true);
+        //, window,
+        // 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         b.dispatchEvent(ev);
 JS
     is $listener->{busy}, 1, 'Event was fired';
     is $listener->{event}, $name, "... and it was $name";
-    is_object $listener->{js_event}->{target}, $tab, "... on the right target";
+    is_object $listener->{js_event}->{target}, $tab, "... on the tab";
 };
+
+#undef $mech;
