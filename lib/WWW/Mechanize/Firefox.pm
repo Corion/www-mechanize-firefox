@@ -489,14 +489,12 @@ sub progress_listener {
     my $mk_nsIWebProgressListener = $mech->repl->declare(<<'JS');
     function (myListener,source) {
         myListener.source = source;
-        //const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
-        //const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
-        var callbacks = ['onStateChange',
-                       'onLocationChange',
+        var callbacks = ["onStateChange",
+                       "onLocationChange",
                        "onProgressChange",
                        "onStatusChange",
                        "onSecurityChange",
-                            ];
+        ];
         for (var h in callbacks) {
             var e = callbacks[h];
             if (! myListener[e]) {
