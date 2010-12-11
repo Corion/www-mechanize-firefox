@@ -2,23 +2,32 @@ use strict;
 use Test::More;
 use WWW::Mechanize::Firefox;
 
-plan tests => 4;
+my $mech = eval { WWW::Mechanize::Firefox->new( 
+    autodie => 0,
+    #log => [qw[debug]]
+)};
 
-my $agent = WWW::Mechanize::Firefox->new();
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 4;
+};
 
 my $method = 49;
 my $seq = "ARRRSFASDATRASDFSDARASDAGADFGASDRFREWFASCDSAGAREW";
 
-$agent->get_local("50-mech-set-fields-875912.htm");
+$mech->get_local("50-mech-set-fields-875912.htm");
 
-$agent->form_name('form1');
-$agent->set_fields( 'sequence' => $seq );
-is $agent->value('sequence'), $seq, "->set_fields sets a single value";
+$mech->form_name('form1');
+$mech->set_fields( 'sequence' => $seq );
+is $mech->value('sequence'), $seq, "->set_fields sets a single value";
 
-$agent->field( 'sequence' => "xx$seq" );
-is $agent->value('sequence'), "xx$seq", "->field also sets a single value";
+$mech->field( 'sequence' => "xx$seq" );
+is $mech->value('sequence'), "xx$seq", "->field also sets a single value";
 
 
-$agent->set_fields( 'sequence' => "1-$seq", sequence2 => "2-$seq" );
-is $agent->value('sequence'), "1-$seq", "->set_fields sets two values";
-is $agent->value('sequence2'), "2-$seq", "->set_fields sets two values";
+$mech->set_fields( 'sequence' => "1-$seq", sequence2 => "2-$seq" );
+is $mech->value('sequence'), "1-$seq", "->set_fields sets two values";
+is $mech->value('sequence2'), "2-$seq", "->set_fields sets two values";
