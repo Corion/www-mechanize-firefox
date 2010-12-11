@@ -512,12 +512,16 @@ sub progress_listener {
     }
 JS
     
+    # Declare it here so we don't close over $lsn!
+    my $release = sub {
+        #warn "Listener removed";
+        $_[0]->bridge->remove_callback(values %handlers);
+    };
     my $lsn = $mk_nsIWebProgressListener->($obj,$source);
     $lsn->__release_action('self.source.removeProgressListener(self)');
     $lsn->__on_destroy(sub {
         # Clean up some memory leaks
-        #warn "Listener removed";
-        $_[0]->bridge->remove_callback(values %handlers);
+        $release->(@_)
     });
     $source->addProgressListener($lsn,$NOTIFY_STATE_DOCUMENT);
     $lsn
