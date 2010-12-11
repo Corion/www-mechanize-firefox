@@ -17,7 +17,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.41 201012xx
+0.41 20101211
     . Remove failing test that didn't respect localized theme names
     . Fix (i)frame tests that didn't produce results due to embedding sites 
       that didn't load.
