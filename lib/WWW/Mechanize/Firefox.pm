@@ -854,7 +854,6 @@ sub _headerVisitor {
 sub _extract_response {
     my ($self,$request) = @_;
     
-    #warn $request->{name};
     my $nsIHttpChannel = $self->repl->constant('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
     
