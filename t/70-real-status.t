@@ -3,7 +3,9 @@ use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 
-my $mech = eval {WWW::Mechanize::Firefox->new()};
+my $mech = eval {WWW::Mechanize::Firefox->new(
+    #log => [qw[debug]],
+)};
 
 if (! $mech) {
     my $err = $@;
@@ -34,3 +36,4 @@ like $response->code, qr/^(404|5\d\d)$/, 'We got a good response for a nonexiste
 ok ! $mech->success, "And the response is not considered a success";
 
 undef $mech;
+$MozRepl::RemoteObject::WARN_ON_LEAKS = 1;

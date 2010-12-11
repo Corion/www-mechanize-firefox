@@ -5,9 +5,6 @@ use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
-    log => [qw[debug]],
-    #use_queue => 1,
-    #autoclose => 1,
 )};
 
 if (! $mech) {
@@ -84,4 +81,5 @@ JS
     is_object $listener->{js_event}->{target}, $tab, "... on the tab";
 };
 
+$MozRepl::RemoteObject::WARN_ON_LEAKS++;
 undef $mech;

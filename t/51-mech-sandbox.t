@@ -88,5 +88,7 @@ JS
     )
 };
 is $@, '', "No error";
-#$mech->repl->poll;
 is_deeply \@args, ["Hello"], "We can override/capture functions";
+
+$MozRepl::RemoteObject::WARN_ON_LEAKS++;
+undef $mech;
