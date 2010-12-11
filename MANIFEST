@@ -32,6 +32,8 @@ README
 README.mkdn
 t/01-mech-destroy.t
 t/401-server
+t/47-mech-memleak2.t
+t/47-mech-ref-memleak.t
 t/47-mech-simplest.t
 t/48-mech-launch.t
 t/49-mech-get-file.html
