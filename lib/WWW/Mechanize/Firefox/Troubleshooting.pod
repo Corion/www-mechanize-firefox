@@ -165,6 +165,43 @@ For those requests, pass the C<< synchronize => 0 >> option:
 This will tell WWW::Mechanize::Firefox not to wait for any response
 from the webserver.
 
+=head2 A tab remains open even after the program closes
+
+If you have something like the following code:
+
+  my $mech = WWW::Mechanize::Firefox->new();
+
+  sub page_title {
+      $mech->selector( 'div.title', single => 1 )->{innerHTML};
+  };
+
+then Perl will keep the C<$mech> object alive until the program ends
+and Global Destruction of all objects starts. As Global Destruction
+happens in a non-deterministic order, this will sometimes prevent
+the C<$mech> object from properly closing the Firefox tab attached to it.
+
+For debugging whether that is really the cause,
+set C<$MozRepl::RemoteObject::WARN_ON_LEAK> to a true value. This will
+emit warnings to C<STDERR> if objects cannot release their Firefox
+counterpart during Global Destruction.
+
+=head3 Solution
+
+Pass the C<$mech> object around as parameter:
+
+  my $mech = WWW::Mechanize::Firefox->new();
+
+  sub page_title {
+      my ($mech) = @_;
+      $mech->selector( 'div.title', single => 1 )->{innerHTML};
+  };
+
+Alternatively, explicitly set C<$mech> to C<undef> at the end of
+your main program:
+
+  ...
+  undef $mech;
+
 =head1 Known Problems
 
 =head2 Page Encoding Versus Perl Encoding
