@@ -483,6 +483,7 @@ sub progress_listener {
     for my $key (keys %handlers) {
         $obj->{$key} = $handlers{$key};
     };
+    #warn "Listener created";
     
     my $mk_nsIWebProgressListener = $mech->repl->declare(<<'JS');
     function (myListener,source) {
