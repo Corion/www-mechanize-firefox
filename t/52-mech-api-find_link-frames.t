@@ -39,4 +39,3 @@ is 0+@frames, 3, "We found three FRAME tags via ->selector";
 
 @frames = $mech->xpath('//frame');
 is 0+@frames, 3, "We found three FRAME tags via ->xpath";
-
