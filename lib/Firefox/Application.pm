@@ -89,6 +89,7 @@ sub new {
 sub DESTROY {
     my ($self) = @_;
     local $@;
+    #warn "App cleaning up";
     if (my $repl = delete $self->{ repl }) {
         %$self = (); # wipe out all references we keep
         # but keep $repl alive until we can dispose of it
