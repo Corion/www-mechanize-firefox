@@ -201,9 +201,7 @@ sub new {
 sub DESTROY {
     my ($self) = @_;
     local $@;
-    my $app = delete $self->{ app };
-    if ($app) {
-        undef $self->{tab};
+    if (my $app = delete $self->{ app }) {
         %$self = (); # wipe out all references we keep
         # but keep $app alive until we can dispose of it
         # as the last thing, now:
