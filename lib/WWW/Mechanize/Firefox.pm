@@ -681,8 +681,6 @@ function() {
         k++;
         var events = pairs[k];
         
-        // XXX We only need one callback function,
-        //     as the event name can be retrieved from e.type
         for( var i = 0; i < events.length; i++) {
             var evname = events[i];
             var callback = (function(listeners,evname){
