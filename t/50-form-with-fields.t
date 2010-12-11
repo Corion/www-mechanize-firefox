@@ -17,7 +17,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 8;
+    plan tests => 9;
 };
 
 $mech->get_local('50-form3.html');
@@ -52,3 +52,19 @@ $mech->get_local('50-form3.html');
 $mech->form_name('snd');
 ok $mech->current_form, "We can find a form by its name";
 
+# Check that refcounting works and releases the bridge once we release
+# our $mech instance
+my $destroyed;
+my $old_DESTROY = \&MozRepl::RemoteObject::DESTROY;
+{ no warnings 'redefine';
+   *MozRepl::RemoteObject::DESTROY = sub {
+       $destroyed++;
+       goto $old_DESTROY;
+   }
+};
+
+$MozRepl::RemoteObject::WARN_ON_LEAKS = 1;
+undef $the_form_dom_node;
+undef $button;
+undef $mech;
+is $destroyed, 1, "Bridge was torn down";

@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 49;
+    plan tests => 50;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -115,3 +115,19 @@ is $content[3]->{innerHTML}, '52-subframe.html', "We get the right frame";
 @content = $mech->selector('#content', frames=>0);
 is scalar @content, 1, 'Querying of subframes returns only the surrounding page with frames=>0';
 is $content[0]->{innerHTML}, '52-frameset-recursive.html', "We get the right frame";
+
+# Check that refcounting works and releases the bridge once we release
+# our $mech instance
+my $destroyed;
+my $old_DESTROY = \&MozRepl::RemoteObject::DESTROY;
+{ no warnings 'redefine';
+   *MozRepl::RemoteObject::DESTROY = sub {
+       $destroyed++;
+       goto $old_DESTROY;
+   }
+};
+
+@content = ();
+undef $mech;
+$MozRepl::RemoteObject::WARN_ON_LEAKS = 1;
+is $destroyed, 1, "Bridge was torn down";

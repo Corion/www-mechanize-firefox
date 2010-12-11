@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 4;
+    plan tests => 5;
 };
 
 my $target = "$0.tmp";
@@ -49,3 +49,13 @@ while ($countdown-- and $download->{currentState} != 3) {
     sleep 1;
 };
 is $download->{currentState}, 3, "Download finished properly";
+
+undef $download;
+
+my $destroyed;
+no warnings 'redefine';
+*WWW::Mechanize::Firefox::DESTROY = sub {
+    $destroyed++
+};
+undef $mech;
+is $destroyed, 1, "Nothing keeps the instance alive";
