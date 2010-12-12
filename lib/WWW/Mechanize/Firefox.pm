@@ -886,7 +886,7 @@ sub response {
         if ($scheme and $scheme =~ /^https?/) {
             # We can only extract from a HTTP Response
             return $self->_extract_response( $js_res );
-        } elsif ($scheme and $scheme =~ /^(file|data)\b/) {
+        } elsif ($scheme and $scheme =~ /^(file|data|about)\b/) {
             # We're cool!
             return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
         } else {
