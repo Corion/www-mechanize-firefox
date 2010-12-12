@@ -73,6 +73,7 @@ t/51-mech-form-with-fields.t
 t/51-mech-links-base.html
 t/51-mech-links-nobase.html
 t/51-mech-links.t
+t/51-mech-navigation.t
 t/51-mech-sandbox.html
 t/51-mech-sandbox.t
 t/51-mech-set-content.t

@@ -967,7 +967,7 @@ sub reload {
     });
 }
 
-=head2 C<< $mech->back >>
+=head2 C<< $mech->back( [$synchronize] >>
 
     $mech->back();
 
@@ -978,13 +978,19 @@ Returns the (new) response.
 =cut
 
 sub back {
-    my ($self) = @_;
-    $self->synchronize( sub {
-        $self->tab->{linkedBrowser}->goBack;
-    });
+    my ($self, $synchronize) = @_;
+    $synchronize ||= (@_ != 2);
+    
+    if ($synchronize) {
+        $self->synchronize( sub {
+            $self->tab->{linkedBrowser}->goBack;
+        });
+    } else {
+            $self->tab->{linkedBrowser}->goBack;
+    };
 }
 
-=head2 C<< $mech->forward >>
+=head2 C<< $mech->forward( [$synchronize] ) >>
 
     $mech->forward();
 
@@ -995,10 +1001,16 @@ Returns the (new) response.
 =cut
 
 sub forward {
-    my ($self) = @_;
-    $self->synchronize( sub {
-        $self->tab->{linkedBrowser}->goForward;
-    });
+    my ($self, $synchronize) = @_;
+    $synchronize ||= (@_ != 2);
+    
+    if ($synchronize) {
+        $self->synchronize( sub {
+            $self->tab->{linkedBrowser}->goForward;
+        });
+    } else {
+            $self->tab->{linkedBrowser}->goForward;
+    };
 }
 
 =head2 C<< $mech->uri >>
