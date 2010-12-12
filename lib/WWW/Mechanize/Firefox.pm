@@ -967,6 +967,18 @@ sub reload {
     });
 }
 
+# Internal convenience method for dipatching a call either synchronized
+# or not
+sub _sync_call {
+    my ($self, $synchronize, $events, $cb) = @_;
+
+    if ($synchronize) {
+        $self->synchronize( $events, $cb );
+    } else {
+        $cb->();
+    };    
+};
+
 =head2 C<< $mech->back( [$synchronize] >>
 
     $mech->back();
@@ -981,13 +993,9 @@ sub back {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    if ($synchronize) {
-        $self->synchronize( sub {
-            $self->tab->{linkedBrowser}->goBack;
-        });
-    } else {
-            $self->tab->{linkedBrowser}->goBack;
-    };
+    $self->_sync_call($synchronize, $self->events, sub {
+        $self->tab->{linkedBrowser}->goBack;
+    });
 }
 
 =head2 C<< $mech->forward( [$synchronize] ) >>
@@ -1004,13 +1012,9 @@ sub forward {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    if ($synchronize) {
-        $self->synchronize( sub {
-            $self->tab->{linkedBrowser}->goForward;
-        });
-    } else {
-            $self->tab->{linkedBrowser}->goForward;
-    };
+    $self->_sync_call($synchronize, $self->events, sub {
+        $self->tab->{linkedBrowser}->goForward;
+    });
 }
 
 =head2 C<< $mech->uri >>
@@ -2013,13 +2017,11 @@ sub click {
         @buttons = $self->_option_query(%options);
     };
         
-    if ($options{ synchronize }) {
-        $self->synchronize($self->events, sub { # ,'abort'
+    $self->_sync_call(
+        $options{ synchronize }, $self->events, sub { # ,'abort'
             $buttons[0]->__click();
-        });
-    } else {
-        $buttons[0]->__click();
-    }
+        }
+    );
 
     if (defined wantarray) {
         return $self->response
