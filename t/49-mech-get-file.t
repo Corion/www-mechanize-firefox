@@ -17,7 +17,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 7;
+    plan tests => 8;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -44,5 +44,7 @@ $mech->get('about:blank');
 $mech->get_local('49-mech-get-file.html');
 ok $mech->success, '49-mech-get-file.html';
 is $mech->title, '49-mech-get-file.html', "We loaded the right file";
+
+ok $mech->is_html, "The local file gets identified as HTML";
 
 undef $mech;
