@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 5;
+    plan tests => 6;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -24,7 +24,10 @@ isa_ok $res, 'HTTP::Response', "Response";
 
 is $mech->uri, $site, "Navigated to $site";
 
-is $res->code, $estatus, "GETting $site"
+is $res->code, $estatus, "GETting $site returns HTTP code $estatus from response"
+    or diag $mech->content;
+
+is $mech->status, $estatus, "GETting $site returns HTTP status $estatus from mech"
     or diag $mech->content;
 
 ok $mech->success, 'We consider this response successful';

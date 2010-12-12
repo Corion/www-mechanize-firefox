@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 5;
+    plan tests => 6;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -28,6 +28,9 @@ if( ! isa_ok $res, 'HTTP::Response', 'The response') {
 } else {
     my $c = $res->code;
     like $res->code, qr/^(404|5\d\d)$/, "GETting $site gives a 5xx (no proxy) or 404 (proxy)"
+        or diag $mech->content;
+
+    like $mech->status, qr/^(404|5\d\d)$/, "GETting $site returns a 5xx (no proxy) or 404 (proxy) HTTP status"
         or diag $mech->content;
 };
 
