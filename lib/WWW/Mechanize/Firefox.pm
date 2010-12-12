@@ -2153,7 +2153,6 @@ an array with those forms.
 The options
 are identical to those accepted by the L<< /$mech->selector >> method.
 
-
 The returned elements are the DOM C<< <form> >> elements.
 
 =cut
