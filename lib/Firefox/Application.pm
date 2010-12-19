@@ -427,6 +427,17 @@ sub set_tab_content {
     $tab->{linkedBrowser}->loadURI($url);
 };
 
+=head1 TODO
+
+=over 4
+
+=item *
+
+Consider how to roll L<http://kb.mozillazine.org/Command_line_arguments>
+into this module for convenient / versatile launching of Firefox
+
+=back
+
 =head1 AUTHOR
 
 Max Maischein C<corion@cpan.org>
