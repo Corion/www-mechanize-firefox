@@ -19,7 +19,7 @@ use Encode qw(encode decode);
 use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.42';
+$VERSION = '0.43';
 
 =head1 NAME
 
@@ -3300,7 +3300,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009-2010 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2011 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 

@@ -216,7 +216,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2010, Max Maischein.
+Copyright 2010-2011, Max Maischein.
 
 All Rights Reserved. This module is free software. It may be used,
 redistributed and/or modified under the same terms as Perl itself.
