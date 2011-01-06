@@ -181,6 +181,7 @@ sub new {
     };
     
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
+    $args{ on_event } ||= undef;
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
     $args{ frames } ||= 1; # we default to searching frames
@@ -551,6 +552,23 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
 
+=head2 C<< $mech->on_event >>
+
+  $mech->on_event(1); # prints every page load event
+
+  # or give it a callback
+  $mech->on_event(sub { warn "Page loaded with $ev->{name} event" });
+
+Gets/sets the notification handler for the Javascript event
+that finished a page load. Set it to C<1> to output via C<warn>,
+or a code reference to call it with the event.
+
+This method is special to WWW::Mechanize::Firefox.
+
+=cut
+
+sub on_event { $_[0]->{on_event} = $_[1] if (@_ > 1); $_[0]->{on_event} };
+
 =head2 C<< $mech->cookies >>
 
   my $cookie_jar = $mech->cookies();
@@ -856,8 +874,13 @@ sub synchronize {
     my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
-    # XXX Make this something the user can enable/disable
-    warn "Received $ev->{event}";
+    if (my $h = $self->{on_event}) {
+        if (ref $h eq 'CODE') {
+            $h->($ev)
+        } else {
+            warn "Received $ev->{event}";
+        };
+    };
     
     if ($need_response) {
         #warn "Returning response";
