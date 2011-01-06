@@ -852,7 +852,8 @@ sub synchronize {
     # 'error' on tab is good for failed load :-(
     # Can we add more listeners to one existing lock?
     my $b = $self->tab->{linkedBrowser};
-    my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    #my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
     #warn "$load_lock->{id} caught $load_lock->{event} ($ev->{event})";
