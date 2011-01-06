@@ -856,7 +856,8 @@ sub synchronize {
     my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
-    #warn "$load_lock->{id} caught $load_lock->{event} ($ev->{event})";
+    # XXX Make this something the user can enable/disable
+    warn "Received $ev->{event}";
     
     if ($need_response) {
         #warn "Returning response";
