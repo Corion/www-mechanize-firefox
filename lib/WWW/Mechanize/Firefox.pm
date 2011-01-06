@@ -758,13 +758,39 @@ be used instead.
 sub _install_response_header_listener {
     my ($self) = @_;
     
-    weaken $self;
+    #weaken $self;
     
     # These should be cached and optimized into one hash query
     my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
     my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
 
+    # XXX Move this into JS?
+    # XXX This is an ugly hack to reduce the number of events pumped from JS to Perl
+    my $make_state_change = $self->repl->declare(<<'JS');
+        function (cb) {
+            const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+            const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
+            const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
+            
+            return function (progress,request,flags,status) {
+                if (flags & (STATE_STOP|STATE_IS_DOCUMENT) == (STATE_STOP|STATE_IS_DOCUMENT)) {
+                    cb(status,request);
+                }
+            }
+        }
+JS
+    my $response_received; $response_received = sub {
+        my ($status,$request) = @_;
+        if ($status == 0) {
+            $self->{ response } ||= $request;
+        };
+        #$self->repl->remove_callback( $response_received );
+        #undef $self;
+    };
+    my $state_change = $make_state_change->( $response_received );
+
+=begin perl
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
         #warn sprintf "State     : <progress> <request> %08x %08x\n", $flags, $status;
@@ -790,6 +816,7 @@ sub _install_response_header_listener {
     #    warn sprintf "Status     : <progress> <request> %08x %s\n", $status, $msg;
     #    warn sprintf "                                 %08x\n", $STATE_STOP;
     #};
+=cut
 
     my $browser = $self->tab->{linkedBrowser};
 
@@ -825,10 +852,12 @@ sub synchronize {
     # 'error' on tab is good for failed load :-(
     # Can we add more listeners to one existing lock?
     my $b = $self->tab->{linkedBrowser};
-    my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    #my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
-    #warn "$load_lock->{id} caught $load_lock->{event} ($ev->{event})";
+    # XXX Make this something the user can enable/disable
+    warn "Received $ev->{event}";
     
     if ($need_response) {
         #warn "Returning response";
