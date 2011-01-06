@@ -810,7 +810,7 @@ JS
     #$self->{response_received} = $response_received; # need to keep it alive
     my $state_change = $make_state_change->( $response_received );
 
-=begin perl
+=for perl
     my $state_change = sub {
         my ($progress,$request,$flags,$status) = @_;
         #warn sprintf "State     : <progress> <request> %08x %08x\n", $flags, $status;
