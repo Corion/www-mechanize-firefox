@@ -943,7 +943,7 @@ sub response {
         } else {
             # make up a response, below
             my $url = $self->document->{documentURI};
-            carp "Making up a response for unknown URL scheme '$scheme' (from '$url')";
+            #carp "Making up a response for unknown URL scheme '$scheme' (from '$url')";
         };
     };
     
