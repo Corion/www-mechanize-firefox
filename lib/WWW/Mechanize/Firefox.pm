@@ -776,15 +776,13 @@ be used instead.
 sub _install_response_header_listener {
     my ($self) = @_;
     
-    #weaken $self;
+    weaken $self;
     
     # These should be cached and optimized into one hash query
     my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
     my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
 
-    # XXX Move this into JS?
-    # XXX This is an ugly hack to reduce the number of events pumped from JS to Perl
     my $make_state_change = $self->repl->declare(<<'JS');
         function (cb) {
             const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
@@ -798,14 +796,18 @@ sub _install_response_header_listener {
             }
         }
 JS
+
     my $response_received; $response_received = sub {
         my ($status,$request) = @_;
-        if ($status == 0) {
-            $self->{ response } ||= $request;
+        if ($self) {
+            if ($status == 0) {
+                $self->{ response } ||= $request;
+            };
+            #$self->repl->remove_callback( $response_received );
         };
-        #$self->repl->remove_callback( $response_received );
-        #undef $self;
+        delete $self->{response_received}; # remove ourselves
     };
+    #$self->{response_received} = $response_received; # need to keep it alive
     my $state_change = $make_state_change->( $response_received );
 
 =begin perl
