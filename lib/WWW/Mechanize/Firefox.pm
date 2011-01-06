@@ -2867,7 +2867,7 @@ sub clickables {
     $self->xpath('//*[@onclick]', %options);
 };
 
-=head2 C<< $mech->expand_frames $spec >>
+=head2 C<< $mech->expand_frames( $spec ) >>
 
   my @frames = $mech->expand_frames();
 
