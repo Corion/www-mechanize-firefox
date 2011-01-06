@@ -3,7 +3,11 @@ use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 
-my $mech = eval {WWW::Mechanize::Firefox->new()};
+my $mech = eval {
+    WWW::Mechanize::Firefox->new(
+       #log => ['debug'],
+    )
+};
 
 if (! $mech) {
     my $err = $@;
@@ -37,7 +41,7 @@ my $eventlistener = $mech->progress_listener(
     $browser,
     onProgressChange => \&onProgressChange,
     onLocationChange => \&onLocationChange,
-    onStatusChange => \&onStatusChange,
+    onStatusChange   => \&onStatusChange,
 );
 
 my $countdown = 5;
