@@ -796,13 +796,10 @@ sub _install_response_header_listener {
     my ($self) = @_;
     
     weaken $self;
-    
-    # These should be cached and optimized into one hash query
-    my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
-    my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
-    my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
 
-    my $make_state_change = $self->repl->declare(<<'JS');
+    # Pre-Filter the progress on the JS side of things so we
+    # don't get that much traffic back and forth between Perl and JS
+    my $make_state_change_filter = $self->repl->declare(<<'JS');
         function (cb) {
             const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
             const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
@@ -810,27 +807,18 @@ sub _install_response_header_listener {
             
             return function (progress,request,flags,status) {
                 if (flags & (STATE_STOP|STATE_IS_DOCUMENT) == (STATE_STOP|STATE_IS_DOCUMENT)) {
-                    cb(status,request);
+                    cb(progress,request,flags,status);
                 }
             }
         }
 JS
 
-    my $response_received; $response_received = sub {
-        my ($status,$request) = @_;
-        if ($self) {
-            if ($status == 0) {
-                $self->{ response } ||= $request;
-            };
-            #$self->repl->remove_callback( $response_received );
-        };
-        delete $self->{response_received}; # remove ourselves
-    };
-    #$self->{response_received} = $response_received; # need to keep it alive
-    my $state_change = $make_state_change->( $response_received );
-
-=for perl
-    my $state_change = sub {
+    # These should be cached and optimized into one hash query
+    my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
+    my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
+    my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
+    
+    my $state_change = $make_state_change_filter->(sub {
         my ($progress,$request,$flags,$status) = @_;
         #warn sprintf "State     : <progress> <request> %08x %08x\n", $flags, $status;
         #warn sprintf "                                 %08x\n", $STATE_STOP | $STATE_IS_DOCUMENT;
@@ -849,13 +837,7 @@ JS
             #    warn sprintf "%08x", $status;
             #};
         };
-    };
-    #my $status_change = sub {
-    #    my ($progress,$request,$status,$msg) = @_;
-    #    warn sprintf "Status     : <progress> <request> %08x %s\n", $status, $msg;
-    #    warn sprintf "                                 %08x\n", $STATE_STOP;
-    #};
-=cut
+    });
 
     my $browser = $self->tab->{linkedBrowser};
 
