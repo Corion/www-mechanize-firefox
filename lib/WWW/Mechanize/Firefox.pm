@@ -910,10 +910,14 @@ sub _extract_response {
     
     my $nsIHttpChannel = $self->repl->constant('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
+    #warn $httpChannel->{originalURI}->{asciiSpec};
     
     my @headers;
     my $v = $self->_headerVisitor(sub{push @headers, @_});
+    
+    # If this fails, we're calling it too early :-(
     $httpChannel->visitResponseHeaders($v);
+    
     my $res = HTTP::Response->new(
         $httpChannel->{responseStatus},
         $httpChannel->{responseStatusText},
