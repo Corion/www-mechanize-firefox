@@ -944,8 +944,8 @@ sub response {
             # We're cool!
             return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
         } else {
-            # make up a response, below
-            my $url = $self->document->{documentURI};
+            # We'll make up a response, below
+            #my $url = $self->document->{documentURI};
             #carp "Making up a response for unknown URL scheme '$scheme' (from '$url')";
         };
     };
