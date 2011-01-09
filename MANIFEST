@@ -55,6 +55,7 @@ t/50-mech-ct.t
 t/50-mech-encoding.t
 t/50-mech-event.t
 t/50-mech-forms.t
+t/50-mech-get-nocache.t
 t/50-mech-get.t
 t/50-mech-multi-event.t
 t/50-mech-new-dsl.t

@@ -629,18 +629,37 @@ Retrieves the URL C<URL> into the tab.
 It returns a faked L<HTTP::Response> object for interface compatibility
 with L<WWW::Mechanize>.
 
+Recognized options:
+
+=over 4
+
+=item *
+
+C<< :content_file >> - filename to store the data in
+
+=item *
+
+C<< no_cache >> - if true, bypass the browser cache
+
+=back
+
 =cut
 
 sub get {
     my ($self,$url, %options) = @_;
     my $b = $self->tab->{linkedBrowser};
     $self->clear_current_form;
+    
+    my $flags = 0;
+    if ($options{ no_cache }) {
+        $flags = $self->repl->constant('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
+    };
 
     if (my $target = delete $options{":content_file"}) {
         $self->save_url($url => $target, %options);
     } else {
         $self->synchronize($self->events, sub {
-            $b->loadURI($url);
+            $b->loadURIWithFlags($url,$flags);
         });
     };
 };
