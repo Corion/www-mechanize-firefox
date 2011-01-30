@@ -2056,12 +2056,12 @@ sub click {
         $name = quotemeta($options{ name }|| '');
         $options{ xpath } = [
                        sprintf( q{//button[@name="%s"]}, $name),
-                       sprintf( q{//input[(@type="button" or @type="submit") and @name="%s"]}, $name), 
+                       sprintf( q{//input[(@type="button" or @type="submit" or @type="image") and @name="%s"]}, $name), 
         ];
         if ($options{ name } eq '') {
             push @{ $options{ xpath }}, 
                        q{//button},
-                       q{//input[(@type="button" or @type="submit")]},
+                       q{//input[(@type="button" or @type="submit" or @type="image")]},
             ;
         };
         $options{ user_info } = "Button with name '$name'";
