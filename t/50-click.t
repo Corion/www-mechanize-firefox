@@ -75,6 +75,11 @@ $mech->get_local('50-click.html');
 $mech->click('Go'); # click the "Go" button
 like $mech->uri, qr/\bGo=/, "->click() the 'Go' button works";
 
+# Name
+$mech->get_local('50-click.html');
+$mech->click('imageGo'); # click the "imageGo" button
+like $mech->uri, qr/\bimageGo\.x=/, "->click() the 'imageGo' button works";
+
 # Name via options
 $mech->get_local('50-click.html');
 $mech->click({ name => '' }); # click the unnamed button
