@@ -11,6 +11,10 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.44 20100130
+    . Also allow ->click() on <input type="image"> inputs
+    . Bump MozRepl::RemoteObject to 0.21 for better cleanup logic
+
 0.43 20110109
     ! Fix MozRepl::RemoteObject prerequisite version number
     ! Change event filtering logic for load progress listener to
