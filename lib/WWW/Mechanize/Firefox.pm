@@ -672,6 +672,8 @@ Shorthand method to construct the appropriate
 C<< file:// >> URI and load it into Firefox. Relative
 paths will be interpreted as relative to C<$0>.
 
+This method accepts the same options as C<< ->get() >>.
+
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
 
@@ -1037,7 +1039,7 @@ sub _sync_call {
     };    
 };
 
-=head2 C<< $mech->back( [$synchronize] >>
+=head2 C<< $mech->back( [$synchronize] ) >>
 
     $mech->back();
 
@@ -1111,7 +1113,7 @@ sub document {
 
     my $ds = $mech->docshell;
 
-Returns the C<docShell> Javascript object.
+Returns the C<docShell> Javascript object associated with the tab.
 
 This is WWW::Mechanize::Firefox specific.
 
