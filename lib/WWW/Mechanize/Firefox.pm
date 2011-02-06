@@ -2380,11 +2380,10 @@ sub _field_by_name {
         @fields = $name;
     } else {
         _default_limiter( single => \%options );
-        @fields = $self->xpath(
+        my $query = 
             sprintf( q{.//input[@%s="%s"] | .//select[@%s="%s"] | .//textarea[@%s="%s"]}, 
-                               $attr,$name,          $attr,$name,          $attr,$name ),
-            %options,
-        );
+                               $attr,$name,          $attr,$name,          $attr,$name );
+        @fields = $self->xpath($query,%options);
     };
     @fields
 }
