@@ -1972,7 +1972,7 @@ sub xpath {
   my @text = $mech->selector('p.content');
 
 Returns all nodes matching the given CSS selector. If
-$css_selector is an array reference, it returns
+C<$css_selector> is an array reference, it returns
 all nodes matched by any of the CSS selectors in the array.
 
 This takes the same options that C<< ->xpath >> does.
