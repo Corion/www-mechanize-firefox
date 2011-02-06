@@ -11,6 +11,15 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.45 to be released
+    . eval_in_page raises errors from perspective of the caller
+      instead of raising errors in Firefox.pm
+    . Added ->by_id() method and { id => $id } option for
+      conveniently finding elements with names that ->selector
+      interprets as CSS selectors.
+    . Improved tests checking fields with fancy:names
+      or fancy:ids
+
 0.44 20100130
     . Allow ->click() on <input type="image"> inputs
       (provided by ysth, thanks)
