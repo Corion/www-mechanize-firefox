@@ -397,6 +397,9 @@ JS
     };
 JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
+    # Report errors from scope of caller
+    local @MozRepl::RemoteObject::Instance::CARP_NOT = (@MozRepl::RemoteObject::Instance::CARP_NOT,__PACKAGE__);
+    #warn Dumper @MozRepl::RemoteObject::CARP_NOT;
     return $eval_in_sandbox->($window,$doc,$str,$js_env);
 };
 *eval = \&eval_in_page;
