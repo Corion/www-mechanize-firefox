@@ -14,7 +14,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 17;
+    plan tests => 27;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -65,6 +65,48 @@ $mech->click({ selector => '#a_div', synchronize=>0, });
 ($clicked,$type) = $mech->eval_in_page('clicked');
 is $clicked, 'a_div', "->click() with a CSS selector works";
 
+# id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ id => 'a_link', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'a_link', "->click() with an id works";
+
+# id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ id => 'a_div', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'a_div', "->click() with an id works";
+
+# id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ id => 'foo:fancy', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'foo:fancy', "->click() with an id works";
+
+# id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ id => 'foo:array[1]', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'foo:array[1]', "->click() with an id works";
+
+# by_id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ by_id => 'a_link', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'a_link', "->click() with by_id works";
+
+# by_id
+$mech->get_local('50-click.html');
+$mech->allow('javascript' => 1);
+$mech->click({ by_id => 'a_div', synchronize=>0, });
+($clicked,$type) = $mech->eval_in_page('clicked');
+is $clicked, 'a_div', "->click() with by_id works";
+
 # Name via options
 $mech->get_local('50-click.html');
 $mech->click({ name => 'Go' }); # click the "Go" button
@@ -107,6 +149,22 @@ ok !$lives, "->click() on non-existing parameter fails correctly";
 like $msg, qr/No elements found for CSS selector 'foobar'/,
     "... with the right error message";
     
+# Non-existing link via id
+$mech->get_local('50-click.html');
+$lives = eval { $mech->click({ id => 'foobar' }); 1 };
+$msg = $@;
+ok !$lives, "->click() on non-existing parameter fails correctly";
+like $msg, qr/No elements found for id 'foobar'/,
+    "... with the right error message";
+
+# Non-existing link via ids
+$mech->get_local('50-click.html');
+$lives = eval { $mech->click({ id => ['foobar','foobaz'] }); 1 };
+$msg = $@;
+ok !$lives, "->click() on non-existing parameter fails correctly";
+like $msg, qr/No elements found for id 'foobar' or 'foobaz'/,
+    "... with the right error message";
+
 # Click with undef
 $mech->get_local('50-click.html');
 $lives = eval { $mech->click(undef); 1 };

@@ -1992,6 +1992,35 @@ sub selector {
     $self->xpath(\@q, %options);
 };
 
+=head2 C<< $mech->by_id $id, %options >>
+
+  my @text = $mech->by_id('_foo:bar');
+
+Returns all nodes matching the given ids. If
+C<$id> is an array reference, it returns
+all nodes matched by any of the ids in the array.
+
+This method is equivalent to calling C<< ->xpath >> :
+
+    $self->xpath(qq{//*[\@id="$_"], %options)
+
+It is convenient when your element ids get mistaken for
+CSS selectors.
+
+=cut
+
+sub by_id {
+    my ($self,$query,%options) = @_;
+    if ('ARRAY' ne (ref $query||'')) {
+        $query = [$query];
+    };
+    $options{ user_info } ||= "id " 
+                            . join(" or ", map {qq{'$_'}} @$query)
+                            . " found";
+    $query = [map { qq{.//*[\@id="$_"]} } @$query];
+    $self->xpath($query, %options)
+}
+
 =head2 C<< $mech->click $name [,$x ,$y] >>
 
   $mech->click( 'go' );
@@ -2020,6 +2049,15 @@ C<xpath> - Find the element to click by the XPath query
 =item *
 
 C<dom> - Click on the passed DOM element
+
+=item *
+
+C<id> - Click on the element with the given id
+
+This is useful if your document ids contain characters that
+do look like CSS selectors. It is equivalent to
+
+    xpath => qq{//*[\@id="$id"}
 
 =item *
 
@@ -2153,7 +2191,7 @@ are identical to those accepted by the L</$mech->xpath> method.
 
 This is equivalent to calling
 
-    $mech->selector("#$id",single => 1,%options)
+    $mech->by_id($id,single => 1,%options)
 
 =cut
 
@@ -2161,8 +2199,8 @@ sub form_id {
     my ($self,$name,%options) = @_;
     
     _default_limiter( single => \%options );
-    $self->{current_form} = $self->selector("#$name",
-        user_info => "form id '$name'",
+    $self->{current_form} = $self->by_id($name,
+        user_info => "form with id '$name'",
         %options
     );
 };
@@ -2896,15 +2934,22 @@ sub wait_until_invisible {
     };    
 };
 
-# Internal method to run either an XPath or CSS query against the DOM
+# Internal method to run either an XPath, CSS or id query against the DOM
 # Returns the element(s) found
+my %rename = (
+    xpath => 'xpath',
+    selector => 'selector',
+    id => 'by_id',
+    by_id => 'by_id',
+);
+
 sub _option_query {
     my ($self,%options) = @_;
     my ($method,$q);
-    for my $meth (qw(selector xpath)) {
+    for my $meth (keys %rename) {
         if (exists $options{ $meth }) {
             $q = delete $options{ $meth };
-            $method = $meth;
+            $method = $rename{ $meth } || $meth;
         }
     };
     _default_limiter( 'one' => \%options );
