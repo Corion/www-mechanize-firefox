@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 1+8*2;
+    plan tests => 1+10*2;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -28,20 +28,24 @@ for my $i (['direct','51-mech-submit.html'],['frame','51-mech-field-frameset.htm
     
     my $lived = eval {
        $mech->field( q => 'q' );
+       $mech->field( "fancy:t" => 'Another fancy value' );
        1
     };
     ok $lived, "We can set field 'q' ($info)";
     is $mech->value('q'), 'q', "We retrieve our value";
+    is $mech->value( "fancy:t"), 'Another fancy value', "... and the fancy one too";
 
     $mech->form_id('testform2');
     is $mech->value('q'), 'Hello World b', "We retrieve a value for plain names";
+    is $mech->value('fancy:t'), 'A fancy value 2', "We retrieve our value for fancy names too";
     $lived = eval {
        $mech->field( r => 'r' );
        $mech->field( q => 'q' );
+       $mech->field( "fancy:t" => 'Another fancy value' );
        1
     };
     is $mech->value('r'), 'r', "We retrieve our value for r";
     is $mech->value('q'), 'q', "We retrieve our value for q";
+    is $mech->value( "fancy:t" ), 'Another fancy value', "... and the fancy one too";
     
-    is $mech->value('fancy:t'), 'A fancy value 2', "We retrieve our value for fancy names too";
 };
