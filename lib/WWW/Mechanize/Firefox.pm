@@ -1891,7 +1891,6 @@ sub xpath {
         #warn "Have node, searching below node";
     } else {
         $options{ document } ||= $self->document;
-        #$options{ node } = $options{ document };
     };
     
     $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
