@@ -1871,6 +1871,7 @@ C<< any >> - no error is raised, no matter if an item is found or not.
 Returns the matched nodes.
 
 You can pass in a list of queries as an array reference for the first parameter.
+The result will then be the list of all elements matching any of the queries.
 
 This is a method that is not implemented in WWW::Mechanize.
 
