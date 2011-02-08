@@ -6,7 +6,7 @@ use MIME::Base64;
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
-$VERSION = '0.44';
+$VERSION = '0.45';
 
 =head1 NAME
 
