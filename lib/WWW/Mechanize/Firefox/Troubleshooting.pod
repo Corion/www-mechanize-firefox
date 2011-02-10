@@ -200,6 +200,21 @@ your main program:
   ...
   undef $mech;
 
+=head2 The script crashes with maximum input buffer length exceeded
+
+When taking a screenshot of a large page, the script crashes with
+
+  maximum input buffer length exceeded: 1048576 bytes ...
+
+=head3 Solution
+
+Pass the C<bufsize> parameter to the WWW::Mechanize::Firefox constructor
+to give L<Net::Telnet> a larger buffer:
+
+  my $firefox = WWW::Mechanize::Firefox->new(
+      bufsize => 10_000_000,
+  );
+
 =head1 Known Problems
 
 =head2 Page Encoding Versus Perl Encoding

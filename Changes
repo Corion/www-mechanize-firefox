@@ -11,6 +11,10 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.46 to be released
+    . Add another, more local test for large pages
+    . Add hint about bufsize to Troubleshooting.pod
+
 0.45 20110208
     . eval_in_page raises errors from perspective of the caller
       instead of raising errors in Firefox.pm
