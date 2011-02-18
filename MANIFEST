@@ -65,6 +65,7 @@ t/50-mech-set-fields-875912.htm
 t/50-mech-set-fields-875912.t
 t/50-mech-status.t
 t/50-popup.t
+t/50-rt65615.t
 t/50-tick.html
 t/50-tick.t
 t/51-empty-page.html
