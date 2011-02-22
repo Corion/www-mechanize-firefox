@@ -15,6 +15,8 @@ TO DO:
     . Add another, more local test for large pages
     . Add hint about bufsize to Troubleshooting.pod
     . Add test that bufsize actually takes effect
+    ! Somewhat experimental squashing of multiple Xpath queries into one
+      query - if this breaks your code, please supply test cases!
 
 0.45 20110208
     . eval_in_page raises errors from perspective of the caller

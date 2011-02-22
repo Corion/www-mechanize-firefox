@@ -1937,7 +1937,9 @@ sub xpath {
 
             my $n = $options{ node } || $doc;
             #warn ">Searching @$query in $doc->{title}";
-            my @found = map { $doc->__xpath($_, $n) } @$query;
+            # Munge the multiple @$queries into one:
+            my $q = join "|", @$query;
+            my @found = map { $doc->__xpath($_, $n) } $q; # @$query;
             #warn "Found $_->{tagName}" for @found;
             push @res, @found;
             
@@ -2997,16 +2999,24 @@ sub expand_frames {
         @spec = qw( frame iframe );
     };
     
-    map { #warn "Expanding $_";
-            ref $_
-          ? $_
-          : map { $_->{contentDocument} }
-            $self->selector(
-                $_,
-                document => $document,
-                frames => 0, # otherwise we'll recurse :)
-            )
-    } @spec;
+    # Optimize the default case of only names in @spec
+    my @res;
+    if (! grep {ref} @spec) {
+        @res = map { $_->{contentDocument} }
+               $self->selector(
+                        \@spec,
+                        document => $document,
+                        frames => 0, # otherwise we'll recurse :)
+                    );
+    } else {
+        @res = 
+            map { #warn "Expanding $_";
+                    ref $_
+                  ? $_
+                  # Just recurse into the above code path
+                  : $self->expand_frames( $_, $document );
+            } @spec;
+    }
 };
 
 =head1 IMAGE METHODS
