@@ -20,8 +20,17 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 my $response;
 my $result = eval {
-    $response = $mech->get('http://perl.org/', no_cache => 1); # a large website
+    $response = $mech->get_local('rt65615.html', no_cache => 1); # a large website
     1
 };
 ok !$result, "We died on the call";
-like $@, qr/1025/, "... and we got the correct bufsize error";
+like $@, qr/\b1025\b/, "... and we got the correct bufsize error";
+
+# Now go in and clean up the tab the previous instance left orphaned
+$mech = WWW::Mechanize::Firefox->new(
+    attach => 1,
+    tab => qr/^rt65615.html$/,
+    autoclose => 1,
+);
+undef $mech;
+
