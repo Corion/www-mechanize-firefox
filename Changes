@@ -11,7 +11,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.46 to be released
+0.46 20110222
     . Add another, more local test for large pages
     . Add hint about bufsize to Troubleshooting.pod
     . Add test that bufsize actually takes effect
