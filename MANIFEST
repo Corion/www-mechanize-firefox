@@ -122,7 +122,7 @@ t/99-todo.t
 t/99-unix-text.t
 t/99-versions.t
 t/mixi_jp_index.html
-t/pm875128.pl
+t/pm875128.t
 t/rt65615.html
 t/rt65615.t
 t/select.html
