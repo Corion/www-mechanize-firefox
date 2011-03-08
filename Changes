@@ -11,6 +11,9 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.47 to be released
+    . Use URI::data instead of hand-rolling URI construction
+
 0.46 20110222
     . Add another, more local test for large pages
     . Add hint about bufsize to Troubleshooting.pod

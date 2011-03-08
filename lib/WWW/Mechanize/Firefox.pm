@@ -1190,10 +1190,11 @@ implemented as a convenience method for L<HTML::Display::MozRepl>.
 
 sub update_html {
     my ($self,$content) = @_;
-    my $data = encode_base64($content,'');
-    my $url = qq{data:text/html;base64,$data};
+    my $url = URI->new('data:');
+    $url->media_type("text/html");
+    $url->data($content);
     $self->synchronize($self->events, sub {
-        $self->tab->{linkedBrowser}->loadURI($url);
+        $self->tab->{linkedBrowser}->loadURI("$url");
     });
     return
 };
