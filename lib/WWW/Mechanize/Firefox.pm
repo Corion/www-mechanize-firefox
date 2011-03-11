@@ -659,10 +659,10 @@ sub get {
     };
 
     if (my $target = delete $options{":content_file"}) {
-        $self->save_url($url => $target, %options);
+        $self->save_url($url => ''.$target, %options);
     } else {
         $self->synchronize($self->events, sub {
-            $b->loadURIWithFlags($url,$flags);
+            $b->loadURIWithFlags(''.$url,$flags);
         });
     };
 };
