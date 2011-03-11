@@ -57,10 +57,10 @@ my $log = $server->get_log;
 like $log, qr/^Cookie:.*? \Qwww_mechanize_firefox_test=$magic\E/m, "We sent the magic cookie";
 like $log, qr/^Cookie:.*? \Qlog-server\E/m, "We sent the webserver cookie";
 
-my @cleanup;
+my @cleanup = "$0.tmp";
 END { unlink $_ for @cleanup };
 
-$mech->save_url($server->url . "save_url_test" => push @cleanup, "$0.tmp");
+$mech->save_url($server->url . "save_url_test" => "$0.tmp");
 
 $log = $server->get_log;
 like $log, qr/^Cookie:.*? \Qwww_mechanize_firefox_test=$magic\E/m, "We sent the magic cookie";
