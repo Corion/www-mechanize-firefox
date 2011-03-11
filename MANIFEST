@@ -15,6 +15,9 @@ examples/screenshot.pl
 examples/tail-console.pl
 examples/urlbar.pl
 inc/IO/Catch.pm
+inc/Test/HTTP/cookie-server
+inc/Test/HTTP/LocalServer.pm
+inc/Test/HTTP/log-server
 INSTALL
 lib/Firefox/Application.pm
 lib/HTML/Display/MozRepl.pm
@@ -114,6 +117,7 @@ t/70-two-instances.t
 t/70-urlbar-2.html
 t/70-urlbar.html
 t/70-urlbar.t
+t/75-save_url-cookies.t
 t/99-changes.t
 t/99-examples.t
 t/99-manifest.t

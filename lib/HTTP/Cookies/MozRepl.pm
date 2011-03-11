@@ -1,5 +1,6 @@
 package HTTP::Cookies::MozRepl;
 use strict;
+use HTTP::Date qw(time2str);
 use MozRepl::RemoteObject 'as_list';
 use parent 'HTTP::Cookies';
 use Carp qw[croak];
@@ -64,7 +65,7 @@ JS
         var r=[];
         while (e.hasMoreElements()) {
             var cookie = e.getNext().QueryInterface(nsiCookie);
-            r.push([null,cookie.name,cookie.value,cookie.path,cookie.host,null,null,cookie.isSecure,cookie.expires]);
+            r.push([1,cookie.name,cookie.value,cookie.path,cookie.host,null,null,cookie.isSecure,cookie.expires]);
         };
         return r
     };
@@ -72,10 +73,12 @@ JS
     # This could be even more efficient by fetching the whole result
     # as one huge data structure
     for my $c ($fetch_cookies->($e,$nsICookie)) {
-        $self->set_cookie(as_list $c);
+        my @v = as_list $c;
+        $v[8] -= time;
+        $self->SUPER::set_cookie(as_list $c);
     };
 
-    # This code is in Perl, but involves far too many roundtrips :-(
+    # This code is pure Perl, but involves far too many roundtrips :-(
     #$e->bridge->queued(sub{
     #    while ($e->hasMoreElements) {
     #        my $cookie = $e->getNext()->QueryInterface($nsICookie);
@@ -85,6 +88,27 @@ JS
     #    };
     #});
 }
+
+sub set_cookie {
+    my ($self, $version, $key, $val, $path, $domain, $port, $path_spec, $secure, $maxage, $discard, $rest ) = @_;
+    $rest ||= {};
+    my $repl = $rest->{repl} || $self->{repl};
+    
+    my $uri = URI->new("http://$domain",'http');
+    #$uri->protocol('http'); # ???
+    $uri->host($domain);
+    $uri->path($path) if $path;
+    $uri->port($port) if $port;
+    
+    my $set = $repl->declare(<<'JS');
+        function (host,path,name,value,secure,httponly,session,expiry) {
+            var cookieMgr = Components.classes["@mozilla.org/cookiemanager;1"].getService(Components.interfaces.nsICookieManager2);
+
+            cookieMgr.add(host,path,name,value,secure,httponly,session,expiry);
+        };
+JS
+    $set->($uri->host, $uri->path, $key, $val, 0, 0, 0, $maxage ? time+$maxage : 0);
+};
 
 sub save {
     croak 'save is not yet implemented'

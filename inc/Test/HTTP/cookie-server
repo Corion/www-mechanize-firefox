@@ -1,0 +1,43 @@
+#!perl -w
+# Thanks to merlyn for nudging me and giving me this snippet!
+use strict;
+
+require HTTP::Daemon;
+require LWP::UserAgent;
+
+$|++;
+
+my $d = HTTP::Daemon->new or die;
+print $d->url, "\n";
+
+# How many requests do we expect?
+my ($ex_user,$ex_pass) = @ARGV;
+
+my $verbose = $ENV{TEST_HTTP_VERBOSE};
+
+my $done = 0;
+while (! $done and my $c = $d->accept) {
+  while (my $req = $c->get_request) {
+    if ($verbose) {
+      warn "# Request URI: " . $req->url->path;
+      my @lines = split "\n",$req->as_string;
+      warn "# $_\n" for @lines;
+    };
+
+    my $res;
+    my ($user,$pass);
+    if ($req->url->path eq '/exit') {
+        $done = 1;
+        $res = HTTP::Response->new(200, "OK", undef, "done");
+    };
+
+    if ($verbose) {
+      warn "---\n";
+      my @lines = split "\n",$res->as_string;
+      warn "# $_\n" for @lines;
+    };
+    $c->send_response($res);
+  }
+  $c->close;
+  undef($c);
+};

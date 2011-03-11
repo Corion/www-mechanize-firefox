@@ -1272,7 +1272,9 @@ function (document,filetarget,rscdir,progress) {
     // with persist flags if desired
     const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
+                                     | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
+                                     ;
     
     obj_Persist.progressListener = progress;
 
@@ -1345,8 +1347,13 @@ function (source,filetarget,progress) {
     // with persist flags if desired
     const nsIWBP = Components.interfaces.nsIWebBrowserPersist;
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
-    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE;
+    // Also make it send the proper cookies
+    // If we are on a 3.0 Firefox, PERSIST_FLAGS_FORCE_ALLOW_COOKIES does
+    // not exist, so we need to get creative:
     
+    obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
+                                     | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
+                                     ;
     obj_Persist.progressListener = progress;
 
     //save file to target

@@ -13,6 +13,10 @@ TO DO:
 
 0.47 to be released
     . Use URI::data instead of hand-rolling URI construction
+    . Add missing prerequisites from LWP split-up
+    + HTTP::Cookies::MozRepl can now ->set_cookie to create a cookie in Firefox
+    * Bugfix: ->save_url() did not send cookies, reported and diagnosed by tcordes
+    . Add test for ->save_url() and ->get() to check that they send cookies
 
 0.46 20110222
     . Add another, more local test for large pages
