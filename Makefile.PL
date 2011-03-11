@@ -26,6 +26,8 @@ WriteMakefile1(
                         'URI' => 0,
                         'URI::data' => 0,
                         'HTTP::Response' => 0, # for interface compatibility with WWW::Mechanize
+                        'HTTP::Cookies' => 0, # for HTTP::Cookies::MozRepl
+                        'HTTP::Date' => 0, # get a date online?!
                         'HTML::Selector::XPath' => 0,
                         'WWW::Mechanize' => 0, # for link filtering and 1:1 API compatibility
                         'WWW::Mechanize::Link' => 0, # for API compatibility
