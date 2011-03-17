@@ -657,6 +657,27 @@ EXTRACTION METHODS
     reference as the first parameter. In it, you can specify the parameters
     to search much like for the `find_link' calls.
 
+  `$mech->click_button( ... )'
+      $mech->click_button( name => 'go' );
+      $mech->click_button( input => $mybutton );
+
+    Has the effect of clicking a button on the current form by specifying
+    its name, value, or index. Its arguments are a list of key/value pairs.
+    Only one of name, number, input or value must be specified in the keys.
+
+    *   `name' - name of the button
+
+    *   `value' - value of the button
+
+    *   `input' - DOM node
+
+    *   `id' - id of the button
+
+    *   `number' - number of the button
+
+    If you find yourself wanting to specify a button through its `selector'
+    or `xpath', consider using `->click' instead.
+
 FORM METHODS
   `$mech->current_form'
       print $mech->current_form->{name};
