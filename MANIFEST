@@ -71,6 +71,7 @@ t/50-popup.t
 t/50-rt65615.t
 t/50-tick.html
 t/50-tick.t
+t/51-click_button.t
 t/51-empty-page.html
 t/51-mech-field-frameset.html
 t/51-mech-field.t

@@ -14,6 +14,13 @@ TO DO:
 0.48 20110317
     . Implemented ->click_button() function plus tests
       Tests courtesy of WWW::Mechanize 1.66
+    . Allow "OR" for node type via using local-name(.) (the element name)
+    . Use the ugly cross-version hack of
+        translate(local-name(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')
+      to accomodate for Firefox 3.0 having UPPERCASE HTML ELEMENT NAMES
+      and Firefox 3.6+ having lowercase html element names. Once we move to 4.0
+      support only, this can be reverted to
+        local-name(.)
 
 0.47 20110311
     . Use URI::data instead of hand-rolling URI construction
