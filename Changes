@@ -11,6 +11,10 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.49 20110403
+    . Fix for RT #67195
+      ->find_link_dom( text => 'foo' ) was (much) slower than it needed to be
+
 0.48 20110317
     . Implemented ->click_button() function plus tests
       Tests courtesy of WWW::Mechanize 1.66
