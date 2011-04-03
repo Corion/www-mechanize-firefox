@@ -1655,10 +1655,13 @@ sub find_link_dom {
         );
         my $lhs = $lefthand{ $lvalue } || '@'.$lvalue;
         for my $op (keys %match_op) {
-            my $key = "${lvalue}_$op";
+            my $v = $match_op{ $op };
+            $op = '_'.$op if length($op);
+            my $key = "${lvalue}$op";
+
             if (exists $opts{ $key }) {
                 my $p = delete $opts{ $key };
-                push @spec, sprintf $match_op{ $op }, $lhs, $p;
+                push @spec, sprintf $v, $lhs, $p;
             };
         };
     };
