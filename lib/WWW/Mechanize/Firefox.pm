@@ -1605,7 +1605,6 @@ sub _default_limiter {
 
 sub quote_xpath($) {
     local $_ = $_[0];
-    #s/(['"\[\]])/\\$1/g;
     s/(['"\[\]])/$xpath_quote{$1} || $1/ge;
     $_
 };
