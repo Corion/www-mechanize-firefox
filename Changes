@@ -14,6 +14,7 @@ TO DO:
 0.49 20110403
     . Fix for RT #67195
       ->find_link_dom( text => 'foo' ) was (much) slower than it needed to be
+      Fix and report by Dave Hansen
 
 0.48 20110317
     . Implemented ->click_button() function plus tests
