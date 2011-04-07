@@ -55,7 +55,7 @@ SKIP: {
     #skip 'HTML::TreeBuilder not installed', 2 if $@;
 
     my $text = $mech->content(format => 'text');
-    diag $text;
+    #diag $text;
     like( $text, qr/Fine/, 'Found Fine' );
     unlike( $text, qr/html/i, 'Could not find "html"' );
 }
