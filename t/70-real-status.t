@@ -5,6 +5,7 @@ use Test::More;
 
 my $mech = eval {WWW::Mechanize::Firefox->new(
     #log => [qw[debug]],
+    autodie => 0,
 )};
 
 if (! $mech) {

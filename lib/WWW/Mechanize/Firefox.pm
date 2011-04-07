@@ -97,6 +97,17 @@ of frame selectors:
 
 =item * 
 
+C<autodie> - whether web failures converted are fatal Perl errors. See
+the C<autodie> accessor. True by default to make error checking easier.
+
+To make errors non-fatal, pass
+
+    autodie => 0
+
+in the constructor.
+
+=item * 
+
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
 
 =item *
@@ -179,6 +190,7 @@ sub new {
     if (delete $args{ autoclose }) {
         $args{ app }->autoclose_tab($args{ tab });
     };
+    if (! exists $args{ autodie }) { $args{ autodie } = 1 };
     
     $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
     $args{ on_event } ||= undef;
@@ -869,10 +881,7 @@ sub synchronize {
     undef $self->{response};
     
     my $need_response = defined wantarray;
-    my $response_catcher;
-    #if ($need_response) {
-        $response_catcher = $self->_install_response_header_listener();
-    #};
+    my $response_catcher = $self->_install_response_header_listener();
     
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
@@ -889,6 +898,7 @@ sub synchronize {
         };
     };
     
+    $self->signal_http_status; # will also fetch ->response if autodie is on :(
     if ($need_response) {
         #warn "Returning response";
         return $self->response
@@ -1500,13 +1510,26 @@ sub links {
     } @links;
 };
 
-# Call croak or cluck, depending on the C< autodie > setting
+# Call croak or carp, depending on the C< autodie > setting
 sub signal_condition {
     my ($self,$msg) = @_;
     if ($self->{autodie}) {
         croak $msg
     } else {
         carp $msg
+    }
+};
+
+# Call croak on the C< autodie > setting if we have a non-200 status
+sub signal_http_status {
+    my ($self) = @_;
+    if ($self->{autodie}) {
+        if ($self->status !~ /^2/) {
+            # there was an error
+            croak ($self->response->message || sprintf "Got status code %d", $self->status );
+        };
+    } else {
+        # silent
     }
 };
 
