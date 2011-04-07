@@ -1151,7 +1151,7 @@ It also currently only works for HTML pages.
 =cut
 
 sub content {
-    my ($self) = @_;
+    my ($self, %options) = @_;
     my $d = $self->document; # keep a reference to it!
     
     my $html = $self->repl->declare(<<'JS', 'list');
@@ -1171,8 +1171,34 @@ JS
         # But it does happen.
         $content = Encode::decode($encoding, $content);
     };
+    
+    if ( my $format = delete $options{format} ) {
+        if ( $format eq 'text' ) {
+            $content = $self->text;
+        }
+        else {
+            $self->die( qq{Unknown "format" parameter "$format"} );
+        }
+    }
+
     return $content
 };
+
+=head2 $mech->text()
+
+Returns the text of the current HTML content.  If the content isn't
+HTML, $mech will die.
+
+=cut
+
+sub text {
+    my $self = shift;
+    
+    # Waugh - this is highly inefficient but conveniently short to write
+    # Maybe this should skip SCRIPT nodes...
+    join '', map { $_->{nodeValue} } $self->xpath('//*/text()');
+}
+
 
 =head2 C<< $mech->content_encoding >>
 
@@ -2747,7 +2773,9 @@ sub submit {
     my ($self,$dom_form) = @_;
     $dom_form ||= $self->current_form;
     if ($dom_form) {
-        $dom_form->submit();
+        $dom_form->submit(); # why don't we ->synchronize here??
+        $self->signal_http_status;
+
         $self->clear_current_form;
         1;
     } else {

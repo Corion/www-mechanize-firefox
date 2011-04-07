@@ -126,6 +126,8 @@ t/99-pod.t
 t/99-todo.t
 t/99-unix-text.t
 t/99-versions.t
+t/mechanize/autocheck.t
+t/mechanize/content.t
 t/mixi_jp_index.html
 t/rt65615.html
 t/rt65615.t

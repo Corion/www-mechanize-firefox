@@ -55,6 +55,16 @@ METHODS
 
                   frames => ['#content_frame']
 
+    *   `autodie' - whether web failures converted are fatal Perl errors.
+        See the `autodie' accessor. True by default to make error checking
+        easier.
+
+        To make errors non-fatal, pass
+
+            autodie => 0
+
+        in the constructor.
+
     *   `log' - array reference to log levels, passed through to
         MozRepl::RemoteObject
 
@@ -362,6 +372,10 @@ CONTENT METHODS
     This is likely not binary-safe.
 
     It also currently only works for HTML pages.
+
+  $mech->text()
+    Returns the text of the current HTML content. If the content isn't HTML,
+    $mech will die.
 
   `$mech->content_encoding'
         print "The content is encoded as ", $mech->content_encoding;
