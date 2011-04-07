@@ -13,8 +13,8 @@ Tests the transforming forms of $mech->content().
 
 =cut
 
-BEGIN { delete @ENV{ qw( http_proxy HTTP_PROXY ) }; }
-use WWW::Mechanize::Firefox
+BEGIN { delete @ENV{ qw( http_proxy HTTP_PROXY ) }; };
+use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
