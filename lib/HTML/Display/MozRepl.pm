@@ -4,7 +4,7 @@ use Carp qw(carp);
 use WWW::Mechanize::Firefox;
 use parent 'HTML::Display::Common';
 use vars qw($VERSION);
-$VERSION = '0.49';
+$VERSION = '0.50';
 
 =head1 NAME
 
