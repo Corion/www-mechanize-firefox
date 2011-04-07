@@ -1,13 +1,15 @@
 # -*- mode: perl; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 
-use 5.006; #weaken
-use ExtUtils::MakeMaker;
+use strict;
+use ExtUtils::MakeMaker qw(WriteMakefile);
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 
 # I should maybe use something like Shipwright...
 regen_README('lib/WWW/Mechanize/Firefox.pm');
 regen_EXAMPLES();
+
+my @tests = map { glob $_ } 't/*.t', 't/*/*.t';
 
 WriteMakefile1(
     MIN_PERL_VERSION => '5.006',
@@ -39,6 +41,7 @@ WriteMakefile1(
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/Firefox.pm', # retrieve abstract from module
     AUTHOR          => 'Max Maischein <corion@cpan.org>',
+    test            => { TESTS => join( ' ', @tests ) },
 );
 
 1;
