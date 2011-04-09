@@ -7,7 +7,7 @@ use Cwd qw(getcwd);
 
 GetOptions(
     'mozrepl|m:s' => \my $mozrepl,
-    'tab' => \my $tab,
+    'tab:s' => \my $tab,
     'current|c' => \my $use_current_tab,
     'close|q' => \my $close,
     'title|t:s' => \my $title,
@@ -64,7 +64,9 @@ bcat.pl - cat HTML to browser
   bcat.pl <index.html
 
 Options:
-   --tabname        title of tab to reuse
+   --tab            title of tab to reuse (regex)
+   --current        reuse current tab
+   --title          title of the page
    --mozrepl        connection string to Firefox
    --close          automatically close the tab at the end of input
    --type TYPE      Fix the type to 'html' or 'text'
@@ -73,9 +75,17 @@ Options:
 
 =over 4
 
-=item B<--tabname>
+=item B<--tab>
 
 Name of the tab to (re)use. A substring is enough.
+
+=item B<--current>
+
+Use the currently focused tab.
+
+=item B<--title>
+
+Give the title of the page that is shown.
 
 =item B<--close>
 
