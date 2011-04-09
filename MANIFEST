@@ -2,6 +2,7 @@
 Changes
 examples/bcat.pl
 examples/dump-links.pl
+examples/ff-scrape.pl
 examples/fullscreen.pl
 examples/gen_examples_pod.pl
 examples/javascript.pl
