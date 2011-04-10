@@ -2,7 +2,7 @@ package Firefox::Application;
 use strict;
 
 use MozRepl::RemoteObject;
-use MIME::Base64;
+use URI;
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
@@ -420,6 +420,10 @@ WWW::Mechanize::Firefox is associated with.
 
 sub set_tab_content {
     my ($self, $tab, $content, $repl) = @_;
+    my $url = URI->new('data:');
+    $url->media_type("text/html");
+    $url->data($content);
+    
     $tab ||= $self->tab;
     $repl ||= $self->repl;
     my $data = encode_base64($content,'');
