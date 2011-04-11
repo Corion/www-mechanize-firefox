@@ -426,7 +426,7 @@ sub set_tab_content {
     
     $tab ||= $self->tab;
     $repl ||= $self->repl;
-    $tab->{linkedBrowser}->loadURI($url);
+    $tab->{linkedBrowser}->loadURI("".$url);
 };
 
 =head1 TODO
