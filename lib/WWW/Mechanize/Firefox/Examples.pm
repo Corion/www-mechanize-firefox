@@ -107,6 +107,8 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     GetOptions(
         'mozrepl|m:s' => \my $mozrepl,
         'outfile|o:s' => \my $outfile,
+        'tab|t:s' => \my $tab,
+        'current|c' => \my $current,
     ) or pod2usage();
     $outfile ||= 'screenshot.png';
     
@@ -115,8 +117,17 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
         push @args, tab => 'current';
     };
     
+    if ($tab) {
+        $tab = qr/$tab/;
+    } elsif ($current) {
+        $tab = $current
+    };
+    
     my $mech = WWW::Mechanize::Firefox->new(
         launch => 'firefox',
+        create => 1,
+        tab => $tab,
+        autoclose => (!$tab),
         @args
     );
     
@@ -216,7 +227,7 @@ if (! $encode_type) {
     
     GetOptions(
         'mozrepl|m:s' => \my $mozrepl,
-        'tab' => \my $tab,
+        'tab:s' => \my $tab,
         'current|c' => \my $use_current_tab,
         'close|q' => \my $close,
         'title|t:s' => \my $title,
@@ -273,7 +284,9 @@ if (! $encode_type) {
       bcat.pl <index.html
     
     Options:
-       --tabname        title of tab to reuse
+       --tab            title of tab to reuse (regex)
+       --current        reuse current tab
+       --title          title of the page
        --mozrepl        connection string to Firefox
        --close          automatically close the tab at the end of input
        --type TYPE      Fix the type to 'html' or 'text'
@@ -282,9 +295,17 @@ if (! $encode_type) {
     
     =over 4
     
-    =item B<--tabname>
+    =item B<--tab>
     
     Name of the tab to (re)use. A substring is enough.
+    
+    =item B<--current>
+    
+    Use the currently focused tab.
+    
+    =item B<--title>
+    
+    Give the title of the page that is shown.
     
     =item B<--close>
     
