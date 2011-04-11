@@ -19,13 +19,15 @@ if (! @ARGV) {
 
 if ($tab) {
     $tab = qr/$tab/;
+} elsif ($current) {
+    $tab = $current
 };
 
 my $mech = WWW::Mechanize::Firefox->new(
     launch => 'firefox',
     create => 1,
     tab => $tab,
-    autoclose => !($current || $tab),
+    autoclose => (!$tab),
     @args
 );
 
