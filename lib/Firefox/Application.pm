@@ -426,8 +426,6 @@ sub set_tab_content {
     
     $tab ||= $self->tab;
     $repl ||= $self->repl;
-    my $data = encode_base64($content,'');
-    my $url = qq{data:text/html;base64,$data};
     $tab->{linkedBrowser}->loadURI($url);
 };
 
