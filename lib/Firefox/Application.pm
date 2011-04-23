@@ -6,7 +6,7 @@ use URI;
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
-$VERSION = '0.50';
+$VERSION = '0.51';
 
 =head1 NAME
 
@@ -69,6 +69,7 @@ sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
     my $use_queue = exists $args{ use_queue } ? delete $args{ use_queue } : 1;
+    my $api = delete $args{ api };
     if (! ref $args{ repl }) {
         my $exe = delete $args{ launch };
         $args{ repl } = MozRepl::RemoteObject->install_bridge(
@@ -80,9 +81,29 @@ sub new {
     };
     
     if (my $bufsize = delete $args{ bufsize }) {
+        # XXX We should check that we are running under MozRepl
+        #     and not AnyEvent, which can't do bufsize
+        # XXX Also, why is this an option here instead of in MozRepl::RemoteObject?
         $args{ repl }->repl->client->telnet->max_buffer_length($bufsize);
     };
-        
+    
+    # Now install the proper API
+    if (! $api) {
+        my $info = $args{ repl }->appinfo;
+        if ($info->{version} >= 4) {
+            $api = 'Firefox::Application::API40';
+        } else {
+            $api = 'Firefox::Application::API35';
+        };
+    };
+    MozRepl::RemoteObject::require_module( $api );
+    
+    # Manually import the routines because I'm lazy
+    for (qw(updateitems addons themes locales)) {
+        no strict 'refs';
+        *{$_} = \&{ "$api\::$_" };
+    };
+    
     bless \%args, $class;
 };
 
@@ -143,10 +164,6 @@ These functions will need fixing for Firefox 4.
 
 =cut
 
-sub addons {
-    my $self = shift;
-    $self->updateitems(type => 'ADDON', @_);
-};
 
 =head2 C<< $ff->locales( %args ) >>
 
@@ -158,13 +175,6 @@ sub addons {
 
 Returns the list of installed locales as C<nsIUpdateItem>s.
 
-=cut
-
-sub locales {
-    my $self = shift;
-    $self->updateitems(type => 'LOCALE', @_);
-};
-
 =head2 C<< $ff->themes( %args ) >>
 
   for my $theme ($ff->themes) {
@@ -174,13 +184,6 @@ sub locales {
   };
 
 Returns the list of installed locales as C<nsIUpdateItem>s.
-
-=cut
-
-sub themes {
-    my $self = shift;
-    $self->updateitems(type => 'THEME', @_);
-};
 
 =head2 C<< $ff->updateitems( %args ) >>
 
@@ -206,24 +209,6 @@ C<LOCALE> - fetch locales
 C<THEME> - fetch themes
 
 =back
-
-=cut
-sub updateitems {
-    my ($self, %options) = @_;
-    my $repl = delete $options{ repl } || $self->repl;
-    my $type = $options{type} || 'ANY';
-    my $addons_js = $repl->declare(sprintf( <<'JS', $type), 'list');
-    function () {
-        var em = Components.classes["@mozilla.org/extensions/manager;1"]
-                    .getService(Components.interfaces.nsIExtensionManager);
-        var type = Components.interfaces.nsIUpdateItem.TYPE_%s;
-        var count = {};
-        var list = em.getItemList(type, count);
-        return list
-   };
-JS
-    $addons_js->()
-};
 
 =head1 UI METHODS
 

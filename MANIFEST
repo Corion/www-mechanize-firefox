@@ -21,6 +21,8 @@ inc/Test/HTTP/LocalServer.pm
 inc/Test/HTTP/log-server
 INSTALL
 lib/Firefox/Application.pm
+lib/Firefox/Application/API35.pm
+lib/Firefox/Application/API40.pm
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
 lib/WWW/Mechanize/Firefox.pm
