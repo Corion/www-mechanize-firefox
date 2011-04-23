@@ -65,6 +65,8 @@ C<use_queue> - whether to enable L<MozRepl::RemoteObject> command queueing
 
 =cut
 
+# XXX Consider making this a factory that reblesses into API40 or API35,
+#     which in turn uses this as parent class?!
 sub new {
     my ($class, %args) = @_;
     my $loglevel = delete $args{ log } || [qw[ error ]];
