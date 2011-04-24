@@ -19,6 +19,7 @@ if (! $mech) {
 my @files = qw<
      65-is_visible_text.html
      65-is_visible_hidden.html
+     65-is_visible_class.html
      65-is_visible_none.html
      65-is_visible_remove.html
      65-is_visible_reload.html

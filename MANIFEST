@@ -44,6 +44,7 @@ t/47-mech-simplest.t
 t/48-mech-launch.t
 t/49-mech-get-file.html
 t/49-mech-get-file.t
+t/49-mech-nav.t
 t/49-mech-reuse.t
 t/50-allow-js.t
 t/50-app-new.t
@@ -104,6 +105,7 @@ t/53-mech-capture-js-noerror.html
 t/55-basic-auth.t
 t/60-mech-cookies.t
 t/65-is_visible.t
+t/65-is_visible_class.html
 t/65-is_visible_hidden.html
 t/65-is_visible_none.html
 t/65-is_visible_reload.html

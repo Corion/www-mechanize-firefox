@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>65-is_visible_class.html</title>
+<style>
+.vizbl { visibility:visible; }
+.hiddn { visibility:hidden; }
+</style>
+<script>
+var timer=2;
+
+function start() {
+     var el = document.getElementById('standby');
+     el.className='vizbl';
+     window.setTimeout(function () {
+          el.className='hiddn';
+     }, timer*1000);
+};
+</script>
+</head>
+<body>
+<p id="before">Text before</p>
+<input id="start" onclick="javascript:start()" type="button" value="start"/>
+<div id="standby" class="hiddn">Please stand by</div>
+<p>Text after</p>
+</body>
+</html>
