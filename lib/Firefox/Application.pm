@@ -77,14 +77,8 @@ sub new {
             launch => $exe,
             log => $loglevel,
             use_queue => $use_queue,
+            bufsize => delete $args{ bufsize },
         );
-    };
-    
-    if (my $bufsize = delete $args{ bufsize }) {
-        # XXX We should check that we are running under MozRepl
-        #     and not AnyEvent, which can't do bufsize
-        # XXX Also, why is this an option here instead of in MozRepl::RemoteObject?
-        $args{ repl }->repl->client->telnet->max_buffer_length($bufsize);
     };
     
     # Now install the proper API
