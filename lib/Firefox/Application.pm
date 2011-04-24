@@ -407,7 +407,11 @@ sub set_tab_content {
     
     $tab ||= $self->tab;
     $repl ||= $self->repl;
+    
     $tab->{linkedBrowser}->loadURI("".$url);
+    # XXX Delay here until the data is actually loaded. Also see
+    #     WWW::Mechanize::Firefox :-(
+    sleep 1;
 };
 
 =head1 TODO
