@@ -93,7 +93,7 @@ sub new {
     if (! $api) {
         my $info = $args{ repl }->appinfo;
         my $v = $info->{version};
-        $v =~ s!^(\d+.\d+)!$1!
+        $v =~ s!^(\d+.\d+).*!$1!
             or $v = '3.0'; # Wild guess
          
         if ($v >= 4) {
