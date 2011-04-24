@@ -92,7 +92,10 @@ sub new {
     # Now install the proper API
     if (! $api) {
         my $info = $args{ repl }->appinfo;
-        if ($info->{version} >= 4) {
+        my $v = $info->{version};
+        $v =~ m!^(\d+).(\d+)!
+            or $v = '3.0'; # Wild guess
+        if ($v >= 4) {
             $api = 'Firefox::Application::API40';
         } else {
             $api = 'Firefox::Application::API35';
