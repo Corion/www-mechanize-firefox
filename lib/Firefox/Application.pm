@@ -100,13 +100,7 @@ sub new {
     };
     MozRepl::RemoteObject::require_module( $api );
     
-    # Manually import the routines because I'm lazy
-    for (qw(updateitems addons themes locales selectedTab addTab)) {
-        no strict 'refs';
-        *{$_} = \&{ "$api\::$_" };
-    };
-    
-    bless \%args, $class;
+    bless \%args, $api;
 };
 
 sub DESTROY {

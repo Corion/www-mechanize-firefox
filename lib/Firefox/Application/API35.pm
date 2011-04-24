@@ -1,5 +1,6 @@
 package Firefox::Application::API35;
 use strict;
+use parent 'Firefox::Application';
 use vars qw($VERSION);
 $VERSION = '0.51';
 
