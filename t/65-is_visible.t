@@ -5,7 +5,8 @@ use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 1,
-    events => ['DOMContentLoaded', 'load', qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]],
+    #events => ['DOMContentLoaded', 'load', qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]],
+    #do_events => 1,
     #log => [qw[debug]],
 )};
 
@@ -43,13 +44,17 @@ for my $file (@files) {
     is $mech->title, $file, "We loaded the right file ($file)";
     $mech->allow('javascript' => 1);
     my ($timer,$type) = $mech->eval_in_page('timer');
+    (my ($window),$type) = $mech->eval_in_page('window');
 
     ok $mech->is_visible(selector => 'body'), "We can see the body";
+    
+    my $standby = $mech->by_id('standby', single=>1);
 
     ok !$mech->is_visible(selector => '#standby'), "We can't see #standby";
-    my @status = 
     ok !$mech->is_visible(selector => '.status', any => 1), "We can't see .status even though there exist multiple such elements";
     $mech->click({ selector => '#start', synchronize => 0 });
+    sleep 1;
+
     ok $mech->is_visible(selector => '#standby'), "We can see #standby";
     my $ok = eval {
         $mech->wait_until_invisible(selector => '#start', timeout => $timer+2);
@@ -64,10 +69,18 @@ for my $file (@files) {
     $mech->allow('javascript' => 1);
     ($timer,$type) = $mech->eval_in_page('timer');
 
-    ok !$mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can't see the standby message";
+    if(! ok( !$mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can't see the standby message (via its text)")) {
+        diag "style.visibility " . $standby->{style}->{visibility};
+        diag "style.display    " . $standby->{style}->{display};
+    };
+    
     $mech->click({ selector => '#start', synchronize => 0 });
+    sleep 1;
    
-    ok $mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can see the standby message";
+    if(! ok $mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can see the standby message (via its text)") {
+        diag "style.visibility " . $standby->{style}->{visibility};
+        diag "style.display    " . $standby->{style}->{display};
+    };
     $ok = eval {
         $mech->wait_until_invisible(xpath => '//*[contains(text(),"stand by")]', timeout => $timer+2);
         1;
