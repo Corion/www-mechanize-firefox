@@ -822,6 +822,7 @@ sub _install_response_header_listener {
             const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
             const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
             
+            //return cb
             return function (progress,request,flags,status) {
                 if (flags & (STATE_STOP|STATE_IS_DOCUMENT) == (STATE_STOP|STATE_IS_DOCUMENT)) {
                     cb(progress,request,flags,status);
@@ -886,7 +887,9 @@ sub synchronize {
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
     my $b = $self->tab->{linkedBrowser};
+    # XXX
     my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    #my $load_lock = $self->_addEventListener([$self->tab,$events]);
     #my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
@@ -2986,6 +2989,7 @@ sub is_visible {
     # No element means not visible
     return
         unless $options{ dom };
+    
     
     my $_is_visible = $self->repl->declare(<<'JS');
     function (obj)
