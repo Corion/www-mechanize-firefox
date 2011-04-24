@@ -65,8 +65,8 @@ sub locales {
 };
 
 sub selectedTab {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
+    my ($self,%options) = @_;
+    my $repl = delete $options{ repl } || $self->repl;
     return $self->browser( $repl )->{tabContainer}->{selectedItem};
 }
 

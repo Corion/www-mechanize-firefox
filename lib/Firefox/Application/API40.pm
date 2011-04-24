@@ -133,8 +133,8 @@ Sets the currently active tab.
 =cut
 
 sub selectedTab {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
+    my ($self,%options) = @_;
+    my $repl = delete $options{ repl } || $self->repl;
     return $self->browser( $repl )->{selectedTab};
 }
 
