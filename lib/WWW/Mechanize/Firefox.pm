@@ -894,7 +894,8 @@ sub synchronize {
         if (ref $h eq 'CODE') {
             $h->($ev)
         } else {
-            #warn "Received $ev->{event}";
+            warn "Received $ev->{event}";
+            #warn "$ev->{event}->{text}"";
         };
     };
     
