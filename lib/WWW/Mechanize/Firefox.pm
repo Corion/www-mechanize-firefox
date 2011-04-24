@@ -1067,7 +1067,8 @@ sub back {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    $self->_sync_call($synchronize, $self->events, sub {
+    #$self->_sync_call($synchronize, $self->events, sub {
+    $self->_sync_call(0, $self->events, sub {
         $self->tab->{linkedBrowser}->goBack;
     });
 }
@@ -1086,7 +1087,8 @@ sub forward {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    $self->_sync_call($synchronize, $self->events, sub {
+    #$self->_sync_call($synchronize, $self->events, sub {
+    $self->_sync_call(0, $self->events, sub {
         $self->tab->{linkedBrowser}->goForward;
     });
 }
