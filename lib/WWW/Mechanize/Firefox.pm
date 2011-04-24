@@ -3006,11 +3006,11 @@ sub is_visible {
             };
             
             if (window.getComputedStyle) {
-                var style = window.getComputedStyle(obj, "");
-                if (style.display == 'none')
-                    return false;
-                if (style.visibility == 'hidden')
-                    return false;
+                var style = window.getComputedStyle(obj, null);
+                if (style.display == 'none') {
+                    return false; }
+                if (style.visibility == 'hidden') {
+                    return false; }
             }
             obj = obj.parentNode;
         };
