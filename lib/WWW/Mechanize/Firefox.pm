@@ -3483,6 +3483,11 @@ for more tab info
 L<https://developer.mozilla.org/en/Document_Loading_-_From_Load_Start_to_Finding_a_Handler>
 for information on how to possibly override the "Save As" dialog
 
+=item *
+
+L<http://code.google.com/p/selenium/source/browse/trunk/javascript/firefox-driver/extension/components/promptService.js>
+for information on how to override a lot of other prompts (like proxy etc.)
+
 =back
 
 =head1 REPOSITORY
