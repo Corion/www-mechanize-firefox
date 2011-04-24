@@ -98,4 +98,44 @@ sub locales {
     $self->updateitems(type => 'locale', @_);
 };
 
+=head2 C<< $ff->addTab( %options ) >>
+
+    my $new = $ff->addTab();
+
+Creates a new tab and returns it.
+The tab will be automatically closed upon program exit.
+
+The Firefox 4 API is asynchronous. The method is forced
+into a synchronous call here.
+
+=cut
+
+sub addTab {
+    my ($self, %options) = @_;
+    my $repl = $options{ repl } || $self->repl;
+
+    my $tab = $self->browser( $repl )->addTab();
+
+    if (not exists $options{ autoclose } or $options{ autoclose }) {
+        $self->autoclose_tab($tab)
+    };
+    
+    $tab
+};
+
+=head2 C<< $ff->selectedTab( %options ) >>
+
+    my $curr = $ff->selectedTab();
+
+Sets the currently active tab.
+
+=cut
+
+sub selectedTab {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    return $self->browser( $repl )->{selectedTab};
+}
+
+
 1;

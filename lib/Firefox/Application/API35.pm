@@ -63,4 +63,24 @@ sub locales {
     $self->updateitems(type => 'LOCALE', @_);
 };
 
+sub selectedTab {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    return $self->browser( $repl )->{tabContainer}->{selectedItem};
+}
+
+sub addTab {
+    my ($self, %options) = @_;
+    my $repl = $options{ repl } || $self->repl;
+
+    my $tab = $self->browser( $repl )->addTab();
+
+    if (not exists $options{ autoclose } or $options{ autoclose }) {
+        $self->autoclose_tab($tab)
+    };
+    
+    $tab
+};
+
+
 1;

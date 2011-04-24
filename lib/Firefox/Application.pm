@@ -101,7 +101,7 @@ sub new {
     MozRepl::RemoteObject::require_module( $api );
     
     # Manually import the routines because I'm lazy
-    for (qw(updateitems addons themes locales)) {
+    for (qw(updateitems addons themes locales selectedTab addTab)) {
         no strict 'refs';
         *{$_} = \&{ "$api\::$_" };
     };
@@ -241,33 +241,14 @@ to close the tab.
 
 =cut
 
-sub addTab {
-    my ($self, %options) = @_;
-    my $repl = $options{ repl } || $self->repl;
-    my $rn = $repl->name;
-
-    my $tab = $self->browser( $repl )->addTab;
-
-    if (not exists $options{ autoclose } or $options{ autoclose }) {
-        $self->autoclose_tab($tab)
-    };
-    
-    $tab
-};
-
-=head2 C<< $ff->addTab( %options ) >>
+=head2 C<< $ff->selectedTab( %options ) >>
 
     my $curr = $ff->selectedTab();
 
-Returns the currently active tab.
+Sets the currently active tab.
 
 =cut
 
-sub selectedTab {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    return $self->browser( $repl )->{tabContainer}->{selectedItem};
-}
 
 =head2 C<< $ff->closeTab( $tab [,$repl] ) >>
 
@@ -282,12 +263,17 @@ sub closeTab {
     $repl ||= $self->repl;
     my $close_tab = $repl->declare(<<'JS');
 function(tab) {
-    // find containing browser
-    var p = tab.parentNode;
-    while (p.tagName != "tabbrowser") {
-        p = p.parentNode;
-    };
-    if(p){p.removeTab(tab)};
+          var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+	                     .getService(Components.interfaces.nsIWindowMediator)
+	                     .getEnumerator("navigator:browser");
+	  while (be.hasMoreElements()) {
+	    var browserWin = be.getNext();
+	    var tabbrowser = browserWin.gBrowser;
+	    if( tabbrowser.getBrowserForTab(tab)) {
+	      tabbrowser.removeTab(tab);
+	      break;
+	    };
+          };
 }
 JS
     return $close_tab->($tab);
@@ -385,12 +371,20 @@ JS
 
 sub autoclose_tab {
     my ($self,$tab) = @_;
-    my $release = join "",
-        q<var p=self.parentNode;>,
-        q<while(p && p.tagName != "tabbrowser") {>,
-            q<p = p.parentNode>,
-        q<};>,
-        q<if(p){p.removeTab(self)};>,
+    my $release = join "\n",
+          # Find the window our tab lives in
+          q<var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]>,
+	                     q<.getService(Components.interfaces.nsIWindowMediator)>,
+	                     q<.getEnumerator("navigator:browser");>,
+	  q<while (be.hasMoreElements()) {>,
+	    q<var browserWin = be.getNext();>,
+	    q<var tabbrowser = browserWin.gBrowser;>,
+	    q<if( tabbrowser.getBrowserForTab(self)) {>,
+	    q<tabbrowser.removeTab(self);>,
+	    q<break;>,
+	    q<};>,
+          q<};>,
+	;
     ;
     $tab->__release_action($release);
 };
