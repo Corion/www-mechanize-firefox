@@ -45,7 +45,7 @@ my @new_tabs = $ff->openTabs($repl);
 is 1+@tabs, 0+@new_tabs, "We added a tab";
 if (! is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 1, "We added our tab" ) {
     for (@new_tabs) {
-        diag $_->{title};
+        diag "<$_->{title}>";
     };
 };
 
