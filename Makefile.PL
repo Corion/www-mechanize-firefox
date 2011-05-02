@@ -24,7 +24,7 @@ WriteMakefile1(
     'NAME'          => 'WWW::Mechanize::Firefox',
     'LICENSE'       => 'perl',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/Firefox.pm', # finds $VERSION
-    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.25, # v25 implements C<bufsize>
+    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.26, # v25 implements C<bufsize>, v0.26 a bugfix
                         'URI' => 0,
                         'URI::data' => 0,
                         'HTTP::Response' => 0, # for interface compatibility with WWW::Mechanize

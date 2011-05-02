@@ -3,11 +3,14 @@ use strict;
 use Test::More;
 use WWW::Mechanize::Firefox;
 
+$ENV{ MOZREPL_CLASS } = 'MozRepl'; # we want the Net::Telnet-based implementation
+
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     bufsize => 1025, # a too small size, but still larger than the Net::Telnet default
     #log => ['debug'],
 )};
+diag "Using ", ref $mech->repl->repl;
 
 if (! $mech) {
     my $err = $@;
@@ -21,6 +24,7 @@ isa_ok $mech, 'WWW::Mechanize::Firefox';
 my $response;
 my $result = eval {
     $response = $mech->get_local('rt65615.html', no_cache => 1); # a large website
+    $mech->content;
     1
 };
 ok !$result, "We died on the call";
