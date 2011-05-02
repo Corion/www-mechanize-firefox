@@ -3011,20 +3011,23 @@ sub is_visible {
     # No element means not visible
     return
         unless $options{ dom };
+    $options{ window } ||= $self->tab->{linkedBrowser}->{contentWindow};
     
     
     my $_is_visible = $self->repl->declare(<<'JS');
-    function (obj)
+    function (obj,window)
     {
         while (obj) {
             // No object
             if (!obj) return false;
             // Descends from document, so we're done
-            if (obj.parentNode === obj.ownerDocument)
+            if (obj.parentNode === obj.ownerDocument) {
                 return true;
+            };
             // Not in the DOM
-            if (!obj.parentNode)
+            if (!obj.parentNode) {
                 return false;
+            };
             // Direct style check
             if (obj.style) {
                 if (obj.style.display == 'none') return false;
@@ -3036,7 +3039,8 @@ sub is_visible {
                 if (style.display == 'none') {
                     return false; }
                 if (style.visibility == 'hidden') {
-                    return false; }
+                    return false;
+                };
             }
             obj = obj.parentNode;
         };
@@ -3044,7 +3048,7 @@ sub is_visible {
         return false
     }
 JS
-    !!$_is_visible->($options{dom});
+    !!$_is_visible->($options{dom}, $options{window});
 };
 
 =head2 C<< $mech->wait_until_invisible( $element ) >>

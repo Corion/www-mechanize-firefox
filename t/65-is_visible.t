@@ -17,9 +17,9 @@ if (! $mech) {
 };
 
 my @files = qw<
+     65-is_visible_class.html
      65-is_visible_text.html
      65-is_visible_hidden.html
-     65-is_visible_class.html
      65-is_visible_none.html
      65-is_visible_remove.html
      65-is_visible_reload.html
@@ -51,7 +51,12 @@ for my $file (@files) {
     
     my $standby = $mech->by_id('standby', single=>1);
 
-    ok !$mech->is_visible(selector => '#standby'), "We can't see #standby";
+    if(! ok !$mech->is_visible(selector => '#standby'), "We can't see #standby") {
+        diag $standby->{style}->{display};
+        diag $standby->{style}->{visibility};
+        diag $window->getComputedStyle($standby,undef)->{display};
+        diag $window->getComputedStyle($standby,undef)->{visibility};
+    };
     ok !$mech->is_visible(selector => '.status', any => 1), "We can't see .status even though there exist multiple such elements";
     $mech->click({ selector => '#start', synchronize => 0 });
     sleep 1;
@@ -71,8 +76,8 @@ for my $file (@files) {
     ($timer,$type) = $mech->eval_in_page('timer');
 
     if(! ok( !$mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can't see the standby message (via its text)")) {
-        diag "style.visibility " . $standby->{style}->{visibility};
-        diag "style.display    " . $standby->{style}->{display};
+        diag "style.visibility <" . $standby->{style}->{visibility} . ">";
+        diag "style.display    <" . $standby->{style}->{display} . ">";
     };
     
     $mech->click({ selector => '#start', synchronize => 0 });
