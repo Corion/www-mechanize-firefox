@@ -11,7 +11,7 @@ use Test::HTTP::LocalServer;
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 1,
     #log => [qw[debug]],
-    on_event => 1,
+    #on_event => 1,
 )};
 
 if (! $mech) {

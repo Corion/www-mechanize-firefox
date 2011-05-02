@@ -192,7 +192,7 @@ sub new {
     };
     if (! exists $args{ autodie }) { $args{ autodie } = 1 };
     
-    $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded error abort stop]];
+    $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded pageshow error abort stop]];
     $args{ on_event } ||= undef;
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
@@ -1085,8 +1085,7 @@ sub back {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    #$self->_sync_call($synchronize, $self->events, sub {
-    $self->_sync_call(0, $self->events, sub {
+    $self->_sync_call($synchronize, $self->events, sub {
         $self->tab->{linkedBrowser}->goBack;
     });
 }
@@ -1105,8 +1104,7 @@ sub forward {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
     
-    #$self->_sync_call($synchronize, $self->events, sub {
-    $self->_sync_call(0, $self->events, sub {
+    $self->_sync_call($synchronize, $self->events, sub {
         $self->tab->{linkedBrowser}->goForward;
     });
 }
