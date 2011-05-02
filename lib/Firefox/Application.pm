@@ -320,7 +320,8 @@ sub browser {
           // No browser windows are open, so open a new one.
           win = window.open('about:blank');
         };
-        return win.getBrowser()
+        return win.gBrowser
+        // return win.getBrowser()
     }
 JS
 };
