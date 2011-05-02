@@ -119,6 +119,15 @@ C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
 C<events> - the set of default Javascript events to listen for while
 waiting for a reply
 
+The default set is
+
+  DOMFrameContentLoaded
+  DOMContentLoaded
+  pageshow
+  error
+  abort
+  stop
+
 =item * 
 
 C<app> - a premade L<Firefox::Application>
