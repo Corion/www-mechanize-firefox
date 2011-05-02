@@ -64,5 +64,7 @@ if (!is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 0, "We removed our tab"){
     };
 };
 
-undef $mech; # and close that tab
 undef $ff;
+diag "App released";
+undef $mech; # and close that tab
+diag "Mech released";

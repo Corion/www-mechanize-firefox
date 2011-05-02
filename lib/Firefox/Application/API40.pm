@@ -124,6 +124,46 @@ sub addTab {
     $tab
 };
 
+sub closeTab {
+    my ($self,$tab,$repl) = @_;
+    $repl ||= $self->repl;
+    my $close_tab = $repl->declare(<<'JS');
+function(tab) {
+          var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+	                     .getService(Components.interfaces.nsIWindowMediator)
+	                     .getEnumerator("navigator:browser");
+	  while (be.hasMoreElements()) {
+	    var browserWin = be.getNext();
+	    var tabbrowser = browserWin.gBrowser;
+	    if( tabbrowser.getBrowserForTab(tab)) {
+	      tabbrowser.removeTab(tab);
+	      break;
+	    };
+          };
+}
+JS
+    return $close_tab->($tab);
+}
+
+sub autoclose_tab {
+    my ($self,$tab) = @_;
+    my $release = join "\n",
+          # Find the window our tab lives in
+          q<var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]>,
+	                     q<.getService(Components.interfaces.nsIWindowMediator)>,
+	                     q<.getEnumerator("navigator:browser");>,
+	  q<while (be.hasMoreElements()) {>,
+	    q<var browserWin = be.getNext();>,
+	    q<var tabbrowser = browserWin.gBrowser;>,
+	    q<if( tabbrowser.getBrowserForTab(self)) {>,
+	    q<tabbrowser.removeTab(self);>,
+	    q<break;>,
+	    q<};>,
+          q<};>,
+	;
+    ;
+    $tab->__release_action($release);
+};
 =head2 C<< $ff->selectedTab( %options ) >>
 
     my $curr = $ff->selectedTab();

@@ -83,6 +83,43 @@ sub addTab {
     $tab
 };
 
+sub autoclose_tab {
+    my ($self,$tab) = @_;
+    my $release = join "",
+        q<var p=self.parentNode;>,
+        q<while(p && p.tagName != "tabbrowser") {>,
+            q<p = p.parentNode>,
+        q<};>,
+        q<if(p){p.removeTab(self)};>,
+    ;
+    $tab->__release_action($release);
+};
+
+=head2 C<< $ff->closeTab( $tab [,$repl] ) >>
+
+    $ff->closeTab( $tab );
+
+Close the given tab.
+
+=cut
+
+sub closeTab {
+    my ($self,$tab,$repl) = @_;
+    $repl ||= $self->repl;
+    my $close_tab = $repl->declare(<<'JS');
+function(tab) {
+    // find containing browser
+    var p = tab.parentNode;
+    while (p.tagName != "tabbrowser") {
+        p = p.parentNode;
+    };
+    if(p){p.removeTab(tab)};
+}
+JS
+    return $close_tab->($tab);
+}
+
+
 sub openTabs {
     my ($self,$repl) = @_;
     $repl ||= $self->repl;
