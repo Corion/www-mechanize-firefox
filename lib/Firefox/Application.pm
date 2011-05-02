@@ -279,40 +279,6 @@ Returns a list of information about the currently open tabs.
 
 =cut
 
-sub openTabs {
-    my ($self,$repl) = @_;
-    $repl ||= $self->repl;
-    my $open_tabs = $repl->declare(<<'JS', 'list');
-function() {
-    var idx = 0;
-    var tabs = [];
-    
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                       .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    if (win) {
-        var browser = win.getBrowser();
-        Array.prototype.forEach.call(
-            browser.tabContainer.childNodes, 
-            function(tab) {
-                var d = tab.linkedBrowser.contentWindow.document;
-                tabs.push({
-                    location: d.location.href,
-                    document: d,
-                    title:    d.title,
-                    "id":     d.id,
-                    index:    idx++,
-                    panel:    tab.linkedPanel,
-                    tab:      tab,
-                });
-            });
-    };
-
-    return tabs;
-}
-JS
-    $open_tabs->();
-}
 
 =head2 C<< $ff->activateTab( [ $tab [, $repl ]] ) >>
 

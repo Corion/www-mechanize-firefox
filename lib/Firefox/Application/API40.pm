@@ -138,5 +138,40 @@ sub selectedTab {
     return $self->browser( $repl )->{selectedTab};
 }
 
+sub openTabs {
+    my ($self,$repl) = @_;
+    $repl ||= $self->repl;
+    my $open_tabs = $repl->declare(<<'JS', 'list');
+function() {
+    var idx = 0;
+    var tabs = [];
+    
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                       .getService(Components.interfaces.nsIWindowMediator);
+    var win = wm.getMostRecentWindow('navigator:browser');
+    if (win) {
+        var tabbrowser = win.gBrowser;
+        var numTabs = tabbrowser.browsers.length;
+        for (var index = 0; index < numTabs; index++) {
+            var tab = tabbrowser.tabContainer.childNodes[index];
+            var d = tab.linkedBrowser.contentWindow.document;
+            tabs.push({
+                location: d.location.href,
+                document: d,
+                title:    d.title,
+                "id":     d.id,
+                index:    idx++,
+                panel:    tab.linkedPanel,
+                tab:      tab,
+            });
+        };
+    };
+
+    return tabs;
+}
+JS
+    $open_tabs->();
+}
+
 
 1;
