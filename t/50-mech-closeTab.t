@@ -27,6 +27,7 @@ my $magic = sprintf "%s - %s", basename($0), $$;
 $mech->update_html(<<HTML);
 <html><head><title>$magic</title></head><body>Test</body></html>
 HTML
+sleep 1;
 
 my $ff = Firefox::Application->new();
 my @tabs = $ff->openTabs($repl);
@@ -40,6 +41,7 @@ $tab2->{title} = $magic2;
 $ff->set_tab_content($tab2, <<HTML, $repl);
 <html><head><title>$magic2</title></head><body>Secondary tab</body></html>
 HTML
+sleep 1;
 
 my @new_tabs = $ff->openTabs($repl);
 is 1+@tabs, 0+@new_tabs, "We added a tab";
