@@ -656,6 +656,18 @@ C<< :content_file >> - filename to store the data in
 
 C<< no_cache >> - if true, bypass the browser cache
 
+=item *
+
+C<< synchronize >> - wait until all elements have loaded
+
+The default is to wait until all elements have loaded. You can switch
+this off by passing
+
+    synchronize => 0
+
+for example if you want to manually poll for an element that appears fairly
+early during the load of a complex page.
+
 =back
 
 =cut
@@ -669,14 +681,17 @@ sub get {
     if ($options{ no_cache }) {
         $flags = $self->repl->constant('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
     };
-
-    if (my $target = delete $options{":content_file"}) {
-        $self->save_url($url => ''.$target, %options);
-    } else {
-        $self->synchronize($self->events, sub {
-            $b->loadURIWithFlags(''.$url,$flags);
-        });
+    if (! exists $options{ synchronize }) {
+        $options{ synchronize } = 1;
     };
+    
+    $self->_sync_call( $options{ synchronize }, $self->{events}, sub {
+        if (my $target = delete $options{":content_file"}) {
+            $self->save_url($url => ''.$target, %options);
+        } else {
+            $b->loadURIWithFlags(''.$url,$flags);
+        };
+    });
 };
 
 =head2 C<< $mech->get_local( $filename , %options ) >>
