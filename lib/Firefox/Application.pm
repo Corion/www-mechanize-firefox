@@ -354,6 +354,9 @@ This is a more general method that allows you to replace
 the HTML of an arbitrary tab, and not only the tab that
 WWW::Mechanize::Firefox is associated with.
 
+It has the flaw of not waiting until the tab has
+loaded.
+
 =cut
 
 sub set_tab_content {
@@ -368,7 +371,6 @@ sub set_tab_content {
     $tab->{linkedBrowser}->loadURI("".$url);
     # XXX Delay here until the data is actually loaded. Also see
     #     WWW::Mechanize::Firefox :-(
-    sleep 1;
 };
 
 =head1 TODO
