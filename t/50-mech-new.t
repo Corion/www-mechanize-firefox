@@ -19,14 +19,15 @@ if (! $mech) {
 };
 
 my $repl = $mech->repl;
+my $app = $mech->application;
 
-my @tabs = Firefox::Application->openTabs($repl);
+my @tabs = $app->openTabs($repl);
 
 sleep 1;
 
 undef $mech; # our own tab should now close automatically
 
-my @new_tabs = Firefox::Application->openTabs($repl);
+my @new_tabs = $app->openTabs($repl);
 
 if (! is scalar @new_tabs, @tabs-1, "Our tab was presumably closed") {
     for (@new_tabs) {
