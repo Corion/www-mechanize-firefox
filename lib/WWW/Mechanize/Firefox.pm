@@ -2280,7 +2280,7 @@ sub click_button {
         $self->click({ dom => $node, %options });
     } else {
         
-        $self->signal_condition("");
+        $self->signal_condition($user_message);
     };
     
 }
