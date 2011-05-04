@@ -10,7 +10,6 @@ my $mech = eval { WWW::Mechanize::Firefox->new(
     bufsize => 1025, # a too small size, but still larger than the Net::Telnet default
     #log => ['debug'],
 )};
-diag "Using ", ref $mech->repl->repl;
 
 if (! $mech) {
     my $err = $@;
@@ -19,6 +18,7 @@ if (! $mech) {
 } else {
     plan tests => 3;
 };
+diag "Using ", ref $mech->repl->repl;
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 my $response;
