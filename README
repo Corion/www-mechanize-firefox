@@ -74,6 +74,15 @@ METHODS
     *   `events' - the set of default Javascript events to listen for while
         waiting for a reply
 
+        The default set is
+
+          DOMFrameContentLoaded
+          DOMContentLoaded
+          pageshow
+          error
+          abort
+          stop
+
     *   `app' - a premade Firefox::Application
 
     *   `repl' - a premade MozRepl::RemoteObject instance or a connection
@@ -263,6 +272,16 @@ NAVIGATION METHODS
     *   `:content_file' - filename to store the data in
 
     *   `no_cache' - if true, bypass the browser cache
+
+    *   `synchronize' - wait until all elements have loaded
+
+        The default is to wait until all elements have loaded. You can
+        switch this off by passing
+
+            synchronize => 0
+
+        for example if you want to manually poll for an element that appears
+        fairly early during the load of a complex page.
 
   `$mech->get_local( $filename , %options )'
       $mech->get_local('test.html');
@@ -1118,6 +1137,10 @@ SEE ALSO
     *   https://developer.mozilla.org/en/Document_Loading_-_From_Load_Start_
         to_Finding_a_Handler for information on how to possibly override the
         "Save As" dialog
+
+    *   http://code.google.com/p/selenium/source/browse/trunk/javascript/fir
+        efox-driver/extension/components/promptService.js for information on
+        how to override a lot of other prompts (like proxy etc.)
 
 REPOSITORY
     The public repository of this module is
