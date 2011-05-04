@@ -14,6 +14,10 @@ TO DO:
 0.51 20110502
     . Add pageshow event to the default set of monitored events.
       Pageshow fires when a page is loaded from the cache.
+    + Firefox 4 is now supported in addition to Firefox 3.5+
+      Firefox 4 support is not really tested outside of the module self-tests.
+    + ->get() can now optionally not synchronize, like ->click(), suggested
+      and coded by Dave Hansen
 
 0.50 20110411
     . implement ->text() and ->content( format => 'text' )
