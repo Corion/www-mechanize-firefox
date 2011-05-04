@@ -51,8 +51,7 @@ sub updateitems {
     my $cb = sub {
         my ($addons) = @_;
         $done++; # This should be $cv->send ...
-        #@res = as_list( $addons );
-        @res = @$addons; # XXX slooow
+        @res = @$addons;
     };
     
     my $addons_js = $repl->declare(sprintf( <<'JS', $type), 'list');

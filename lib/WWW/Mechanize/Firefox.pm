@@ -911,10 +911,7 @@ sub synchronize {
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
     my $b = $self->tab->{linkedBrowser};
-    # XXX
     my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
-    #my $load_lock = $self->_addEventListener([$self->tab,$events]);
-    #my $load_lock = $self->_addEventListener([$b,$events]);
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
     if (my $h = $self->{on_event}) {
