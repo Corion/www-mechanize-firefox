@@ -5,6 +5,20 @@ use vars qw($VERSION %addon_types);
 use MozRepl::RemoteObject qw(as_list);
 $VERSION = '0.51';
 
+=head1 NAME
+
+Firefox::Application::API35 - API wrapper for Firefox 3.5+
+
+=head1 SYNOPSIS
+
+    use Firefox::Application;
+    my $ff = Firefox::Application->new(
+        # Force the Firefox 4 API
+        api => 'Firefox::Application::API40',
+    );
+
+=head1 METHODS
+
 =head2 C<< $api->updateitems( %args ) >>
 
   for my $item ($api->updateitems) {

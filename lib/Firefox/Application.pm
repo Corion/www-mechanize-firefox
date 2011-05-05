@@ -61,6 +61,13 @@ suitable for initializing one.
 
 C<use_queue> - whether to enable L<MozRepl::RemoteObject> command queueing
 
+=item *
+
+C<api> - class for the API wrapper
+
+You almost never want to use this parameter, as Firefox::Application
+asks Firefox about its version.
+
 =back
 
 =cut

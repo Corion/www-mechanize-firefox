@@ -4,6 +4,20 @@ use parent 'Firefox::Application';
 use vars qw($VERSION);
 $VERSION = '0.51';
 
+=head1 NAME
+
+Firefox::Application::API35 - API wrapper for Firefox 3.5+
+
+=head1 SYNOPSIS
+
+    use Firefox::Application;
+    my $ff = Firefox::Application->new(
+        # Force the Firefox 3.5 API
+        api => 'Firefox::Application::API35',
+    );
+
+=head1 METHODS
+
 =head2 C<< $api->updateitems( %args ) >>
 
   for my $item ($api->updateitems) {
