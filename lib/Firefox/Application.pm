@@ -156,13 +156,11 @@ sub appinfo {
       print sprintf "GUID: %s\n", $addon->{id};
   };
 
-Returns the list of installed addons as C<nsIUpdateItem>s.
-See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIUpdateItem>.
-
-These functions will need fixing for Firefox 4.
-
-=cut
-
+Returns the list of installed addons as C<nsIUpdateItem>s (FF 3.5+)
+or C<Addon>s (FF4+).
+See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIUpdateItem>
+or L<https://developer.mozilla.org/en/Addons/Add-on_Manager/Addon>,
+depending on your Firefox version.
 
 =head2 C<< $ff->locales( %args ) >>
 
