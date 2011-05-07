@@ -10,11 +10,16 @@ use URI::URL qw();
 use Carp qw(carp croak);
 
 use vars qw($VERSION);
-$VERSION = '0.51';
+$VERSION = '0.53';
 
 =head1 SYNOPSIS
 
+  use LWP::Simple qw(get);
+  my $server = Test::HTTP::LocalServer->spawn;
 
+  ok get $server->url, "Retrieve " . $server->url;
+
+  $server->stop;
 
 =head1 METHODS
 
@@ -39,6 +44,15 @@ C<< file => >> filename containing the page to be served
 =item *
 
 C<<  debug => 1 >> to make the spawned server output debug information
+
+=item *
+
+C<<  eval => >> string that will get evaluated per request in the server
+
+Try to avoid characters that are special to the shell, especially quotes.
+A good idea for a slow server would be
+
+  eval => sleep+10
 
 =back
 
@@ -80,12 +94,16 @@ sub spawn {
   my $web_page = delete $args{file} || "";
 
   my $server_file = File::Spec->catfile( $FindBin::Bin,File::Spec->updir,'inc','Test','HTTP','log-server' );
+  my @opts;
+  push @opts, "-e" => qq{"} . delete($args{ eval }) . qq{"}
+      if $args{ eval };
 
-  open my $server, qq'$^X "$server_file" "$web_page" "$logfile" |'
-    or die "Couldn't spawn fake server $server_file : $!";
+  open my $server, qq'$^X "$server_file" "$web_page" "$logfile" @opts|'
+    or croak "Couldn't spawn local server $server_file : $!";
   my $url = <$server>;
   chomp $url;
-  die "Couldn't find fake server url" unless $url;
+  die "Couldn't read back local server url"
+      unless $url;
 
   $self->{_fh} = $server;
   $self->{_server_url} = URI::URL->new($url);
@@ -149,6 +167,50 @@ sub DESTROY {
   for my $file (@{$_[0]->{delete}}) {
     unlink $file or warn "Couldn't remove tempfile $file : $!\n";
   };
+};
+
+=head1 URLs implemented by the server
+
+=head2 302 redirect C<< $server->redirect($target) >>
+
+This URL will issue a redirect to C<$target>. No special care is taken
+towards URL-decoding C<$target> as not to complicate the server code.
+You need to be wary about issuing requests with escaped URL parameters.
+
+=head2 404 error C<< $server->error_notfound($target) >>
+
+This URL will response with status code 404.
+
+=head2 Error in response content C<< $server->error_after_headers >>
+
+This URL will send headers for a successfull response but will close the
+socket with an error after 2 blocks of 16 spaces have been sent.
+
+=head2 Chunked response C<< $server->chunked >>
+
+This URL will return 5 blocks of 16 spaces at a rate of one block per second
+in a chunked response.
+
+=head2 Other URLs
+
+All other URLs will echo back the cookies and query parameters.
+
+=cut
+
+use vars qw(%urls);
+%urls = (
+    'redirect' => 'redirect/%s',
+    'error_notfound' => 'error/notfound/%s',
+    'error_after_headers' => 'error/after_headers',
+    'chunked' => 'chunks',
+);
+for (keys %urls) {
+    no strict 'refs';
+    my $name = $_;
+    *{ $name } = sub {
+        my $self = shift;
+        $self->url . sprintf $urls{ $name }, @_;
+    };
 };
 
 =head1 EXPORT

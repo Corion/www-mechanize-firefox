@@ -38,6 +38,9 @@ WriteMakefile1(
                         'parent' => 0,
                         'Scalar::Util' => 1.14,
                         'Object::Import'  => 0,
+                        
+                        'HTTP::Daemon' => 0, # just for testing
+                        'LWP::Simple' => 0, # just for testing
                       }, # e.g., Module::Name => 1.1
     ABSTRACT_FROM   => 'lib/WWW/Mechanize/Firefox.pm', # retrieve abstract from module
     AUTHOR          => 'Max Maischein <corion@cpan.org>',
