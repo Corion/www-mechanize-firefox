@@ -2,6 +2,8 @@
 use strict;
 use Test::More;
 use WWW::Mechanize::Firefox;
+use lib 'inc', '../inc';
+use Test::HTTP::LocalServer;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
@@ -19,7 +21,11 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-my ($site,$estatus) = ('http://search.cpan.org/',200);
+my $server = Test::HTTP::LocalServer->spawn(
+    #debug => 1
+);
+
+my ($site,$estatus) = ($server->url,200);
 my $res = $mech->get($site);
 isa_ok $res, 'HTTP::Response', "Response";
 
