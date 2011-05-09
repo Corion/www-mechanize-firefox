@@ -11,9 +11,13 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.52 To be released
+0.52 20110509
     . Remove traces of Firefox 4 being unsupported
     . Added license to API35.pm and API40.pm
+    . Upgrade local test server to more current incarnation
+    . Eliminate almost all tests that need an outside network connection
+    . Document Firefox 4 bug
+      L<https://bugzilla.mozilla.org/show_bug.cgi?id=649924>
 
 0.51 20110502
     . Add pageshow event to the default set of monitored events.
