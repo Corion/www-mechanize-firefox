@@ -215,6 +215,17 @@ to give L<Net::Telnet> a larger buffer:
       bufsize => 10_000_000,
   );
 
+=head2 Javascript error "0x8007000e (NS_ERROR_OUT_OF_MEMORY)" on C<< ->content_as_png >>
+
+This error is caused because of Firefox 4 bug 649924
+(L<https://bugzilla.mozilla.org/show_bug.cgi?id=649924>). It seems
+that the Firefox C<< canvas >> element is size-limited when
+hardware acceleration is enabled.
+
+=head3 Workaround
+
+Until that bug is fixed, disable hardware acceleration and restart Firefox 4.
+
 =head1 Known Problems
 
 =head2 Page Encoding Versus Perl Encoding
