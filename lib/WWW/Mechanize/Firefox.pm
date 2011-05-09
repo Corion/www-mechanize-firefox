@@ -3,7 +3,6 @@ use 5.006; #weaken
 use strict;
 use Time::HiRes; # hires sleep()
 
-use MozRepl::RemoteObject;
 use URI;
 use Cwd;
 use File::Basename qw(dirname);
