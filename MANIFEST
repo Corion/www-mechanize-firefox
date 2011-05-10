@@ -48,6 +48,7 @@ t/49-mech-nav.t
 t/49-mech-reuse.t
 t/50-allow-js.t
 t/50-app-new.t
+t/50-app-profile.t
 t/50-click.html
 t/50-click.t
 t/50-follow-link.t
