@@ -7,7 +7,7 @@ $VERSION = '0.52';
 
 =head1 NAME
 
-Firefox::Application::API35 - API wrapper for Firefox 3.5+
+Firefox::Application::API40 - API wrapper for Firefox 4+
 
 =head1 SYNOPSIS
 
