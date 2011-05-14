@@ -98,7 +98,7 @@ sub spawn {
   push @opts, "-e" => qq{"} . delete($args{ eval }) . qq{"}
       if $args{ eval };
 
-  open my $server, qq'$^X "$server_file" "$web_page" "$logfile" @opts|'
+  my $pid = open my $server, qq'$^X "$server_file" "$web_page" "$logfile" @opts|'
     or croak "Couldn't spawn local server $server_file : $!";
   my $url = <$server>;
   chomp $url;
@@ -106,6 +106,7 @@ sub spawn {
       unless $url;
 
   $self->{_fh} = $server;
+  $self->{_pid} = $pid;
   $self->{_server_url} = URI::URL->new($url);
 
   $self;
@@ -146,6 +147,19 @@ url.
 sub stop {
   get( $_[0]->{_server_url} . "quit_server" );
   undef $_[0]->{_server_url}
+};
+
+=head2 C<< $server->kill >>
+
+This kills the server process via C<kill>. The log
+cannot be retrieved then.
+
+=cut
+
+sub kill {
+  CORE::kill( 9 => $_[0]->{ _pid } );
+  undef $_[0]->{_server_url};
+  undef $_[0]->{_pid};
 };
 
 =head2 C<< $server->get_log >>
