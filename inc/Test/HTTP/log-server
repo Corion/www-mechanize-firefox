@@ -69,6 +69,9 @@ SERVERLOOP: {
             $res->header('location', $d->url . $1);
         } elsif ($location =~ m!^/error/notfound/(.*)$!) {
             $res = HTTP::Response->new(404, "Not found", [Connection => 'close']);
+        } elsif ($location =~ m!^/error/timeout/(\d+)$!) {
+            sleep $1;
+            $res = HTTP::Response->new(500, "Timeout error", [Connection => 'close']);
         } elsif ( $location =~ m!^/chunks!) {
             my $count = 5;
             $res = HTTP::Response->new(200, "OK", undef, sub {

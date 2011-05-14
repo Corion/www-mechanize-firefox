@@ -10,7 +10,7 @@ use URI::URL qw();
 use Carp qw(carp croak);
 
 use vars qw($VERSION);
-$VERSION = '0.53';
+$VERSION = '0.54';
 
 =head1 SYNOPSIS
 
@@ -215,6 +215,7 @@ use vars qw(%urls);
 %urls = (
     'redirect' => 'redirect/%s',
     'error_notfound' => 'error/notfound/%s',
+    'error_timeout' => 'error/timeout/%s',
     'error_after_headers' => 'error/after_headers',
     'chunked' => 'chunks',
 );
