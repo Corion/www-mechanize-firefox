@@ -195,6 +195,14 @@ You need to be wary about issuing requests with escaped URL parameters.
 
 This URL will response with status code 404.
 
+=head2 Timeout C<< $server->error_timeout($seconds) >>
+
+This URL will send a 599 error after C<$seconds> seconds.
+
+=head2 Timeout+close C<< $server->error_close($seconds) >>
+
+This URL will send nothing and close the connection after C<$seconds> seconds.
+
 =head2 Error in response content C<< $server->error_after_headers >>
 
 This URL will send headers for a successfull response but will close the
@@ -216,6 +224,7 @@ use vars qw(%urls);
     'redirect' => 'redirect/%s',
     'error_notfound' => 'error/notfound/%s',
     'error_timeout' => 'error/timeout/%s',
+    'error_close' => 'error/close/%s',
     'error_after_headers' => 'error/after_headers',
     'chunked' => 'chunks',
 );

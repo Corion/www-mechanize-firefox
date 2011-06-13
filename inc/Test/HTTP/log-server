@@ -71,7 +71,10 @@ SERVERLOOP: {
             $res = HTTP::Response->new(404, "Not found", [Connection => 'close']);
         } elsif ($location =~ m!^/error/timeout/(\d+)$!) {
             sleep $1;
-            $res = HTTP::Response->new(500, "Timeout error", [Connection => 'close']);
+            $res = HTTP::Response->new(599, "Timeout reached", [Connection => 'close']);
+        } elsif ($location =~ m!^/error/close/(\d+)$!) {
+            sleep $1;
+            $res = undef;
         } elsif ( $location =~ m!^/chunks!) {
             my $count = 5;
             $res = HTTP::Response->new(200, "OK", undef, sub {
@@ -111,15 +114,20 @@ SERVERLOOP: {
             debug "Request " . ($r->uri->path || "/");
         };
       };
-      debug "Response:\n" . $res->as_string;
+      debug "Response:\n" . $res->as_string
+          if $res;
       eval {
-        $c->send_response($res);
+        $c->send_response($res)
+            if $res;
       };
       if (my $err = $@) {
           debug "Server raised error: $err";
           if ($err !~ /^Planned error\b/) {
               warn $err;
           };
+          $c->close;
+      };
+      if (! $res) {
           $c->close;
       };
       last if $quitserver;

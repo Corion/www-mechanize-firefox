@@ -8,6 +8,7 @@ use Test::HTTP::LocalServer;
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
     #log => [qw[debug]],
+    #use_queue => 1,
     #on_event => 1,
 )};
 
