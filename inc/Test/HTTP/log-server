@@ -76,7 +76,7 @@ SERVERLOOP: {
             my $count = 5;
             $res = HTTP::Response->new(200, "OK", undef, sub {
                sleep 1;
-               my $buf = ' ' x 16;
+               my $buf = 'x' x 16;
                return $buf if $count-- > 0;
                return undef; # done
             });
@@ -84,7 +84,7 @@ SERVERLOOP: {
             my $count = 2;
             $res = HTTP::Response->new(200, "OK", undef, sub {
                sleep 1;
-               my $buf = ' ' x 16;
+               my $buf = 'x' x 16;
                return $buf if $count-- > 0;
                die "Planned error after headers";
             });
