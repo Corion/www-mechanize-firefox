@@ -56,9 +56,12 @@ my %known_uri = (
 my $rowidx=0;
 for my $selector (@ARGV) {
     my $fetch_attr;
-    if ($selector =~ m!/?\@(\w+)$!) {
+    if ($selector =~ s!(?:/?|\s*)\@(\w+)$!!) {
         $fetch_attr = $1;
     };
+    
+    $selector =~ s/\s+$//;
+    
     if ($selector !~ m!^/!) {
         $selector = selector_to_xpath( $selector );
     };
@@ -105,7 +108,8 @@ ff-scrape.pl - simple Firefox HTML scraping from the command line
 
 Options:
    --tab            title of tab to scrape (instead of URL)
-   --sep            separator for the output columns, default is tab
+   --current        use currently active tab (instead of URL)
+   --sep            separator for the output columns, default is tab-separated
    --uri            force absolute URIs for colum number x
    --no-uri         force verbatim output for colum number x
    --mozrepl        connection string to Firefox
