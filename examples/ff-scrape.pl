@@ -55,15 +55,18 @@ my %known_uri = (
 
 my $rowidx=0;
 for my $selector (@ARGV) {
+    my $fetch_attr;
+    if ($selector =~ m!/?\@(\w+)$!) {
+        $fetch_attr = $1;
+    };
     if ($selector !~ m!^/!) {
         $selector = selector_to_xpath( $selector );
     };
     my @nodes;
-    if ($selector !~ m!/\@(\w+)$!) {
+    if (! defined $fetch_attr) {
         @nodes = map { /^\s*(.*?)\s*\z/ms } map { $_->{innerHTML} } $mech->xpath($selector);
     } else {
-        my ($attr) = $1;
-        $make_uri{ $rowidx } ||= (($known_uri{ lc $attr }) and ! $no_known_uri);
+        $make_uri{ $rowidx } ||= (($known_uri{ lc $fetch_attr }) and ! $no_known_uri);
         @nodes = map { $_->{nodeValue} } $mech->xpath($selector);
     };
     
