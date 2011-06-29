@@ -2074,7 +2074,7 @@ sub selector {
     if ('ARRAY' ne (ref $query || '')) {
         $query = [$query];
     };
-    my @q = map { selector_to_xpath($_); } @$query;
+    my @q = map { selector_to_xpath($_) } @$query;
     $self->xpath(\@q, %options);
 };
 
