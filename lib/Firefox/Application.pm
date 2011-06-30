@@ -97,6 +97,8 @@ sub new {
          
         if ($v >= 4) {
             $api = 'Firefox::Application::API40';
+        } elsif ($v >= 3.6) {
+            $api = 'Firefox::Application::API36';
         } else {
             $api = 'Firefox::Application::API35';
         };

@@ -2407,7 +2407,9 @@ sub form_with_fields {
     if (ref $fields[0] eq 'HASH') {
         $options = shift @fields;
     };
-    my @clauses = map { sprintf './/input[@name="%s"]', quote_xpath($_) } @fields;
+    my @clauses  = map { $self->application->element_query([qw[input select textarea]], { 'name' => $_ })} @fields;
+    
+    
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     _default_limiter( single => $options );
@@ -2541,16 +2543,8 @@ sub _field_by_name {
         @fields = $name;
     } else {
         _default_limiter( single => \%options );
-        my $query = 
-            './/*[(' . 
-                join ' or ',
-                q{translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="input"},
-                q{translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="select"},
-                q{translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="textarea"},
-            . ')'
-            . sprintf(  q{ and @%s="%s"]}, 
-                             $attr,  $name
-                   );
+        my $query = $self->application->element_query([qw[input select textarea]], { $attr => $name });
+        #warn $query;
         @fields = $self->xpath($query,%options);
     };
     @fields

@@ -3,7 +3,7 @@ use strict;
 use parent 'Firefox::Application';
 use vars qw($VERSION %addon_types);
 use MozRepl::RemoteObject qw(as_list);
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 =head1 NAME
 
@@ -225,6 +225,36 @@ function() {
 JS
     $open_tabs->();
 }
+
+=head2 C<< $api->element_query( \@elements, \%attributes ) >>
+
+    my $query = $element_query(['input', 'select', 'textarea'],
+                               { name => 'foo' });
+
+Returns the XPath query that searches for all elements with C<tagName>s
+in C<@elements> having the attributes C<%attributes>. The C<@elements>
+will form an C<or> condition, while the attributes will form an C<and>
+condition.
+
+=cut
+
+sub element_query {
+    my ($self, $elements, $attributes) = @_;
+        my $query = 
+            './/*[(' . 
+                join( ' or ',
+                    map {
+                        sprintf qq{local-name(.)="%s"}, lc $_
+                    } @$elements
+                )
+            . ') and '
+            . join( " and ",
+                map { sprintf q{@%s="%s"}, $_, $attributes->{$_} }
+                  sort keys(%$attributes)
+            )
+            . ']';
+};
+
 
 1;
 
