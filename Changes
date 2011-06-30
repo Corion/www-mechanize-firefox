@@ -14,6 +14,7 @@ TO DO:
 0.53 to be released
     ! Renamed ff-scrape.pl to scrape-ff.pl
     . scrape-ff.pl now supports attribute selection with CSS selectors
+    + Bugfix: ->form_with_fields() ignored textarea and select fields
 
 0.52 20110509
     . Remove traces of Firefox 4 being unsupported

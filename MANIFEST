@@ -2,7 +2,6 @@
 Changes
 examples/bcat.pl
 examples/dump-links.pl
-examples/scrape-ff.pl
 examples/fullscreen.pl
 examples/gen_examples_pod.pl
 examples/javascript.pl
@@ -12,6 +11,7 @@ examples/open-local-file.pl
 examples/open-url.pl
 examples/proxy-settings.pl
 examples/README
+examples/scrape-ff.pl
 examples/screenshot.pl
 examples/tail-console.pl
 examples/urlbar.pl
@@ -22,6 +22,7 @@ inc/Test/HTTP/log-server
 INSTALL
 lib/Firefox/Application.pm
 lib/Firefox/Application/API35.pm
+lib/Firefox/Application/API36.pm
 lib/Firefox/Application/API40.pm
 lib/HTML/Display/MozRepl.pm
 lib/HTTP/Cookies/MozRepl.pm
