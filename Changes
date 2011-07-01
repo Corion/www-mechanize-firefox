@@ -11,7 +11,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.53 to be released
+0.53 20110701
     ! Renamed ff-scrape.pl to scrape-ff.pl
     . scrape-ff.pl now supports attribute selection with CSS selectors
     + Bugfix: ->form_with_fields() ignored textarea and select fields
