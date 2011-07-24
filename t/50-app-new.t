@@ -5,46 +5,30 @@ use File::Basename;
 
 use Firefox::Application;
 
+use t::helper;
+
 # What instances of Firefox will we try?
 my $instance_port = 4243;
-my @instances;
-push @instances, undef; # default Firefox instance
-if (-d 'firefox-versions') { # author test with local instances
-    push @instances, sort glob 'firefox-versions/*/FirefoxPortable.exe'; # sorry, Windows-only
-};
+my @instances = t::helper::firefox_instances;
 
-# Connect to default instance
-my $ff = eval { Firefox::Application->new( 
-    autodie => 0,
-    #log => [qw[debug]]
-)};
-
-if (! $ff) {
-    my $err = $@;
+if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
     plan tests => 8*@instances;
 };
-undef $ff;
 
-for my $firefox_instance (@instances) {
-    my $name = $firefox_instance || 'default Firefox';
-    if ($firefox_instance) {
-        diag "Testing with $firefox_instance";
-    };
-    
-    my @launch = $firefox_instance
-               ? ( launch => [$firefox_instance, '-repl', $instance_port],
-                   repl => "localhost:$instance_port" )
-               : ();
-    
-    $ff = Firefox::Application->new(
+sub new_mech {
+    Firefox::Application->new(
         autodie => 0,
         #log => [qw[debug]],
-        @launch,
+        @_,
     );
+};
 
+t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
+    my ($firefox_instance, $ff) = @_;
+    
     my $lives;
     my @addons;
 
@@ -82,9 +66,4 @@ for my $firefox_instance (@instances) {
     isn't $standard_theme, undef, "We find the Standard theme";
     # is $standard_theme->{name}, 'Standard', 'The name is "Standard"';
     # This test fails, as the name is localized. Duh.
-    
-    if ($firefox_instance) {
-        $ff->quit;
-        sleep 1; # justin case
-    };
-};
+});
