@@ -41,6 +41,7 @@ for my $firefox_instance (@instances) {
     
     $ff = Firefox::Application->new(
         autodie => 0,
+        #log => [qw[debug]],
         @launch,
     );
 
@@ -51,9 +52,9 @@ for my $firefox_instance (@instances) {
         $ff->appinfo->{name},
         $ff->appinfo->{version};
     
-    if (($firefox_instance||'') =~ /\b(\d+\.\d+\.\d+)\b/) {
+    if (($firefox_instance||'') =~ /\b(\d+(\.\d+)+)\b/) {
         my $expected_version = $1;
-        is $ff->appinfo->{version}, $expected_version, "We connect to the right instance";
+        is $ff->appinfo->{version}, $expected_version, "We connect to an instance with version $expected_version";
     } else {
         SKIP: {
             skip "Don't know what version to expect", 1;
@@ -84,6 +85,6 @@ for my $firefox_instance (@instances) {
     
     if ($firefox_instance) {
         $ff->quit;
-        sleep 3; # justin case
+        sleep 1; # justin case
     };
 };
