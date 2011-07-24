@@ -198,6 +198,31 @@ sub element_query {
             . ']';
 };
 
+=head2 C<< $api->quit( restart => $restart ) >>
+
+    # hard force-quit the application
+    $api->quit();
+
+=cut
+
+sub quit {
+    my ($self, %options) = @_;
+    my $repl = $options{ repl } || $self->repl;
+    my $flags = $options{ restart }
+              ? 0x03 # force-quit
+              : 0x13 # force-quit + restart
+              ;
+    
+    my $get_startup = $repl->declare(<<'JS');
+    function() {
+        return Components.classes["@mozilla.org/toolkit/app-startup;1"]
+                     .getService(Components.interfaces.nsIAppStartup);
+    }
+JS
+    my $s = $get_startup->();
+    $s->quit($flags);
+};
+
 1;
 
 =head1 AUTHOR
