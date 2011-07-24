@@ -10,7 +10,7 @@ use t::helper;
 
 # What instances of Firefox will we try?
 my $instance_port = 4243;
-my @instances = t::helper::firefox_instances(qr/\b5\.0/);
+my @instances = t::helper::firefox_instances();
 
 if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
@@ -22,7 +22,7 @@ if (my $err = t::helper::default_unavailable) {
 sub new_mech {
     WWW::Mechanize::Firefox->new(
         autodie => 0,
-        log => [qw[debug]],
+        #log => [qw[debug]],
         @_,
     );
 };
