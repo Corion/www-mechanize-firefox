@@ -10,3 +10,4 @@ WWW-Mechanize-Firefox-*
 WWW-Mechanize-Firefox-*/
 .releaserc
 cover_db
+firefox-versions/
