@@ -7,7 +7,7 @@ use t::helper;
 
 # What instances of Firefox will we try?
 my $instance_port = 4243;
-my @instances = t::helper::firefox_instances(qr/6\.0/);
+my @instances = t::helper::firefox_instances();
 
 if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
