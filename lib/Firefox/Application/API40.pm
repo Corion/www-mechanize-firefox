@@ -142,6 +142,7 @@ sub closeTab {
     $repl ||= $self->repl;
     my $close_tab = $repl->declare(<<'JS');
 function(tab) {
+          if(tab.collapsed) { return };
           var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 	                     .getService(Components.interfaces.nsIWindowMediator)
 	                     .getEnumerator("navigator:browser");
@@ -162,17 +163,19 @@ sub autoclose_tab {
     my ($self,$tab) = @_;
     my $release = join "\n",
           # Find the window our tab lives in
-          q<var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]>,
-	                     q<.getService(Components.interfaces.nsIWindowMediator)>,
-	                     q<.getEnumerator("navigator:browser");>,
-	  q<while (be.hasMoreElements()) {>,
-	    q<var browserWin = be.getNext();>,
-	    q<var tabbrowser = browserWin.gBrowser;>,
-	    q<if( tabbrowser.getBrowserForTab(self)) {>,
-	    q<tabbrowser.removeTab(self);>,
-	    q<break;>,
-	    q<};>,
-          q<};>,
+          q<if(!self.collapsed){>,
+              q<var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]>,
+                                 q<.getService(Components.interfaces.nsIWindowMediator)>,
+                                 q<.getEnumerator("navigator:browser");>,
+              q<while (!self.collapsed && be.hasMoreElements()) {>,
+                q<var browserWin = be.getNext();>,
+                q<var tabbrowser = browserWin.gBrowser;>,
+                q<if( tabbrowser.getBrowserForTab(self)) {>,
+                q<tabbrowser.removeTab(self);>,
+                q<break;>,
+                q<};>,
+              q<};>,
+        q<};>,
 	;
     ;
     $tab->__release_action($release);
