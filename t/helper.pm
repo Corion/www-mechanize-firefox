@@ -5,7 +5,7 @@ use Test::More;
 
 sub firefox_instances {
     my ($filter) = @_;
-    $filter ||= qr/./;
+    $filter ||= qr/^/;
     my @instances;
     push @instances, undef; # default Firefox instance
     if (-d 'firefox-versions') { # author test with local instances
