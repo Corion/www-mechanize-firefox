@@ -19,7 +19,7 @@ if (my $err = t::helper::default_unavailable) {
 sub new_mech {
     WWW::Mechanize::Firefox->new(
         autodie => 0,
-        log => [qw[debug]],
+        #log => [qw[debug]],
         @_,
     );
 };
