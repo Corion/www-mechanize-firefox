@@ -209,8 +209,8 @@ sub quit {
     my ($self, %options) = @_;
     my $repl = $options{ repl } || $self->repl;
     my $flags = $options{ restart }
-              ? 0x03 # force-quit
-              : 0x13 # force-quit + restart
+              ? 0x13 # force-quit
+              : 0x03 # force-quit + restart
               ;
     
     my $get_startup = $repl->declare(<<'JS');

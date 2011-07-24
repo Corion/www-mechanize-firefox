@@ -409,6 +409,15 @@ sub set_tab_content {
     $tab->{linkedBrowser}->loadURI("".$url);
 };
 
+=head2 C<< $ff->quit( %options ) >>
+
+  $ff->quit( restart => 1 ); # restart
+  $ff->quit(); # quit
+
+Quits or restarts the application
+
+=cut
+
 =head1 TODO
 
 =over 4
