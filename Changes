@@ -10,8 +10,15 @@ TO DO:
     . Make ->set_visible actually use ->field()
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
+    . Make Firefox instance search path configurable for the tests
 
 0.54 to be released
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 4.0.1
+        - 5.0.1
+        - 6.0 Beta
     . The tests can now run against other Firefox installations under
         firefox-versions/(v.v.v)/FirefoxPortable.exe
     + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
