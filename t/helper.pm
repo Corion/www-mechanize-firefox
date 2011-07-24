@@ -4,12 +4,15 @@ use strict;
 use Test::More;
 
 sub firefox_instances {
+    my ($filter) = @_;
+    $filter ||= qr/./;
     my @instances;
     push @instances, undef; # default Firefox instance
     if (-d 'firefox-versions') { # author test with local instances
         push @instances, sort glob 'firefox-versions/*/FirefoxPortable.exe'; # sorry, Windows-only
     };
-    @instances
+    
+    grep { ($_ ||'') =~ /$filter/ } @instances;
 };
 
 sub default_unavailable {

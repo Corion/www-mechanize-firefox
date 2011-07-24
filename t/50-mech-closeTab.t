@@ -6,65 +6,78 @@ use File::Basename;
 use Firefox::Application;
 use WWW::Mechanize::Firefox;
 
-my $mech = eval { WWW::Mechanize::Firefox->new( 
-    autodie => 0,
-    #log => [qw[debug]]
-)};
+use t::helper;
 
-if (! $mech) {
-    my $err = $@;
+# What instances of Firefox will we try?
+my $instance_port = 4243;
+my @instances = t::helper::firefox_instances(qr/\b5\.0/);
+
+if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 4;
+    plan tests => 4*@instances;
 };
 
-my $repl = $mech->repl;
+sub new_mech {
+    WWW::Mechanize::Firefox->new(
+        autodie => 0,
+        log => [qw[debug]],
+        @_,
+    );
+};
 
-my $magic = sprintf "%s - %s", basename($0), $$;
+t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
+    my ($firefox_instance, $mech) = @_;
+    my $repl = $mech->repl;
 
-# Now check that we can close an arbitrary tab:
-$mech->update_html(<<HTML);
+    my $magic = sprintf "%s - %s", basename($0), $$;
+
+    # Now check that we can close an arbitrary tab:
+    $mech->update_html(<<HTML);
 <html><head><title>$magic</title></head><body>Test</body></html>
 HTML
-sleep 1;
+    sleep 1;
 
-my $ff = Firefox::Application->new();
-my @tabs = $ff->openTabs($repl);
+    my $ff = Firefox::Application->new(
+        repl => $repl,
+    );
+    my @tabs = $ff->openTabs($repl);
 
-$mech->tab->{title} = $magic; # mark our main tab
+    $mech->tab->{title} = $magic; # mark our main tab
 
-my $tab2 = $ff->addTab();
-my $magic2 = "Another tab ($magic)";
-$tab2->{title} = $magic2;
+    my $tab2 = $ff->addTab();
+    my $magic2 = "Another tab ($magic)";
+    $tab2->{title} = $magic2;
 
-$ff->set_tab_content($tab2, <<HTML, $repl);
+    $ff->set_tab_content($tab2, <<HTML, $repl);
 <html><head><title>$magic2</title></head><body>Secondary tab</body></html>
 HTML
-sleep 1;
+    sleep 1;
 
-my @new_tabs = $ff->openTabs($repl);
-is 1+@tabs, 0+@new_tabs, "We added a tab";
-if (! is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 1, "We added our tab" ) {
-    for (@new_tabs) {
-        diag "<$_->{title}>";
+    my @new_tabs = $ff->openTabs($repl);
+    is 1+@tabs, 0+@new_tabs, "We added a tab";
+    if (! is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 1, "We added our tab" ) {
+        for (@new_tabs) {
+            diag "<$_->{title}>";
+        };
     };
-};
 
-$ff->closeTab($tab2);
-@new_tabs = $ff->openTabs($repl);
-if (! is 0+@tabs, 0+@new_tabs, "We closed a tab") {
-    for (@new_tabs) {
-        diag $_->{title};
+    $ff->closeTab($tab2);
+    @new_tabs = $ff->openTabs($repl);
+    if (! is 0+@tabs, 0+@new_tabs, "We closed a tab") {
+        for (@new_tabs) {
+            diag $_->{title};
+        };
     };
-};
-if (!is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 0, "We removed our tab"){
-    for (@new_tabs) {
-        diag $_->{title};
+    if (!is 0+(grep { $_->{title} eq $magic2 } @new_tabs), 0, "We removed our tab"){
+        for (@new_tabs) {
+            diag $_->{title};
+        };
     };
-};
 
-undef $ff;
-diag "App released";
-undef $mech; # and close that tab
-diag "Mech released";
+    undef $ff;
+    diag "App released";
+    undef $mech; # and close that tab
+    diag "Mech released";
+});
