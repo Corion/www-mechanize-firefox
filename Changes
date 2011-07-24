@@ -10,6 +10,10 @@ TO DO:
     . Make ->set_visible actually use ->field()
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
+0.54 to be released
+    . The tests can now run against other Firefox installations under
+        firefox-versions/(v.v.v)/FirefoxPortable.exe
+    + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
 
 0.53 20110701
     ! Renamed ff-scrape.pl to scrape-ff.pl
