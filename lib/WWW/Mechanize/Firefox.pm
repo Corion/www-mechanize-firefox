@@ -3237,8 +3237,8 @@ sub content_as_png {
         var win = browser.contentWindow;
         var left = rect.left || 0;
         var top = rect.top || 0;
-        var width = rect.width || win.document.width;
-        var height = rect.height || win.document.height;
+        var width = rect.width || win.document.body.clientWidth;
+        var height = rect.height || win.document.body.clientHeight;
         canvas.width = width;
         canvas.height = height;
         var ctx = canvas.getContext('2d');
