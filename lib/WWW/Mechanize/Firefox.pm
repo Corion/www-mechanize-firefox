@@ -2022,7 +2022,7 @@ sub xpath {
             #warn ">Searching @$query in $doc->{title}";
             # Munge the multiple @$queries into one:
             my $q = join "|", @$query;
-#            warn $q;
+            #warn $q;
             my @found = map { $doc->__xpath($_, $n) } $q; # @$query;
             #warn "Found $_->{tagName}" for @found;
             push @res, @found;
@@ -2939,14 +2939,14 @@ sub set_visible {
     my $form = $self->current_form;
     my @form;
     if ($form) { @form = (node => $form) };
-    my @visible_fields = $self->xpath(q{//input[@type != "hidden" and @type!= "button"]}, 
+    my @visible_fields = $self->xpath(q{//input[not(@type) or (@type != "hidden" and @type!= "button" and @type!="submit")]}, 
                                       @form
                                       );
     for my $idx (0..$#values) {
         if ($idx > $#visible_fields) {
             $self->signal_condition( "Not enough fields on page" );
         }
-        $visible_fields[ $idx ]->{value} = $values[ $idx ];
+        $self->field( $visible_fields[ $idx ] => $values[ $idx ]);
     }
 }
 
