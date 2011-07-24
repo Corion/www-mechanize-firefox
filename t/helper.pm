@@ -46,8 +46,20 @@ sub run_across_instances {
             if ($mech->can('application')) {
                 $mech = $mech->application;
             };
-            $mech->quit;
-            sleep 1; # justin case
+            #// $mech->quit;
+            # Quit in 100ms, so we have time to shut our socket down
+            $mech->repl->expr(<<'JS');
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        var win = wm.getMostRecentWindow('navigator:browser');
+        win.setTimeout(function() {
+            Components.classes["@mozilla.org/toolkit/app-startup;1"]
+                     .getService(Components.interfaces.nsIAppStartup).quit(0x02);
+        }, 500);
+JS
+            undef $mech;
+            sleep 1; # So the browser can shut down before we try to connect
+            # to the new instance
         };
     };
 };
