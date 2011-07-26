@@ -78,13 +78,14 @@ sub new {
     my $use_queue = exists $args{ use_queue } ? delete $args{ use_queue } : 1;
     my $api = delete $args{ api };
     if (! ref $args{ repl }) {
-        my $exe = delete $args{ launch };
+        my @passthrough = qw(repl js_JSON launch);
+        my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () } 
+                      @passthrough;
         $args{ repl } = MozRepl::RemoteObject->install_bridge(
-            repl   => $args{ repl } || undef,
-            launch => $exe,
             log => $loglevel,
             use_queue => $use_queue,
             bufsize => delete $args{ bufsize },
+            %options,
         );
     };
     
