@@ -141,6 +141,15 @@ suitable for initializing one
 C<use_queue> - whether to use the command queueing of L<MozRepl::RemoteObject>.
 Default is 1.
 
+=item *
+
+C<js_JSON> - whether to use native JSON encoder of Firefox
+
+    js_JSON => 'native', # force using the native JSON encoder
+
+The default is to autodetect whether a native JSON encoder is available and
+whether the transport is UTF-8 safe.
+
 =item * 
 
 C<pre_events> - the events that are sent to an input field before its
@@ -159,7 +168,7 @@ sub new {
     my ($class, %args) = @_;
     
     if (! ref $args{ app }) {
-        my @passthrough = qw(launch repl bufsize log use_queue);
+        my @passthrough = qw(launch repl bufsize log use_queue js_JSON);
         my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () } 
                       @passthrough;
         $args{ app } = Firefox::Application->new(
