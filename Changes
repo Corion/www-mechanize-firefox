@@ -12,9 +12,14 @@ TO DO:
     . Make ->set_visible also support select+option inputs
 
 0.54 to be released
+    + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
+    + Bugfix: ->set_visible now also finds input fields without "type" attribute
+    . ->set_visible() now also has tests
+    
     + WWW::Mechanize::Firefox is currently tested against the following versions
         - 3.0.19
         - 3.5.19
+        - 3.6.19
         - 4.0.1
         - 5.0.1
         - 6.0 Beta
@@ -23,9 +28,6 @@ TO DO:
     . The search glob for Firefox versions to run the tests against can
       be set via $ENV{TEST_WWW_MECHANIZE_FIREFOX_VERSIONS}
       The default is firefox-versions/*/FirefoxPortable*
-    + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
-    + Bugfix: ->set_visible now also finds input fields without "type" attribute
-    . ->set_visible() now also has tests
 
 0.53 20110701
     ! Renamed ff-scrape.pl to scrape-ff.pl
