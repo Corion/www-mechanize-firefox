@@ -14,3 +14,4 @@ CVS/
 .bak$
 ^cover_db/
 ^db/
+^firefox-versions/
