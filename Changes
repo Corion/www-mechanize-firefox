@@ -11,7 +11,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.54 to be released
+0.54 20110726
     + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
     + Bugfix: ->set_visible now also finds input fields without "type" attribute
     . ->set_visible() now also has tests
