@@ -50,7 +50,7 @@ sub run_across_instances {
                 $mech = $mech->application;
             };
             #// $mech->quit;
-            # Quit in 100ms, so we have time to shut our socket down
+            # Quit in 500ms, so we have time to shut our socket down
             $mech->repl->expr(<<'JS');
         var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                            .getService(Components.interfaces.nsIWindowMediator);
@@ -61,7 +61,7 @@ sub run_across_instances {
         }, 500);
 JS
             undef $mech;
-            sleep 1; # So the browser can shut down before we try to connect
+            sleep 2; # So the browser can shut down before we try to connect
             # to the new instance
         };
     };

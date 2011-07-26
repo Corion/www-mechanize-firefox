@@ -35,7 +35,7 @@ JS
 is $listener->{busy}, 1, 'Event was fired';
 is $listener->{event}, $name, '... and it was our event';
 
-$mech->repl->expr(<<JS, $mech->repl);
+$mech->repl->expr(<<JS);
     var b = $rn.getLink($browser_id);
     var ev = b.contentWindow.content.document.createEvent('MouseEvents');
     ev.initMouseEvent('click', true, true, window,
