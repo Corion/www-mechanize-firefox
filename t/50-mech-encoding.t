@@ -7,7 +7,7 @@ use t::helper;
 
 # What instances of Firefox will we try?
 my $instance_port = 4243;
-my @instances = t::helper::firefox_instances();
+my @instances = t::helper::firefox_instances(qr/5\.0/);
 
 my @tests = (
     [ 'mixi_jp_index.html', 'EUC-JP', qr/\x{30DF}\x{30AF}\x{30B7}\x{30A3}/ ],
@@ -37,6 +37,7 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
         my ($file,$encoding,$content_re) = @$_;
         $mech->get_local($file);
         is $mech->content_encoding, $encoding, "$file has encoding $encoding";
+        diag length $mech->content;
         like $mech->content, $content_re, "Partial expression gets found in UTF-8 content";
     };
 });
