@@ -91,6 +91,13 @@ METHODS
     *   `use_queue' - whether to use the command queueing of
         MozRepl::RemoteObject. Default is 1.
 
+    *   `js_JSON' - whether to use native JSON encoder of Firefox
+
+            js_JSON => 'native', # force using the native JSON encoder
+
+        The default is to autodetect whether a native JSON encoder is
+        available and whether the transport is UTF-8 safe.
+
     *   `pre_events' - the events that are sent to an input field before its
         value is changed. By default this is `[focus]'.
 
