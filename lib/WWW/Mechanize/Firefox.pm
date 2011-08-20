@@ -3236,18 +3236,22 @@ sub content_as_png {
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     my $screenshot = $self->repl->declare(<<'JS');
     function (tab,rect) {
+        var browser = tab.linkedBrowser;
         var browserWindow = Components.classes['@mozilla.org/appshell/window-mediator;1']
             .getService(Components.interfaces.nsIWindowMediator)
             .getMostRecentWindow('navigator:browser');
+        var win = browser.contentWindow;
+        var body = win.document.body;
+        if(!body) {
+            return;
+        };
         var canvas = browserWindow
                .document
                .createElementNS('http://www.w3.org/1999/xhtml', 'canvas');
-        var browser = tab.linkedBrowser;
-        var win = browser.contentWindow;
         var left = rect.left || 0;
         var top = rect.top || 0;
-        var width = rect.width || win.document.body.clientWidth;
-        var height = rect.height || win.document.body.clientHeight;
+        var width = rect.width || body.clientWidth;
+        var height = rect.height || body.clientHeight;
         canvas.width = width;
         canvas.height = height;
         var ctx = canvas.getContext('2d');
@@ -3264,7 +3268,8 @@ sub content_as_png {
         // );
     }
 JS
-    return decode_base64($screenshot->($tab, $rect))
+    my $scr = $screenshot->($tab, $rect);
+    return $scr ? decode_base64($scr) : undef
 };
 
 =head2 C<< $mech->element_as_png( $element ) >>
