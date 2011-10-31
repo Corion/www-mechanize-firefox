@@ -602,7 +602,14 @@ EXTRACTION METHODS
         This may or may not conflict with `node'. This will default to the
         `frames' setting of the WWW::Mechanize::Firefox object.
 
-    *   `node' - node relative to which the query is to be executed
+    *   `node' - node relative to which the query is to be executed. Note
+        that you will have to use a relative XPath expression as well. Use
+
+          .//foo
+
+        instead of
+
+          //foo
 
     *   `single' - If true, ensure that only one element is found. Otherwise
         croak or carp, depending on the `autodie' parameter.
@@ -690,6 +697,15 @@ EXTRACTION METHODS
         of the events listed in `events' is fired. You want to switch it off
         when there will be no HTTP response or DOM event fired, for example
         for clicks that only modify the DOM.
+
+        You can pass in a scalar that is a false value to not wait for any
+        kind of event.
+
+        Passing in an array reference will use the array elements as
+        Javascript events to wait for.
+
+        Passing in any other true value will use the value of `->events' as
+        the list of events to wait for.
 
     Returns a HTTP::Response object.
 

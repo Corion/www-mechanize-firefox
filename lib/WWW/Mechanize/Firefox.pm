@@ -18,7 +18,7 @@ use Encode qw(encode decode);
 use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec';
-$VERSION = '0.55';
+$VERSION = '0.56';
 
 =head1 NAME
 
