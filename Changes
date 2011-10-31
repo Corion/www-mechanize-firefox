@@ -11,6 +11,8 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.56 to be released
+    . Make "frames => 0" work in constructor (+test)
 0.55 20110728
     . Re-release of 0.54, this time including t/helper.pm for the tests
 

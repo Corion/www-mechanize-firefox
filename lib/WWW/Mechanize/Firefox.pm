@@ -213,7 +213,9 @@ sub new {
     $args{ on_event } ||= undef;
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
-    $args{ frames } ||= 1; # we default to searching frames
+    if( ! exists $args{ frames }) {
+        $args{ frames } ||= 1; # we default to searching frames
+    };
 
     die "No tab found"
         unless $args{tab};
