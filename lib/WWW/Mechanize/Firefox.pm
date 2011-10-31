@@ -1932,7 +1932,15 @@ C<frames> setting of the WWW::Mechanize::Firefox object.
 
 =item *
 
-C<< node >> - node relative to which the query is to be executed
+C<< node >> - node relative to which the query is to be executed. Note
+that you will have to use a relative XPath expression as well. Use
+
+  .//foo
+
+instead of
+
+  //foo
+
 
 =item *
 
