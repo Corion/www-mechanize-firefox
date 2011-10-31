@@ -701,10 +701,15 @@ sub get {
         $flags = $self->repl->constant('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
     };
     if (! exists $options{ synchronize }) {
-        $options{ synchronize } = 1;
+        $options{ synchronize } = $self->events;
+    };
+    if( !ref $options{ synchronize }) {
+        $options{ synchronize } = $options{ synchronize }
+                                ? $self->events
+                                : []
     };
     
-    $self->_sync_call( $options{ synchronize }, $self->{events}, sub {
+    $self->_sync_call( $options{ synchronize }, sub {
         if (my $target = delete $options{":content_file"}) {
             $self->save_url($url => ''.$target, %options);
         } else {
@@ -1078,9 +1083,9 @@ sub reload {
 # Internal convenience method for dipatching a call either synchronized
 # or not
 sub _sync_call {
-    my ($self, $synchronize, $events, $cb) = @_;
+    my ($self, $events, $cb) = @_;
 
-    if ($synchronize) {
+    if (@$events) {
         $self->synchronize( $events, $cb );
     } else {
         $cb->();
@@ -1100,8 +1105,13 @@ Returns the (new) response.
 sub back {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
+    if( !ref $synchronize ) {
+        $synchronize = $synchronize
+                     ? $self->events
+                     : []
+    };
     
-    $self->_sync_call($synchronize, $self->events, sub {
+    $self->_sync_call($synchronize, sub {
         $self->tab->{linkedBrowser}->goBack;
     });
 }
@@ -1119,8 +1129,13 @@ Returns the (new) response.
 sub forward {
     my ($self, $synchronize) = @_;
     $synchronize ||= (@_ != 2);
+    if( !ref $synchronize ) {
+        $synchronize = $synchronize
+                     ? $self->events
+                     : []
+    };
     
-    $self->_sync_call($synchronize, $self->events, sub {
+    $self->_sync_call($synchronize, sub {
         $self->tab->{linkedBrowser}->goForward;
     });
 }
@@ -2173,6 +2188,15 @@ one of the events listed in C<events> is fired. You want to switch
 it off when there will be no HTTP response or DOM event fired, for
 example for clicks that only modify the DOM.
 
+You can pass in a scalar that is a false value to not wait for
+any kind of event.
+
+Passing in an array reference will use the array elements as
+Javascript events to wait for.
+
+Passing in any other true value will use the value of C<< ->events >>
+as the list of events to wait for.
+
 =back
 
 Returns a L<HTTP::Response> object.
@@ -2212,7 +2236,11 @@ sub click {
     };
     
     if (! exists $options{ synchronize }) {
-        $options{ synchronize } = 1;
+        $options{ synchronize } = $self->events;
+    } elsif( ! ref $options{ synchronize }) {
+        $options{ synchronize } = $options{ synchronize }
+                                ? $self->events
+                                : [],
     };
     
     if ($options{ dom }) {
@@ -2222,7 +2250,7 @@ sub click {
     };
         
     $self->_sync_call(
-        $options{ synchronize }, $self->events, sub { # ,'abort'
+        $options{ synchronize }, sub { # ,'abort'
             $buttons[0]->__click();
         }
     );
