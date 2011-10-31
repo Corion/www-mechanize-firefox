@@ -7,7 +7,7 @@ use t::helper;
 
 # What instances of Firefox will we try?
 my $instance_port = 4243;
-my @instances = t::helper::firefox_instances(qr/5\.0/);
+my @instances = t::helper::firefox_instances();
 
 my @tests = (
     [ 'mixi_jp_index.html', 'EUC-JP', qr/\x{30DF}\x{30AF}\x{30B7}\x{30A3}/ ],
