@@ -2058,7 +2058,6 @@ sub xpath {
             my $q = join "|", @$query;
             #warn $q;
             my @found = map { $doc->__xpath($_, $n) } $q; # @$query;
-            #warn "Found $_->{tagName}" for @found;
             push @res, @found;
             
             # A small optimization to return if we already have enough elements
