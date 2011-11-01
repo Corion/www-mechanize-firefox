@@ -101,6 +101,8 @@ t/52-mech-api-find_link.t
 t/52-mech-xpath.t
 t/52-selector-frames.t
 t/52-selector-noframes.t
+t/52-selector-relative.html
+t/52-selector-relative.t
 t/52-subframe.html
 t/53-mech-capture-js-error.html
 t/53-mech-capture-js-error.t

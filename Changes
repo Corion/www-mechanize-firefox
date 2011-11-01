@@ -11,6 +11,10 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.57 to be released
+    . Make relative queries work for ->selector()
+      with "node => $foo"
+      Reported by Rolf Langsdorf
 0.56 20111031
     . Make "frames => 0" work in constructor (+test)
 0.55 20110728
