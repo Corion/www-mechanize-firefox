@@ -1956,7 +1956,6 @@ instead of
 
   //foo
 
-
 =item *
 
 C<< single >> - If true, ensure that only one element is found. Otherwise croak
