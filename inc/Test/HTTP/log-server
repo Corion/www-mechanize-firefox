@@ -103,7 +103,8 @@ SERVERLOOP: {
             (my $h = $r->headers->{host}) =~ s/:\d+//;
             my $rbody = sprintf $body,$location,$session,$query,@categories;
             $res = HTTP::Response->new(200, "OK", [
-                  "Set-Cookie" => $q->cookie(-name => 'log-server',-value=>'shazam2', -discard=>1,),
+                  'Set-Cookie' => $q->cookie(-name => 'log-server-httponly',-value=>'supersecret', -discard => 1, -httponly=>1),
+                  'Set-Cookie' => $q->cookie(-name => 'log-server',-value=>'shazam2', -discard=>1,),
                   'Cache-Control' => 'no-cache',
                   'Pragma' => 'no-cache',
                   'Max-Age' => 0,

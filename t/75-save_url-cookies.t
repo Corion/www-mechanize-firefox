@@ -22,10 +22,12 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 7;
+    plan tests => 8;
 };
 
-my $server = Test::HTTP::LocalServer->spawn;
+my $server = Test::HTTP::LocalServer->spawn(
+    #debug => 1,
+);
 my $magic = "$0-shazam";
 
 $mech->get($server->url);
@@ -48,7 +50,6 @@ $cookies->set_cookie(
 
 my $count;
 $cookies->load;
-#$cookies->scan(sub{ diag "@_" if @_ =~ /hellboy/; $count++; });
 
 $mech->get($server->url);
 is $mech->status, 200, "We got the local page";
@@ -66,5 +67,8 @@ $log = $server->get_log;
 like $log, qr/^Cookie:.*? \Qwww_mechanize_firefox_test=$magic\E/m, "We sent the magic cookie";
 like $log, qr/^Cookie:.*? \Qlog-server\E/m, "We sent the webserver cookie";
 
+# Scan for HTTPOnly cookie
+$cookies->scan(sub{ $count++ if $_[1] eq 'log-server-httponly' and $_[2] eq 'supersecret' });
+is $count, 1, "We found the HTTPOnly cookie";
 
 $server->stop;

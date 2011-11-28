@@ -6,7 +6,7 @@ use parent 'HTTP::Cookies';
 use Carp qw[croak];
 
 use vars qw[$VERSION];
-$VERSION = '0.57';
+$VERSION = '0.58';
 
 =head1 NAME
 
@@ -74,8 +74,13 @@ JS
     # as one huge data structure
     for my $c ($fetch_cookies->($e,$nsICookie)) {
         my @v = as_list $c;
-        $v[8] -= time;
-        $self->SUPER::set_cookie(as_list $c);
+        if( $v[8] > 0) {
+            $v[8] -= time;
+        } elsif( $v[8] == 0 ) {
+            # session cookie, we never let it expire within HTTP::Cookie
+            $v[8] += 3600; # well, "never"
+        };
+        $self->SUPER::set_cookie(@v);
     };
 
     # This code is pure Perl, but involves far too many roundtrips :-(
