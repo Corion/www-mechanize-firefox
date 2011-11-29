@@ -62,6 +62,7 @@ t/50-mech-bufsize.t
 t/50-mech-closeTab.t
 t/50-mech-ct.t
 t/50-mech-encoding.t
+t/50-mech-error.t
 t/50-mech-event.t
 t/50-mech-forms.t
 t/50-mech-get-nocache.t

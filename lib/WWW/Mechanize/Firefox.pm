@@ -17,7 +17,7 @@ use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
 use Carp qw(carp croak );
 
-use vars qw'$VERSION %link_spec';
+use vars qw'$VERSION %link_spec @CARP_NOT';
 $VERSION = '0.58';
 
 =head1 NAME
@@ -429,9 +429,13 @@ JS
 JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
     # Report errors from scope of caller
-    local @MozRepl::RemoteObject::Instance::CARP_NOT = (@MozRepl::RemoteObject::Instance::CARP_NOT,__PACKAGE__);
-    #warn Dumper @MozRepl::RemoteObject::CARP_NOT;
-    return $eval_in_sandbox->($window,$doc,$str,$js_env);
+    # This feels weirdly backwards here, but oh well:
+    @CARP_NOT = (ref $self->repl); # we trust this
+    #local @MozRepl::RemoteObject::Instance::CARP_NOT = (@MozRepl::RemoteObject::Instance::CARP_NOT,__PACKAGE__);
+    #local @MozRepl::RemoteObject::CARP_NOT = (@MozRepl::RemoteObject::CARP_NOT,__PACKAGE__);
+    
+    
+    $eval_in_sandbox->($window,$doc,$str,$js_env);
 };
 *eval = \&eval_in_page;
 
