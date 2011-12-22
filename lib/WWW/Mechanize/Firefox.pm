@@ -3054,8 +3054,7 @@ sub is_visible {
     return
         unless $options{ dom };
     $options{ window } ||= $self->tab->{linkedBrowser}->{contentWindow};
-    
-    
+
     my $_is_visible = $self->repl->declare(<<'JS');
     function (obj,window)
     {
@@ -3083,7 +3082,7 @@ sub is_visible {
                 if (style.visibility == 'hidden') {
                     return false;
                 };
-            }
+            };
             obj = obj.parentNode;
         };
         // The object does not live in the DOM at all
