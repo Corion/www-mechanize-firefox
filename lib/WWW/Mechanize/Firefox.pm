@@ -411,7 +411,7 @@ JS
     };
     
     my $eval_in_sandbox = $self->repl->declare(<<'JS', 'list');
-    function (w,d,str,env) {
+    function (w,d,str,env,caller,line) {
         var unsafeWin = w.wrappedJSObject;
         var safeWin = XPCNativeWrapper(unsafeWin);
         var sandbox = Components.utils.Sandbox(safeWin);
@@ -423,7 +423,8 @@ JS
             sandbox.window[e] = env[e]
         }
         sandbox.__proto__ = unsafeWin;
-        var res = Components.utils.evalInSandbox(str, sandbox);
+
+        var res = Components.utils.evalInSandbox(str, sandbox, "1.8",caller,line);
         return [res,typeof(res)];
     };
 JS
@@ -434,8 +435,9 @@ JS
     #local @MozRepl::RemoteObject::Instance::CARP_NOT = (@MozRepl::RemoteObject::Instance::CARP_NOT,__PACKAGE__);
     #local @MozRepl::RemoteObject::CARP_NOT = (@MozRepl::RemoteObject::CARP_NOT,__PACKAGE__);
     
+    my ($caller,$line) = (caller)[1,2];
     
-    $eval_in_sandbox->($window,$doc,$str,$js_env);
+    $eval_in_sandbox->($window,$doc,$str,$js_env,$caller,$line);
 };
 *eval = \&eval_in_page;
 
