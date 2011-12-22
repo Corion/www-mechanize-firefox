@@ -57,16 +57,18 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
         $mech->allow('javascript' => 1);
         my ($timer,$type) = $mech->eval_in_page('timer');
         (my ($window),$type) = $mech->eval_in_page('window');
+        $window = $mech->tab->{linkedBrowser}->{contentWindow};
 
         ok $mech->is_visible(selector => 'body'), "We can see the body";
         
         my $standby = $mech->by_id('standby', single=>1);
-
         if(! ok !$mech->is_visible(selector => '#standby'), "We can't see #standby") {
-            diag $standby->{style}->{display};
-            diag $standby->{style}->{visibility};
-            diag $window->getComputedStyle($standby,undef)->{display};
-            diag $window->getComputedStyle($standby,undef)->{visibility};
+            my $style = $standby->{style};
+            diag "style.visibility          <" . $style->{visibility} . ">";
+            diag "style.display             <" . $style->{display} . ">";
+            $style = $window->getComputedStyle($standby, undef);
+            diag "computed-style.visibility <" . $style->{visibility} . ">";
+            diag "computed-style.display    <" . $style->{display} . ">";
         };
         ok !$mech->is_visible(selector => '.status', any => 1), "We can't see .status even though there exist multiple such elements";
         $mech->click({ selector => '#start', synchronize => 0 });
@@ -74,11 +76,19 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
 
         ok $mech->is_visible(selector => '#standby'), "We can see #standby";
         my $ok = eval {
-            $mech->wait_until_invisible(selector => '#start', timeout => $timer+2);
+            $mech->wait_until_invisible(selector => '#standby', timeout => $timer+2);
             1;
         };
         is $ok, 1, "No timeout" or diag $@;
-        ok !$mech->is_visible(selector => '#standby'), "The #standby is invisible";
+        if(! ok( !$mech->is_visible(selector => '#standby'), "The #standby is invisible")) {
+            my $style = $standby->{style};
+            diag "style.visibility          <" . $style->{visibility} . ">";
+            diag "style.display             <" . $style->{display} . ">";
+            $style = $window->getComputedStyle($standby, undef);
+            diag "computed-style.visibility <" . $style->{visibility} . ">";
+            diag "computed-style.display    <" . $style->{display} . ">";
+        };
+        
 
         # Now test with plain text
         $mech->get_local($file);
@@ -87,8 +97,12 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
         ($timer,$type) = $mech->eval_in_page('timer');
 
         if(! ok( !$mech->is_visible(xpath => '//*[contains(text(),"stand by")]'), "We can't see the standby message (via its text)")) {
-            diag "style.visibility <" . $standby->{style}->{visibility} . ">";
-            diag "style.display    <" . $standby->{style}->{display} . ">";
+            my $style = $standby->{style};
+            diag "style.visibility          <" . $style->{visibility} . ">";
+            diag "style.display             <" . $style->{display} . ">";
+            $style = $window->getComputedStyle($standby, undef);
+            diag "computed-style.visibility <" . $style->{visibility} . ">";
+            diag "computed-style.display    <" . $style->{display} . ">";
         };
         
         $mech->click({ selector => '#start', synchronize => 0 });
