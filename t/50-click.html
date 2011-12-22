@@ -7,6 +7,19 @@ var w;
 var counter=0;
 
 window.setTimeout(function(){counter++},1000);
+
+function foo() {
+     return "foo called"
+};
+
+function call_foo() {
+     return foo();
+};
+
+function call_bar() {
+     return bar();
+};
+
 </script>
 </head>
 <body>
