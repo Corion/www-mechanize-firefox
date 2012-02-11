@@ -16,7 +16,7 @@ package WWW::Mechanize::Firefox::Examples;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.58';
+$VERSION = '0.59';
 
 1;
 
@@ -79,7 +79,7 @@ The following is a list of the 12 example programs that are included in the WWW:
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/open-local-file.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/open-local-file.pl>
 
 =head2 Example: open-url.pl
 
@@ -94,7 +94,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     <>;
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/open-url.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/open-url.pl>
 
 =head2 Example: screenshot.pl
 
@@ -108,6 +108,11 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
         'mozrepl|m:s' => \my $mozrepl,
         'outfile|o:s' => \my $outfile,
         'tab|t:s' => \my $tab,
+        'target-width|tw:s' => \my $target_w,
+        'target-height|th:s' => \my $target_h,
+        'target-scale|s:s' => \my $target_scale,
+        'target-scale-x|sx:s' => \my $target_scale_w,
+        'target-scale-y|sy:s' => \my $target_scale_h,
         'current|c' => \my $current,
     ) or pod2usage();
     $outfile ||= 'screenshot.png';
@@ -134,7 +139,14 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     if (@ARGV) {
         $mech->get($ARGV[0]);
     };
-    my $png = $mech->content_as_png();
+    my $png = $mech->content_as_png(undef,undef,
+        {
+            width => $target_w,
+            height => $target_h,
+            scalex => ($target_scale_w||$target_scale),
+            scaley => ($target_scale_h||$target_scale),
+        }
+    );
     
     open my $out, '>', $outfile
         or die "Couldn't create '$outfile': $!";
@@ -152,6 +164,11 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     Options:
        --outfile        name of output file
        --mozrepl        connection string to Firefox
+       --tab            name of the tab title to use
+       --current        use currently active tab
+       --target-width   width of target image (in pixels)
+       --target-height  height of target image (in pixels)
+       --target-scale   scale of target image (ratio)
     
     =head1 OPTIONS
     
@@ -176,7 +193,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/screenshot.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/screenshot.pl>
 
 =head2 Example: dump-links.pl
 
@@ -212,7 +229,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/dump-links.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/dump-links.pl>
 
 =head2 Example: bcat.pl
 
@@ -335,7 +352,7 @@ if (! $encode_type) {
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/bcat.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/bcat.pl>
 
 =head2 Example: manipulate-javascript.pl
 
@@ -374,7 +391,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/manipulate-javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/manipulate-javascript.pl>
 
 =head2 Example: javascript.pl
 
@@ -406,7 +423,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/javascript.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/javascript.pl>
 
 =head2 Example: js-console.pl
 
@@ -490,7 +507,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/js-console.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/js-console.pl>
 
 =head2 Example: tail-console.pl
 
@@ -610,7 +627,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/tail-console.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/tail-console.pl>
 
 =head2 Example: urlbar.pl
 
@@ -721,7 +738,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     };
 
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/urlbar.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/urlbar.pl>
 
 =head2 Example: fullscreen.pl
 
@@ -759,7 +776,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/fullscreen.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/fullscreen.pl>
 
 =head2 Example: proxy-settings.pl
 
@@ -810,7 +827,7 @@ my $prefs = $ff->repl->expr(<<'JS');
     
     =cut
 
-Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.58/examples/proxy-settings.pl>
+Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Firefox-0.59/examples/proxy-settings.pl>
 
 =head1 AUTHOR
 
