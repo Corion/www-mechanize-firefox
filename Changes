@@ -11,7 +11,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.59 to be released
+0.59 20120211
     + Report Javascript errors from the perspective of the caller
       instead of a location in WWW::Mechanize::Firefox
     ! ->wait_until_invisible() requeries selectors now instead
