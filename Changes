@@ -13,7 +13,9 @@ TO DO:
 
 0.59 to be released
     + Report Javascript errors from the perspective of the caller
-      instead of a location in WWW::Mechanize::Firefox
+      instead of a location in WWW::Mechanize::Firefox
+    ! ->wait_until_invisible() requeries selectors now instead
+      of only querying them once.
 0.58 20111128
     ! Fix cookie handling which was weirdly broken yet the tests passed.
       Session cookies now get returned

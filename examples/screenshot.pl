@@ -8,6 +8,11 @@ GetOptions(
     'mozrepl|m:s' => \my $mozrepl,
     'outfile|o:s' => \my $outfile,
     'tab|t:s' => \my $tab,
+    'target-width|tw:s' => \my $target_w,
+    'target-height|th:s' => \my $target_h,
+    'target-scale|s:s' => \my $target_scale,
+    'target-scale-x|sx:s' => \my $target_scale_w,
+    'target-scale-y|sy:s' => \my $target_scale_h,
     'current|c' => \my $current,
 ) or pod2usage();
 $outfile ||= 'screenshot.png';
@@ -34,7 +39,14 @@ my $mech = WWW::Mechanize::Firefox->new(
 if (@ARGV) {
     $mech->get($ARGV[0]);
 };
-my $png = $mech->content_as_png();
+my $png = $mech->content_as_png(undef,undef,
+    {
+        width => $target_w,
+        height => $target_h,
+        scalex => ($target_scale_w||$target_scale),
+        scaley => ($target_scale_h||$target_scale),
+    }
+);
 
 open my $out, '>', $outfile
     or die "Couldn't create '$outfile': $!";
@@ -52,6 +64,11 @@ screenshot.pl [options] [url]
 Options:
    --outfile        name of output file
    --mozrepl        connection string to Firefox
+   --tab            name of the tab title to use
+   --current        use currently active tab
+   --target-width   width of target image (in pixels)
+   --target-height  height of target image (in pixels)
+   --target-scale   scale of target image (ratio)
 
 =head1 OPTIONS
 

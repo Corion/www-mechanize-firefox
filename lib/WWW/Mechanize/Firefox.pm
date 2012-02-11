@@ -3119,6 +3119,15 @@ intervals are possible.
 
 =back
 
+Note that when passing in a selector, that selector is requeried
+on every poll instance. So the following query will work as expected:
+
+  xpath => '//*[contains(text(),"stand by")]'
+
+This also means that if your selector query relies on finding
+a changing text, you need to pass the node explicitly instead of
+passing the selector.
+
 =cut
 
 sub wait_until_invisible {
@@ -3133,23 +3142,25 @@ sub wait_until_invisible {
     
     _default_limiter( 'maybe', \%options );
 
-    if (! $options{dom}) {
-        $options{dom} = $self->_option_query(%options);
-    };
-    return
-        unless $options{dom};
 
     my $timeout_after;
     if ($timeout) {
         $timeout_after = time + $timeout;
     };
     my $v;
-    while (     $v = $self->is_visible($options{dom})
-           and (!$timeout_after or time < $timeout_after )) {
+    my $node;
+    do {
+        $node = $options{ dom };
+        if (! $node) {
+            $node = $self->_option_query(%options);
+        };
+        return
+            unless $node;
         sleep $sleep;
-    };
-    if (! $v and time > $timeout_after) {
-        croak "Timeout of $timeout seconds reached while waiting for element";
+    } while (     $v = $self->is_visible($node)
+           and (!$timeout_after or time < $timeout_after ));
+    if ($node and time >= $timeout_after) {
+        croak "Timeout of $timeout seconds reached while waiting for element to become invisible";
     };    
 };
 
