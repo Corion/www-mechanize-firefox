@@ -3250,7 +3250,7 @@ sub expand_frames {
 
 =head1 IMAGE METHODS
 
-=head2 C<< $mech->content_as_png( [$tab, \%coordinates ] ) >>
+=head2 C<< $mech->content_as_png( [$tab, \%coordinates, \%target_size ] ) >>
 
     my $png_data = $mech->content_as_png();
 
@@ -3270,9 +3270,25 @@ If the coordinates are given, that rectangle will be cut out.
 The coordinates should be a hash with the four usual entries,
 C<left>,C<top>,C<width>,C<height>.
 
+=item *
+
+The target size of the image can also be given. It defaults to
+the size of the image. The allowed parameters in the hash are
+
+C<scalex>, C<scaley> - for specifying the scale, default is 1.0 in each direction.
+
+C<width>, C<height> - for specifying the target size
+
+If you want the resulting image to be 480 pixels wide, specify
+
+    { width: 480 }
+
+The height will then be calculated from the ratio of original width to
+original height.
+
 =back
 
-This is specific to WWW::Mechanize::Firefox.
+This method is specific to WWW::Mechanize::Firefox.
 
 Currently, the data transfer between Firefox and Perl
 is done Base64-encoded. It would be beneficial to find what's
@@ -3281,14 +3297,16 @@ necessary to make JSON handle binary data more gracefully.
 =cut
 
 sub content_as_png {
-    my ($self, $tab, $rect) = @_;
+    my ($self, $tab, $rect, $target_rect) = @_;
     $tab ||= $self->tab;
     $rect ||= {};
+    $target_rect ||= {};
     
     # Mostly taken from
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
+    # Except for the addition of a target image size
     my $screenshot = $self->repl->declare(<<'JS');
-    function (tab,rect) {
+    function (tab,rect,target_rect) {
         var browser = tab.linkedBrowser;
         var browserWindow = Components.classes['@mozilla.org/appshell/window-mediator;1']
             .getService(Components.interfaces.nsIWindowMediator)
@@ -3305,12 +3323,34 @@ sub content_as_png {
         var top = rect.top || 0;
         var width = rect.width || body.clientWidth;
         var height = rect.height || body.clientHeight;
-        canvas.width = width;
-        canvas.height = height;
+        
+        if( isNaN( target_rect.scalex * target_rect.scaley )) {
+            // No scale was given
+            // Was a fixed target width / height given?
+            if( target_rect.width ) {
+                target_rect.scalex = target_rect.width / width;
+            };
+            if( target_rect.height ) {
+                target_rect.scaley = target_rect.height / height
+            };
+
+            // If only one of scalex / scaley is given, force the other
+            // to be the same, default to 1.0
+            target_rect.scalex = target_rect.scalex || target_rect.scaley || (target_rect.width / width) || 1.0;
+            target_rect.scaley = target_rect.scaley || target_rect.scalex || (target_rect.height / height) || 1.0;
+        } else {
+            // alert("scales fixed");
+        };
+        // Calculate the target width/height if missing:
+        target_rect.height = target_rect.height || height * target_rect.scaley;
+        target_rect.width  = target_rect.width  || width * target_rect.scalex;
+        
+        canvas.width = target_rect.width;
+        canvas.height = target_rect.height;
         var ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
+        ctx.clearRect(0, 0, target_rect.width, target_rect.height);
         ctx.save();
-        ctx.scale(1.0, 1.0);
+        ctx.scale(target_rect.scalex, target_rect.scaley);
         ctx.drawWindow(win, left, top, width, height, 'rgb(255,255,255)');
         ctx.restore();
 
@@ -3321,7 +3361,7 @@ sub content_as_png {
         // );
     }
 JS
-    my $scr = $screenshot->($tab, $rect);
+    my $scr = $screenshot->($tab, $rect, $target_rect);
     return $scr ? decode_base64($scr) : undef
 };
 

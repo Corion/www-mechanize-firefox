@@ -16,6 +16,7 @@ TO DO:
       instead of a location in WWW::Mechanize::Firefox
     ! ->wait_until_invisible() requeries selectors now instead
       of only querying them once.
+    + Add target size options when converting HTML to PNG
 0.58 20111128
     ! Fix cookie handling which was weirdly broken yet the tests passed.
       Session cookies now get returned
