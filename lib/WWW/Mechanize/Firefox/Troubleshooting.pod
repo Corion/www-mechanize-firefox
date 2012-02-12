@@ -14,13 +14,15 @@ to configure Firefox:
 
 =item 1.
 
-Install mozrepl from
+Install mozrepl 1.1.0 available from
 
 L<http://wiki.github.com/bard/mozrepl/>
 
-A direct link is
-   
-L<http://repo.hyperstruct.net/mozrepl/1.0/mozrepl.xpi>
+respectively
+
+L<https://github.com/bard/mozrepl/tags>
+
+You will need to edit the C<.zip> file into a C<.xpi> file.
 
 =item 2.
 
@@ -37,7 +39,7 @@ You may want to tick the "Activate on startup" item.
 Alternatively, launch the Firefox binary with the C<-mozrepl> command line
 switch:
 
-  firefox -mozrepl
+  firefox -repl
 
 If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
 this might be because you use the NoScript Mozilla extension
@@ -242,7 +244,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2010-2011, Max Maischein.
+Copyright 2010-2012 by Max Maischein C<corion@cpan.org>.
 
 All Rights Reserved. This module is free software. It may be used,
 redistributed and/or modified under the same terms as Perl itself.

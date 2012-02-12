@@ -837,7 +837,7 @@ Contributed examples contain the original author's name.
 
 =head1 COPYRIGHT
 
-Copyright 2010-2011, Max Maischein.
+Copyright 2009-2012 by Max Maischein C<corion@cpan.org>.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
 

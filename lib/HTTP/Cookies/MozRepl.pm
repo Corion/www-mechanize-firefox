@@ -128,7 +128,7 @@ __END__
 L<https://developer.mozilla.org/en/nsICookieManager> -
 nsICookieManager documentation
 
-L<HTTP::Cookies> - the used interface
+L<HTTP::Cookies> - the interface used
 
 =head1 REPOSITORY
 
@@ -141,7 +141,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009-2011 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2012 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
