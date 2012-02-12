@@ -43,17 +43,21 @@ if (! $js_ok) {
     exit;
 };
 
-is_deeply [$mech->js_errors], [], "No errors reported on page";
+# Filter out the stupid Firefox warning about document.inputEncoding being
+# deprecated. If you deprecate it, also mark it in your documentation as
+# deprecated, and also document what to use instead!
+is_deeply [grep { $_->{message} !~ /inputEncoding/ }$mech->js_errors], [], "No errors reported on page";
 
 load_file_ok('53-mech-capture-js-noerror.html', javascript => 1 );
-is_deeply [$mech->js_errors], [], "No errors reported on page";
+is_deeply [ grep { $_->{message} !~ /inputEncoding/ } $mech->js_errors], [], "No errors reported on page";
 
 load_file_ok('53-mech-capture-js-error.html', javascript => 0);
-is_deeply [$mech->js_errors], [], "Errors on page";
+is_deeply [grep { $_->{message} !~ /inputEncoding/ } $mech->js_errors], [], "Errors on page";
 
 load_file_ok('53-mech-capture-js-error.html', javascript => 1);
-is scalar $mech->js_errors, 1, "One error message found";
-(my $msg) = $mech->js_errors;
+my @errors = grep { $_->{message} !~ /inputEncoding/ } $mech->js_errors;
+is scalar @errors, 1, "One error message found";
+(my $msg) = @errors;
 like $msg->{message}, qr/^\[JavaScript Error: "nonexisting_function is not defined"/, "Errors message";
 like $msg->{message}, qr!\Q53-mech-capture-js-error.html\E"!, "File name";
 like $msg->{message}, qr!\bline: 5\b!, "Line number";
