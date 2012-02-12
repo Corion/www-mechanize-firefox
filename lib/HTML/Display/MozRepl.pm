@@ -8,7 +8,7 @@ $VERSION = '0.59';
 
 =head1 NAME
 
-HTML::Display::MozRepl - use a mozrepl enabled FireFox to display HTML
+HTML::Display::MozRepl - use a mozrepl enabled Firefox to display HTML
 
 =head1 SYNOPSIS
 
