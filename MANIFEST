@@ -37,6 +37,7 @@ MANIFEST			This list of files
 MANIFEST.skip
 README
 README.mkdn
+t/00-load.t
 t/01-mech-destroy.t
 t/401-server
 t/47-mech-memleak2.t
