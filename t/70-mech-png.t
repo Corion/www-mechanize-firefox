@@ -14,7 +14,7 @@ if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 5*@instances;
+    plan tests => 12*@instances;
 };
 
 sub new_mech {
