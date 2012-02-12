@@ -55,6 +55,7 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
     my ($mozrepl) = grep { $_->{id} eq 'mozrepl@hyperstruct.net' } @addons;
     isn't $mozrepl, undef, "We find the mozrepl addon";
     is $mozrepl->{name}, 'MozRepl', 'The name is "MozRepl"';
+    diag "Using MozRepl version $mozrepl->{version}";
 
     my @locales = $ff->locales;
     ok @locales >= 0, "We can ask for ->locales";
