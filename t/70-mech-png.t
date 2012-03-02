@@ -41,7 +41,7 @@ sub image_dimensions_are {
         is_deeply $got, $_[1], $_[2]
             or diag Dumper $got;
     } else {
-        SKIP: skip "Image::Info not available", 1;
+        SKIP: { skip "Image::Info not available", 1; }
     };
 };
 

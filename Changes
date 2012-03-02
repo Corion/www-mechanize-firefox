@@ -11,6 +11,9 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.60 20120302
+    . Fix test failing when Image::Info was unavailable
+    ! Fix scaling bug in ->element_as_png()
 0.59 20120211
     + Report Javascript errors from the perspective of the caller
       instead of a location in WWW::Mechanize::Firefox

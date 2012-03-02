@@ -39,6 +39,7 @@ my $mech = WWW::Mechanize::Firefox->new(
 if (@ARGV) {
     $mech->get($ARGV[0]);
 };
+
 my $png = $mech->content_as_png(undef,undef,
     {
         width => $target_w,
