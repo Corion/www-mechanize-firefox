@@ -218,7 +218,7 @@ sub print_footer {
 
     print "=head1 COPYRIGHT\n\n";
 
-    print "Copyright 2009-2012 by Max Maischein C<corion@cpan.org>.\n\n";
+    print "Copyright 2009-2012 by Max Maischein C<corion\@cpan.org>.\n\n";
 
     print "All Rights Reserved. This module is free software. It may be used, ";
     print "redistributed and/or modified under the same terms as Perl itself.";
