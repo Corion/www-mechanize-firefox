@@ -35,6 +35,8 @@ lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
+MYMETA.json
+MYMETA.yml
 README
 README.mkdn
 t/00-load.t
@@ -70,6 +72,7 @@ t/50-mech-get-nocache.t
 t/50-mech-get.t
 t/50-mech-multi-event.t
 t/50-mech-new-dsl.t
+t/50-mech-new-with-tab.t
 t/50-mech-new.t
 t/50-mech-save-dialog.t
 t/50-mech-set-fields-875912.htm
