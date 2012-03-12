@@ -12,10 +12,14 @@ TO DO:
     . Make ->set_visible also support select+option inputs
 
 0.61 to be released
-    . Fix code errors in WWW::Mechanize::Firefox::Cookbook
+    . Fix code errors in WWW::Mechanize::Firefox::Cookbook
+    . Allow to create a WWW::Mechanize::Firefox object if you already have
+      an existing Firefox tab object.
+
 0.60 20120302
     . Fix test failing when Image::Info was unavailable
-    ! Fix scaling bug in ->element_as_png()
+    ! Fix scaling bug in ->element_as_png()
+
 0.59 20120211
     + Report Javascript errors from the perspective of the caller
       instead of a location in WWW::Mechanize::Firefox
@@ -32,18 +36,20 @@ TO DO:
         - 8.0
         - 9.0
         - 10.0
-        
 
 0.58 20111128
     ! Fix cookie handling which was weirdly broken yet the tests passed.
       Session cookies now get returned
-      Thanks to blakew for pointing that out
+      Thanks to blakew for pointing that out
+
 0.57 20111102
     . Make relative queries work for ->selector()
       with "node => $foo"
-      Reported by Rolf Langsdorf
+      Reported by Rolf Langsdorf
+
 0.56 20111031
-    . Make "frames => 0" work in constructor (+test)
+    . Make "frames => 0" work in constructor (+test)
+
 0.55 20110728
     . Re-release of 0.54, this time including t/helper.pm for the tests
 

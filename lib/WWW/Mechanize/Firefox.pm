@@ -63,6 +63,11 @@ found, the constructor dies.
 If you pass in the string C<current>, the currently
 active tab will be used instead.
 
+If you pass in a L<MozRepl::RemoteObject> instance, this will be used
+as the new tab. This is convenient if you have an existing tab
+in Firefox as object already, for example created through
+L<Firefox::Application>C<< ->addTab() >>.
+
 =item *
 
 C<create> - will create a new tab if no existing tab matching
@@ -183,6 +188,10 @@ sub new {
             } else {
                 croak "Don't know what to do with tab '$tabname'. Did you mean qr{$tabname}?";
             };
+        } elsif ('MozRepl::RemoteObject::Instance' eq ref $tabname) {
+            # Nothing to do - we already got a tab passed in
+            # Just put it back in place
+            $args{ tab } = $tabname;
         } else {
             ($args{ tab }) = grep { $_->{title} =~ /$tabname/ }
                 $args{ app }->openTabs();
@@ -226,7 +235,7 @@ sub new {
     
     $args{ response } ||= undef;
     $args{ current_form } ||= undef;
-        
+    
     bless \%args, $class;
 };
 
