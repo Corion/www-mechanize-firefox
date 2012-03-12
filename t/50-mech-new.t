@@ -36,7 +36,7 @@ if (! is scalar @new_tabs, @tabs-1, "Our tab was presumably closed") {
 };
 
 my $magic = sprintf "%s - %s", basename($0), $$;
-diag "Tab title is $magic";
+#diag "Tab title is $magic";
 # Now check that we don't open a new tab if we try to find an existing tab:
 $mech = WWW::Mechanize::Firefox->new( 
     autodie => 0,
