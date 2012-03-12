@@ -11,6 +11,8 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.61 to be released
+    . Fix code errors in WWW::Mechanize::Firefox::Cookbook
 0.60 20120302
     . Fix test failing when Image::Info was unavailable
     ! Fix scaling bug in ->element_as_png()

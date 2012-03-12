@@ -88,7 +88,7 @@ use the following code:
     while ($retries-- and ! $mech->is_visible( xpath => '//*[@id="submit"]' )) {
           sleep 1;
     };
-    die "Timeout" unless $retries;
+    die "Timeout" if 0 > $retries;
     
     # Now the element exists
     $mech->click({xpath => '//*[@id="submit"]'});
@@ -104,7 +104,7 @@ use the following code:
     while ($retries-- and $mech->is_visible( xpath => '//*[@id="hourglass"]' )) {
           sleep 1;
     };
-    die "Timeout while waiting for application" unless $retries;
+    die "Timeout while waiting for application" if 0 > $retries;
     
     # Now the hourglass is not visible anymore
 
