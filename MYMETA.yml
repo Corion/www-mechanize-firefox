@@ -37,4 +37,4 @@ requires:
   perl: 5.006
 resources:
   repository: http://github.com/Corion/www-mechanize-firefox
-version: 0.60
+version: 0.61

@@ -11,7 +11,7 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
-0.61 to be released
+0.61 20120312
     . Fix code errors in WWW::Mechanize::Firefox::Cookbook
     . Allow to create a WWW::Mechanize::Firefox object if you already have
       an existing Firefox tab object.
