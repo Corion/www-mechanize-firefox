@@ -10,7 +10,8 @@ use strict;
 my @files;
 
 my $blib = File::Spec->catfile(qw(blib lib));
-find(\&wanted, grep { -d } ($blib, 'bin'));
+find(\&wanted, grep { -d } ($blib, 'bin', 'examples'));
+push @files, 'Makefile.PL';
 plan tests => scalar @files;
 foreach my $file (@files) {
   unix_file_ok($file);
