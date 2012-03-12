@@ -32,6 +32,11 @@ METHODS
         If you pass in the string `current', the currently active tab will
         be used instead.
 
+        If you pass in a MozRepl::RemoteObject instance, this will be used
+        as the new tab. This is convenient if you have an existing tab in
+        Firefox as object already, for example created through
+        Firefox::Application`->addTab()'.
+
     *   `create' - will create a new tab if no existing tab matching the
         criteria given in `tab' can be found.
 
