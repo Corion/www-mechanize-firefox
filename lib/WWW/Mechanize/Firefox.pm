@@ -4,7 +4,6 @@ use strict;
 use Time::HiRes qw(sleep); # hires sleep()
 
 use URI;
-use Cwd;
 use File::Basename qw(dirname);
 use HTTP::Response;
 use HTML::Selector::XPath 'selector_to_xpath';
@@ -750,9 +749,10 @@ also exist in WWW::Mechanize through a plugin.
 
 sub get_local {
     my ($self, $htmlfile, %options) = @_;
+    require Cwd;
     my $fn = File::Spec->rel2abs(
                  File::Spec->catfile(dirname($0),$htmlfile),
-                 getcwd,
+                 Cwd::getcwd(),
              );
     $fn =~ s!\\!/!g; # fakey "make file:// URL"
 
