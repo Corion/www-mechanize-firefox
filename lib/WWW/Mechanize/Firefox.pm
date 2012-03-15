@@ -3,15 +3,15 @@ use 5.006; #weaken
 use strict;
 use Time::HiRes qw(sleep); # hires sleep()
 
-use URI;
+use URI ();
 use File::Basename qw(dirname);
-use HTTP::Response;
+use HTTP::Response ();
 use HTML::Selector::XPath 'selector_to_xpath';
-use MIME::Base64;
+use MIME::Base64 'decode_base64';
 use WWW::Mechanize::Link;
 use Firefox::Application;
 use MozRepl::RemoteObject ();
-use HTTP::Cookies::MozRepl;
+use HTTP::Cookies::MozRepl ();
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
 use Carp qw(carp croak );
