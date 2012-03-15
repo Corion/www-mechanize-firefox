@@ -1,7 +1,7 @@
 package WWW::Mechanize::Firefox;
 use 5.006; #weaken
 use strict;
-use Time::HiRes; # hires sleep()
+use Time::HiRes qw(sleep); # hires sleep()
 
 use URI;
 use Cwd;
