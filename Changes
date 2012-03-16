@@ -11,6 +11,17 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.62 20120316
+    ! Fix bug in ->form_number that made it always fail when there
+      was more than a single form on a page. Reported by Blake Willmarth.
+    ! Explicitly import sleep() from Time::HiRes
+    . Clean up list of imports, explicitly only importing what we need
+    . Add explicit prerequisites of Cwd, File::Basename
+    ! Cwd.pm now is only loaded in the one routine that needs it. This
+      will be an issue for you if you package WWW::Mechanize::Firefox
+      with PAR or App::fatpacker. You may need to review your list of
+      automatically included modules.
+
 0.61 20120312
     . Fix code errors in WWW::Mechanize::Firefox::Cookbook
     . Allow to create a WWW::Mechanize::Firefox object if you already have
