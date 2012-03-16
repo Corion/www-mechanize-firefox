@@ -2441,7 +2441,7 @@ sub form_number {
     my ($self,$number,%options) = @_;
 
     _default_limiter( single => \%options );
-    $self->{current_form} = $self->xpath("//form[$number]",
+    $self->{current_form} = $self->xpath("(//form)[$number]",
         user_info => "form number $number",
         %options
     );
