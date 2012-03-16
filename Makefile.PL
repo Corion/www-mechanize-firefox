@@ -24,7 +24,7 @@ WriteMakefile1(
     'NAME'          => 'WWW::Mechanize::Firefox',
     'LICENSE'       => 'perl',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/Firefox.pm', # finds $VERSION
-    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.27, # v0.27 implements sane encoding fixes
+    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.30, # v0.30 fixes clobbering of $@ on old(er) perls
                         'URI' => 0,
                         'URI::data' => 0,
                         'Cwd' => 0, # only needed in ->get_local, mostly exercised by the tests
