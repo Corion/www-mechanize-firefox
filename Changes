@@ -11,6 +11,9 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.63 20120316
+    ! Fix bad test from v0.62, no other code changes
+
 0.62 20120316
     ! Fix bug in ->form_number that made it always fail when there
       was more than a single form on a page. Reported by Blake Willmarth.

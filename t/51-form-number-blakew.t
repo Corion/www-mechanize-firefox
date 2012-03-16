@@ -15,7 +15,7 @@ if (! $mech) {
     plan tests => 7;
 };
 
-$mech->get_local('blakew.html');
+$mech->get_local('51-form-number-blakew.html');
 is $mech->current_form, undef, "At start, we have no current form";
 my $lives = eval {
     $mech->form_number(1);
