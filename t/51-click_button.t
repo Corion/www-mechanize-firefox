@@ -19,7 +19,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 13;
+    plan tests => 22;
 };
 
 my $server = Test::HTTP::LocalServer->spawn();
@@ -49,6 +49,30 @@ CLICK_BY_NAME: {
 
     ok(! eval { $mech->click_button(name => 'bogus'); 1 },
     'Button name unknown');
+}
+
+CLICK_BY_ID: {
+    $mech->click_button(id => 'submit_button');
+    like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
+    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    $mech->back;
+
+    ok(! eval { $mech->click_button(id => 'no_such_button'); 1 },
+    'Button name unknown');
+    ok(! eval { $mech->click_button(id => 'query'); 1 },
+    'Button name unknown');
+}
+
+CLICK_BY_VALUE: {
+    $mech->click_button(value => 'Go');
+    like( $mech->uri, qr/formsubmit/, 'Clicking on button by value' );
+    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    $mech->back;
+
+    ok(! eval { $mech->click_button(value => 'bogus'); 1 },
+    'Button value unknown');
 }
 
 CLICK_BY_OBJECT_REFERENCE: {
