@@ -16,7 +16,7 @@ package WWW::Mechanize::Firefox::Examples;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.61';
+$VERSION = '0.62';
 
 1;
 

@@ -32,6 +32,8 @@
       },
       "runtime" : {
          "requires" : {
+            "Cwd" : 0,
+            "File::Basename" : 0,
             "HTML::Selector::XPath" : 0,
             "HTTP::Cookies" : 0,
             "HTTP::Daemon" : 0,
