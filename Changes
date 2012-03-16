@@ -13,6 +13,8 @@ TO DO:
 0.64 201203xx
     . Add test for clicking a button by value
     . Add test for clicking a button by id
+    . Add test for ->new(tab => 'current')
+    . Add test for ->new(tab => 'non-existing-tab')
 
 0.63 20120316
     ! Fix bad test from v0.62, no other code changes
