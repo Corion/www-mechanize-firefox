@@ -1202,9 +1202,11 @@ sub docshell {
     $self->tab->__dive(qw[linkedBrowser docShell]);
 }
 
-=head2 C<< $mech->content >>
+=head2 C<< $mech->content( %options ) >>
 
   print $mech->content;
+  print $mech->content( format => 'html' ); # default
+  print $mech->content( format => 'text' ); # identical to ->text
 
 This always returns the content as a Unicode string. It tries
 to decode the raw content according to its input encoding.
@@ -1217,6 +1219,8 @@ It also currently only works for HTML pages.
 
 sub content {
     my ($self, %options) = @_;
+    $options{ format } ||= 'html';
+    
     my $d = $self->document; # keep a reference to it!
     
     my $html = $self->repl->declare(<<'JS', 'list');
@@ -1226,24 +1230,25 @@ function(d){
     return [e.innerHTML,d.inputEncoding];
 }
 JS
-    # We return the raw bytes here.
-    my ($content,$encoding) = $html->($d);
-    if (! utf8::is_utf8($content)) {
-        #warn "Switching on UTF-8 (from $encoding)";
-        # Switch on UTF-8 flag
-        # This should never happen, as JSON::XS (and JSON) should always
-        # already return proper UTF-8
-        # But it does happen.
-        $content = Encode::decode($encoding, $content);
-    };
-    
-    if ( my $format = delete $options{format} ) {
-        if ( $format eq 'text' ) {
-            $content = $self->text;
-        }
-        else {
-            $self->die( qq{Unknown "format" parameter "$format"} );
-        }
+    my $format = delete $options{ format };
+    my $content;
+    if( 'html' eq $format ) {
+        # We return the raw bytes here.
+        ($content,my $encoding) = $html->($d);
+        if (! utf8::is_utf8($content)) {
+            #warn "Switching on UTF-8 (from $encoding)";
+            # Switch on UTF-8 flag
+            # This should never happen, as JSON::XS (and JSON) should always
+            # already return proper UTF-8
+            # But it does happen.
+            $content = Encode::decode($encoding, $content);
+        };
+
+    } elsif ( 'text' eq $format ) {
+        $content = $self->text;
+    }
+    else {
+        croak qq{Unknown "format" parameter "$format"};
     }
 
     return $content

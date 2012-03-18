@@ -17,6 +17,7 @@ TO DO:
     . Add test for clicking a button by id
     . Add test for ->new(tab => 'current')
     . Add test for ->new(tab => 'non-existing-tab')
+    . Add test for checking that ->content(format => 'bogus') fails
 
 0.63 20120316
     ! Fix bad test from v0.62, no other code changes

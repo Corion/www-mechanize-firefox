@@ -63,6 +63,7 @@ t/50-form3.html
 t/50-mech-activateTab.t
 t/50-mech-bufsize.t
 t/50-mech-closeTab.t
+t/50-mech-content.t
 t/50-mech-ct.t
 t/50-mech-encoding.t
 t/50-mech-error.t
@@ -127,7 +128,7 @@ t/65-mech-meta.html
 t/65-mech-meta.t
 t/70-download-url.t
 t/70-mech-png.t
-t/70-real-status.t
+t/70-real-status-timeout.t
 t/70-rt70106-reload.t
 t/70-rt71216.html
 t/70-rt71216.t
