@@ -11,6 +11,10 @@ TO DO:
       so it can also set select fields?!
     . Make ->set_visible also support select+option inputs
 
+0.62 to be released
+    . Add "document" option to ->content() to optionally specify the
+      document object of which the content is desired.
+    . Add more documentation for the ->content() method.
 0.61 20120312
     . Fix code errors in WWW::Mechanize::Firefox::Cookbook
     . Allow to create a WWW::Mechanize::Firefox object if you already have
