@@ -3247,7 +3247,7 @@ sub expand_frames {
     my @spec = ref $spec ? @$spec : $spec;
     $document ||= $self->document;
     
-    if ($spec == 1) {
+    if (! ref $spec and $spec !~ /\D/ and $spec == 1) {
         # All frames
         @spec = qw( frame iframe );
     };
