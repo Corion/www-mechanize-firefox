@@ -20,6 +20,11 @@ TO DO:
     . Add test for ->new(tab => 'current')
     . Add test for ->new(tab => 'non-existing-tab')
     . Add test for checking that ->content(format => 'bogus') fails
+    . Add "document" option to ->content() to optionally specify the
+      document object of which the content is desired.
+    . Add more documentation for the ->content() method.
+    + Report more Firefox / Javascript errors from within the perspective of the caller
+      instead of reporting lines within Firefox.pm
 
 0.63 20120316
     ! Fix bad test from v0.62, no other code changes

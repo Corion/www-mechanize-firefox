@@ -103,6 +103,7 @@ t/52-frameset-deep.html
 t/52-frameset-recursive.html
 t/52-frameset.html
 t/52-iframeset.html
+t/52-frame-document.t
 t/52-mech-api-find_link-frames.t
 t/52-mech-api-find_link.html
 t/52-mech-api-find_link.t
