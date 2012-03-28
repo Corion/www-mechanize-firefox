@@ -15,6 +15,9 @@ TO DO:
     . Add "document" option to ->content() to optionally specify the
       document object of which the content is desired.
     . Add more documentation for the ->content() method.
+    + Report more Firefox / Javascript errors from within the perspective of the caller
+      instead of reporting lines within Firefox.pm
+
 0.61 20120312
     . Fix code errors in WWW::Mechanize::Firefox::Cookbook
     . Allow to create a WWW::Mechanize::Firefox object if you already have

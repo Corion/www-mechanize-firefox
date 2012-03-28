@@ -17,6 +17,9 @@ use Encode qw(encode decode);
 use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec @CARP_NOT';
+@CARP_NOT = ('MozRepl::RemoteObject',
+             'MozRepl::AnyEvent',
+             'MozRepl::RemoteObject::Instance'); # we trust these blindly
 $VERSION = '0.61';
 
 =head1 NAME
@@ -439,9 +442,7 @@ JS
     $window ||= $self->tab->{linkedBrowser}->{contentWindow};
     # Report errors from scope of caller
     # This feels weirdly backwards here, but oh well:
-    @CARP_NOT = (ref $self->repl); # we trust this
-    #local @MozRepl::RemoteObject::Instance::CARP_NOT = (@MozRepl::RemoteObject::Instance::CARP_NOT,__PACKAGE__);
-    #local @MozRepl::RemoteObject::CARP_NOT = (@MozRepl::RemoteObject::CARP_NOT,__PACKAGE__);
+    #local @CARP_NOT = (ref $self->repl); # we trust this
     
     my ($caller,$line) = (caller)[1,2];
     
