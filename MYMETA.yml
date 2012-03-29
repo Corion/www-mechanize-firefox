@@ -27,7 +27,7 @@ requires:
   HTTP::Response: 0
   LWP::Simple: 0
   MIME::Base64: 0
-  MozRepl::RemoteObject: 0.27
+  MozRepl::RemoteObject: 0.3
   Object::Import: 0
   Scalar::Util: 1.14
   Shell::Command: 0
@@ -39,4 +39,4 @@ requires:
   perl: 5.006
 resources:
   repository: http://github.com/Corion/www-mechanize-firefox
-version: 0.63
+version: 0.64

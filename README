@@ -394,15 +394,24 @@ CONTENT METHODS
 
     This is WWW::Mechanize::Firefox specific.
 
-  `$mech->content'
+  `$mech->content( %options )'
       print $mech->content;
+      print $mech->content( format => 'html' ); # default
+      print $mech->content( format => 'text' ); # identical to ->text
 
     This always returns the content as a Unicode string. It tries to decode
-    the raw content according to its input encoding.
+    the raw content according to its input encoding. This currently only
+    works for HTML pages, not for images etc.
 
-    This is likely not binary-safe.
+    Recognized options:
 
-    It also currently only works for HTML pages.
+    *   `document' - the document to use.
+
+        Default is `$self->document'.
+
+    *   `format' - the stuff to return
+
+        The allowed values are `html' and `text'. The default is `html'.
 
   $mech->text()
     Returns the text of the current HTML content. If the content isn't HTML,
