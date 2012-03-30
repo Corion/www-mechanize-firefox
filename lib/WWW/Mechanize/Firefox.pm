@@ -352,7 +352,7 @@ JS
     $getErrorMessages->($console);
 }
 
-=head2 C<< $mech->clear_js_errors >>
+=head2 C<< $mech->clear_js_errors() >>
 
     $mech->clear_js_errors();
 
@@ -489,7 +489,7 @@ sub autoclose_tab {
     $self->application->autoclose_tab(@_);
 };
 
-=head2 C<< $mech->tab >>
+=head2 C<< $mech->tab() >>
 
 Gets the object that represents the Firefox tab used by WWW::Mechanize::Firefox.
 
@@ -576,7 +576,7 @@ JS
     $lsn
 };
 
-=head2 C<< $mech->repl >>
+=head2 C<< $mech->repl() >>
 
   my ($value,$type) = $mech->repl->expr('2+2');
 
@@ -588,7 +588,7 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub repl { $_[0]->application->repl };
 
-=head2 C<< $mech->events >>
+=head2 C<< $mech->events() >>
 
   $mech->events( ['load'] );
 
@@ -601,7 +601,7 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
 
-=head2 C<< $mech->on_event >>
+=head2 C<< $mech->on_event() >>
 
   $mech->on_event(1); # prints every page load event
 
@@ -618,7 +618,7 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub on_event { $_[0]->{on_event} = $_[1] if (@_ > 1); $_[0]->{on_event} };
 
-=head2 C<< $mech->cookies >>
+=head2 C<< $mech->cookies() >>
 
   my $cookie_jar = $mech->cookies();
 
@@ -961,7 +961,7 @@ sub synchronize {
     };
 };
 
-=head2 C<< $mech->res >> / C<< $mech->response >>
+=head2 C<< $mech->res() >> / C<< $mech->response() >>
 
     my $response = $mech->response();
 
@@ -1039,7 +1039,7 @@ sub response {
 }
 *res = \&response;
 
-=head2 C<< $mech->success >>
+=head2 C<< $mech->success() >>
 
     $mech->get('http://google.com');
     print "Yay"
@@ -1057,7 +1057,7 @@ sub success {
     $res and $res->is_success
 }
 
-=head2 C<< $mech->status >>
+=head2 C<< $mech->status() >>
 
     $mech->get('http://google.com');
     print $mech->status();
@@ -1156,7 +1156,7 @@ sub forward {
     });
 }
 
-=head2 C<< $mech->uri >>
+=head2 C<< $mech->uri() >>
 
     print "We are at " . $mech->uri;
 
@@ -1175,7 +1175,7 @@ sub uri {
 
 =head1 CONTENT METHODS
 
-=head2 C<< $mech->document >>
+=head2 C<< $mech->document() >>
 
 Returns the DOM document object.
 
@@ -1188,7 +1188,7 @@ sub document {
     $self->tab->__dive(qw[linkedBrowser contentWindow document]);
 }
 
-=head2 C<< $mech->docshell >>
+=head2 C<< $mech->docshell() >>
 
     my $ds = $mech->docshell;
 
@@ -1269,7 +1269,7 @@ JS
     return $content
 };
 
-=head2 $mech->text()
+=head2 C<< $mech->text() >>
 
 Returns the text of the current HTML content.  If the content isn't
 HTML, $mech will die.
@@ -1285,7 +1285,7 @@ sub text {
 }
 
 
-=head2 C<< $mech->content_encoding >>
+=head2 C<< $mech->content_encoding() >>
 
     print "The content is encoded as ", $mech->content_encoding;
 
@@ -1485,7 +1485,7 @@ JS
     $transfer_file->("$url" => $localname, $options{progress});
 }
 
-=head2 C<< $mech->base >>
+=head2 C<< $mech->base() >>
 
   print $mech->base;
 
@@ -1506,9 +1506,9 @@ sub base {
     $base ||= $self->uri;
 };
 
-=head2 C<< $mech->content_type >>
+=head2 C<< $mech->content_type() >>
 
-=head2 C<< $mech->ct >>
+=head2 C<< $mech->ct() >>
 
   print $mech->content_type;
 
@@ -1537,7 +1537,7 @@ sub is_html {
     return defined $self->ct && ($self->ct eq 'text/html');
 }
 
-=head2 C<< $mech->title >>
+=head2 C<< $mech->title() >>
 
   print "We are on page " . $mech->title;
 
@@ -1552,7 +1552,7 @@ sub title {
 
 =head1 EXTRACTION METHODS
 
-=head2 C<< $mech->links >>
+=head2 C<< $mech->links() >>
 
   print $_->text . " -> " . $_->url . "\n"
       for $mech->links;
@@ -1927,9 +1927,9 @@ sub find_all_links_dom {
     return \@matches;
 };
 
-=head2 C<< $mech->follow_link $link >>
+=head2 C<< $mech->follow_link( $link ) >>
 
-=head2 C<< $mech->follow_link %options >>
+=head2 C<< $mech->follow_link( %options ) >>
 
   $mech->follow_link( xpath => '//a[text() = "Click here!"]' );
 
@@ -1955,7 +1955,7 @@ sub follow_link {
     }
 }
 
-=head2 C<< $mech->xpath $query, %options >>
+=head2 C<< $mech->xpath( $query, %options ) >>
 
     my $link = $mech->xpath('//a[id="clickme"]', one => 1);
     # croaks if there is no link or more than one link found
@@ -2120,7 +2120,7 @@ sub xpath {
     return $return_first ? $res[0] : @res;
 };
 
-=head2 C<< $mech->selector $css_selector, %options >>
+=head2 C<< $mech->selector( $css_selector, %options ) >>
 
   my @text = $mech->selector('p.content');
 
@@ -2146,7 +2146,7 @@ sub selector {
     $self->xpath(\@q, %options);
 };
 
-=head2 C<< $mech->by_id $id, %options >>
+=head2 C<< $mech->by_id( $id, %options ) >>
 
   my @text = $mech->by_id('_foo:bar');
 
@@ -2175,7 +2175,7 @@ sub by_id {
     $self->xpath($query, %options)
 }
 
-=head2 C<< $mech->click $name [,$x ,$y] >>
+=head2 C<< $mech->click( $name [,$x ,$y] ) >>
 
   $mech->click( 'go' );
   $mech->click({ xpath => '//button[@name="go"]' });
@@ -2373,7 +2373,7 @@ sub click_button {
 
 =head1 FORM METHODS
 
-=head2 C<< $mech->current_form >>
+=head2 C<< $mech->current_form() >>
 
   print $mech->current_form->{name};
 
@@ -2404,7 +2404,7 @@ sub clear_current_form {
     undef $_[0]->{current_form};
 };
 
-=head2 C<< $mech->form_name $name [, %options] >>
+=head2 C<< $mech->form_name( $name [, %options] ) >>
 
   $mech->form_name( 'search' );
 
@@ -2423,7 +2423,7 @@ sub form_name {
     );
 };
 
-=head2 C<< $mech->form_id $id [, %options] >>
+=head2 C<< $mech->form_id( $id [, %options] ) >>
 
   $mech->form_id( 'login' );
 
@@ -2447,7 +2447,7 @@ sub form_id {
     );
 };
 
-=head2 C<< $mech->form_number $number [, %options] >>
+=head2 C<< $mech->form_number( $number [, %options] ) >>
 
   $mech->form_number( 2 );
 
@@ -2467,7 +2467,7 @@ sub form_number {
     );
 };
 
-=head2 C<< $mech->form_with_fields [$options], @fields >>
+=head2 C<< $mech->form_with_fields( [$options], @fields ) >>
 
   $mech->form_with_fields(
       'user', 'password'
@@ -2500,7 +2500,7 @@ sub form_with_fields {
     );
 };
 
-=head2 C<< $mech->forms %options >>
+=head2 C<< $mech->forms( %options ) >>
 
   my @forms = $mech->forms();
 
@@ -2523,7 +2523,7 @@ sub forms {
                      : \@res
 };
 
-=head2 C<< $mech->field $selector, $value, [,\@pre_events [,\@post_events]] >>
+=head2 C<< $mech->field( $selector, $value, [,\@pre_events [,\@post_events]] ) >>
 
   $mech->field( user => 'joe' );
   $mech->field( not_empty => '', [], [] ); # bypass JS validation
@@ -2843,7 +2843,7 @@ sub tick {
     };
 };
 
-=head2 C<< $mech->untick($name, $value) >>
+=head2 C<< $mech->untick( $name, $value ) >>
 
   $mech->untick('spam_confirm','yes',undef)
 
@@ -2858,13 +2858,16 @@ sub untick {
     $self->tick( $name, $value, undef );
 };
 
-=head2 C<< $mech->submit >>
+=head2 C<< $mech->submit( $form ) >>
 
   $mech->submit;
 
-Submits the current form. Note that this does B<not> fire the C<onClick>
+Submits the form. Note that this does B<not> fire the C<onClick>
 event and thus also does not fire eventual Javascript handlers.
 Maybe you want to use C<< $mech->click >> instead.
+
+The default is to submit the current form as returned
+by C<< $mech->current_form >>.
 
 =cut
 
@@ -3031,9 +3034,9 @@ sub set_visible {
     }
 }
 
-=head2 C<< $mech->is_visible $element >>
+=head2 C<< $mech->is_visible( $element ) >>
 
-=head2 C<< $mech->is_visible %options >>
+=head2 C<< $mech->is_visible(  %options ) >>
 
   if ($mech->is_visible( selector => '#login' )) {
       print "You can log in now.";
@@ -3217,7 +3220,7 @@ sub _option_query {
     return $self->$method( $q, %options );
 };
 
-=head2 C<< $mech->clickables >>
+=head2 C<< $mech->clickables() >>
 
     print "You could click on\n";
     for my $el ($mech->clickables) {
