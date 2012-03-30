@@ -2409,7 +2409,7 @@ sub clear_current_form {
   $mech->form_name( 'search' );
 
 Selects the current form by its name. The options
-are identical to those accepted by the L</$mech->xpath> method.
+are identical to those accepted by the L<< /$mech->xpath >> method.
 
 =cut
 
@@ -2429,7 +2429,7 @@ sub form_name {
 
 Selects the current form by its C<id> attribute.
 The options
-are identical to those accepted by the L</$mech->xpath> method.
+are identical to those accepted by the L<< /$mech->xpath >> method.
 
 This is equivalent to calling
 
@@ -3286,6 +3286,9 @@ sub expand_frames {
 
     my $png_data = $mech->content_as_png();
 
+    # Create scaled-down 480px wide preview
+    my $png_data = $mech->content_as_png(undef, undef, { width => 480 });
+
 Returns the given tab or the current page rendered as PNG image.
 
 All parameters are optional. 
@@ -3313,7 +3316,7 @@ C<width>, C<height> - for specifying the target size
 
 If you want the resulting image to be 480 pixels wide, specify
 
-    { width: 480 }
+    { width => 480 }
 
 The height will then be calculated from the ratio of original width to
 original height.
@@ -3464,8 +3467,8 @@ relatively slow currently.
 
 =head1 INCOMPATIBILITIES WITH WWW::Mechanize
 
-As this module is in a very early stage of development,
-there are many incompatibilities. The main thing is
+There are many incompatibilities with L<WWW::Mechanize>, but enough
+similarities to warrant the same namespace. The main thing is
 that only the most needed WWW::Mechanize methods
 have been implemented by me so far.
 
@@ -3592,21 +3595,9 @@ into their own Mechanize plugin(s).
 
 =back
 
-=head1 INSTALLING
+=head1 INSTALLATION
 
-=over 4
-
-=item *
-
-Install the C<mozrepl> add-on into Firefox
-
-=item *
-
-Start the C<mozrepl> add-on or you will see test failures/skips
-in the module when calling C<< ->new >>. You may want to set
-C<mozrepl> to start when the browser starts.
-
-=back
+See L<WWW::Mechanize::Firefox::Troubleshooting>.
 
 =head1 SEE ALSO
 
