@@ -846,7 +846,7 @@ Usually, you want to use it like this:
 
   my $l = $mech->xpath('//a[@onclick]', single => 1);
   $mech->synchronize('DOMFrameContentLoaded', sub {
-      $l->__click()
+      $mech->click( $l );
   });
 
 It is necessary to synchronize with the browser whenever
