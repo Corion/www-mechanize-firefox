@@ -11,6 +11,7 @@ use MIME::Base64 'decode_base64';
 use WWW::Mechanize::Link;
 use Firefox::Application;
 use MozRepl::RemoteObject ();
+use MozRepl::RemoteObject::Methods ();
 use HTTP::Cookies::MozRepl ();
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
@@ -211,7 +212,7 @@ sub new {
     if (! $args{ tab }) {
         my @autoclose = exists $args{ autoclose } ? (autoclose => $args{ autoclose }) : ();
         $args{ tab } = $args{ app }->addTab( @autoclose );
-        my $body = $args{ tab }->__dive(qw[ linkedBrowser contentWindow document body ]);
+        my $body = $args{ tab }->MozRepl::RemoteObject::Methods::dive(qw[ linkedBrowser contentWindow document body ]);
         $body->{innerHTML} = __PACKAGE__;
     };
 
@@ -1166,7 +1167,7 @@ Returns the current document URI.
 
 sub uri {
     my ($self) = @_;
-    my $loc = $self->tab->__dive(qw[
+    my $loc = $self->tab->MozRepl::RemoteObject::Methods::dive(qw[
         linkedBrowser
         currentURI
         asciiSpec ]);
@@ -1185,7 +1186,7 @@ This is WWW::Mechanize::Firefox specific.
 
 sub document {
     my ($self) = @_;
-    $self->tab->__dive(qw[linkedBrowser contentWindow document]);
+    $self->tab->MozRepl::RemoteObject::Methods::dive(qw[linkedBrowser contentWindow document]);
 }
 
 =head2 C<< $mech->docshell() >>
@@ -1200,7 +1201,7 @@ This is WWW::Mechanize::Firefox specific.
 
 sub docshell {
     my ($self) = @_;
-    $self->tab->__dive(qw[linkedBrowser docShell]);
+    $self->tab->MozRepl::RemoteObject::Methods::dive(qw[linkedBrowser docShell]);
 }
 
 =head2 C<< $mech->content( %options ) >>
