@@ -870,10 +870,6 @@ JS
 sub add_header {
     my ($self, @headers) = @_;
     $self->{custom_header_observer} ||= $self->_custom_header_observer;
-    if( ref $headers[0]) { # somebody gave us a HTTP::Headers instance
-        # XXX Transform headers hash into list of pairs header: value
-        die "Conversion of references/objects is not implemented (yet)";
-    };
     
     # This is slooow, but we only do it when changing the headers...
     my $h = $self->{custom_header_observer}->{headers};
