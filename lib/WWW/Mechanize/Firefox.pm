@@ -42,7 +42,7 @@ that plugin in your Firefox.
 
 For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
-=head1 METHODS
+=head1 CONSTRUCTOR and CONFIGURATION
 
 =head2 C<< $mech->new( %args ) >>
 
@@ -290,6 +290,64 @@ sub agent {
     };
 };
 
+=head2 C<< $mech->autodie( [$state] ) >>
+
+  $mech->autodie(0);
+
+Accessor to get/set whether warnings become fatal.
+
+=cut
+
+sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
+
+=head2 C<< $mech->events() >>
+
+  $mech->events( ['load'] );
+
+Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
+will wait for after requesting a new page. Returns an array reference.
+
+This method is special to WWW::Mechanize::Firefox.
+
+=cut
+
+sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
+
+=head2 C<< $mech->on_event() >>
+
+  $mech->on_event(1); # prints every page load event
+
+  # or give it a callback
+  $mech->on_event(sub { warn "Page loaded with $ev->{name} event" });
+
+Gets/sets the notification handler for the Javascript event
+that finished a page load. Set it to C<1> to output via C<warn>,
+or a code reference to call it with the event.
+
+This method is special to WWW::Mechanize::Firefox.
+
+=cut
+
+sub on_event { $_[0]->{on_event} = $_[1] if (@_ > 1); $_[0]->{on_event} };
+
+=head2 C<< $mech->cookies() >>
+
+  my $cookie_jar = $mech->cookies();
+
+Returns a L<HTTP::Cookies> object that was initialized
+from the live Firefox instance.
+
+B<Note:> C<< ->set_cookie >> is not yet implemented,
+as is saving the cookie jar.
+
+=cut
+
+sub cookies {
+    return HTTP::Cookies::MozRepl->new(
+        repl => $_[0]->repl
+    )
+}
+
 =head1 JAVASCRIPT METHODS
 
 =head2 C<< $mech->allow( %options ) >>
@@ -521,6 +579,14 @@ more parts of the Firefox UI and application.
 
 sub application { $_[0]->{app} };
 
+=head2 C<< $mech->autoclose_tab >>
+
+  $mech->autoclose_tab( 0 ); # keep tab open after program end
+
+Set whether to close the tab associated with the instance.
+
+=cut
+
 sub autoclose_tab {
     my $self = shift;
     $self->application->autoclose_tab(@_);
@@ -535,16 +601,6 @@ This method is special to WWW::Mechanize::Firefox.
 =cut
 
 sub tab { $_[0]->{tab} };
-
-=head2 C<< $mech->autodie( [$state] ) >>
-
-  $mech->autodie(0);
-
-Accessor to get/set whether warnings become fatal.
-
-=cut
-
-sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
 =head2 C<< $mech->progress_listener( $source, %callbacks ) >>
 
@@ -624,54 +680,6 @@ This method is special to WWW::Mechanize::Firefox.
 =cut
 
 sub repl { $_[0]->application->repl };
-
-=head2 C<< $mech->events() >>
-
-  $mech->events( ['load'] );
-
-Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
-will wait for after requesting a new page. Returns an array reference.
-
-This method is special to WWW::Mechanize::Firefox.
-
-=cut
-
-sub events { $_[0]->{events} = $_[1] if (@_ > 1); $_[0]->{events} };
-
-=head2 C<< $mech->on_event() >>
-
-  $mech->on_event(1); # prints every page load event
-
-  # or give it a callback
-  $mech->on_event(sub { warn "Page loaded with $ev->{name} event" });
-
-Gets/sets the notification handler for the Javascript event
-that finished a page load. Set it to C<1> to output via C<warn>,
-or a code reference to call it with the event.
-
-This method is special to WWW::Mechanize::Firefox.
-
-=cut
-
-sub on_event { $_[0]->{on_event} = $_[1] if (@_ > 1); $_[0]->{on_event} };
-
-=head2 C<< $mech->cookies() >>
-
-  my $cookie_jar = $mech->cookies();
-
-Returns a L<HTTP::Cookies> object that was initialized
-from the live Firefox instance.
-
-B<Note:> C<< ->set_cookie >> is not yet implemented,
-as is saving the cookie jar.
-
-=cut
-
-sub cookies {
-    return HTTP::Cookies::MozRepl->new(
-        repl => $_[0]->repl
-    )
-}
 
 =head2 C<< $mech->highlight_node( @nodes ) >>
 
