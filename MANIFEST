@@ -99,11 +99,11 @@ t/51-mech-sandbox.t
 t/51-mech-set-content.t
 t/51-mech-submit.html
 t/51-mech-submit.t
+t/52-frame-document.t
 t/52-frameset-deep.html
 t/52-frameset-recursive.html
 t/52-frameset.html
 t/52-iframeset.html
-t/52-frame-document.t
 t/52-mech-api-find_link-frames.t
 t/52-mech-api-find_link.html
 t/52-mech-api-find_link.t
@@ -130,6 +130,7 @@ t/65-mech-meta.html
 t/65-mech-meta.t
 t/70-download-url.t
 t/70-mech-png.t
+t/70-real-status.t
 t/70-rt70106-reload.t
 t/70-rt71216.html
 t/70-rt71216.t
