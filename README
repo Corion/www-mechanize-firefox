@@ -70,6 +70,9 @@ METHODS
 
         in the constructor.
 
+    *   `agent' - the name of the User Agent to use. This overrides how
+        Firefox identifies itself.
+
     *   `log' - array reference to log levels, passed through to
         MozRepl::RemoteObject
 
@@ -108,6 +111,17 @@ METHODS
 
     *   `post_events' - the events that are sent to an input field after its
         value is changed. By default this is `[blur, change]'.
+
+  `$mech->agent( $product_id );'
+        $mech->agent('wonderbot/JS 1.0');
+
+    Set the product token that is used to identify the user agent on the
+    network. The agent value is sent as the "User-Agent" header in the
+    requests. The default is whatever Firefox uses.
+
+    To reset the user agent to the Firefox default, pass an empty string:
+
+        $mech->agent('');
 
 JAVASCRIPT METHODS
   `$mech->allow( %options )'
@@ -306,6 +320,30 @@ NAVIGATION METHODS
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
 
+  `$mech->add_header( $name => $value, ... )'
+        $mech->add_header(
+            'X-WWW-Mechanize-Firefox' => "I'm using it",
+            Encoding => 'text/klingon',
+        );
+
+    This method sets up custom headers that will be sent with every HTTP(S)
+    request that Firefox makes.
+
+    Using multiple instances of WWW::Mechanize::Firefox objects with the
+    same application together with changed request headers will most likely
+    have weird effects. So don't do that.
+
+  `$mech->delete_header( $name , $name2... )'
+        $mech->delete_header( 'User-Agent' );
+    
+    Removes HTTP headers from the agent's list of special headers. Note that
+    Firefox may still send a header with its default value.
+
+  `$mech->reset_headers'
+        $mech->reset_headers();
+
+    Removes all custom headers and makes Firefox send its defaults again.
+
   `$mech->synchronize( $event, $callback )'
     Wraps a synchronization semaphore around the callback and waits until
     the event `$event' fires on the browser. If you want to wait for one of
@@ -316,7 +354,7 @@ NAVIGATION METHODS
 
       my $l = $mech->xpath('//a[@onclick]', single => 1);
       $mech->synchronize('DOMFrameContentLoaded', sub {
-          $l->__click()
+          $mech->click( $l );
       });
 
     It is necessary to synchronize with the browser whenever a click
@@ -1143,10 +1181,6 @@ INCOMPATIBILITIES WITH WWW::Mechanize
   Functions that will likely never be implemented
     These functions are unlikely to be implemented because they make little
     sense in the context of Firefox.
-
-    *   `->add_header'
-
-    *   `->delete_header'
 
     *   `->clone'
 
