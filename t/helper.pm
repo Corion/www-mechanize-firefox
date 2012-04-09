@@ -40,7 +40,17 @@ sub run_across_instances {
                        repl => "localhost:$port" )
                    : ();
         
-        my $mech = $new_mech->(@launch);
+        # Try three times to connect
+        my $retry = 3;
+        my $mech;
+        my $last_error;
+        while(!$mech and $retry-- > 0) {
+            eval { $mech = $new_mech->(@launch); };
+            $last_error = $@;
+        };
+        if( ! $retry) {
+            die "Couldn't launch $firefox_instance: $@";
+        };
 
         # Run the user-supplied tests
         $code->($firefox_instance, $mech);
