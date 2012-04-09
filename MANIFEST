@@ -118,6 +118,7 @@ t/53-mech-capture-js-error.t
 t/53-mech-capture-js-noerror.html
 t/55-basic-auth.t
 t/60-mech-cookies.t
+t/60-mech-custom-headers.t
 t/65-is_visible.t
 t/65-is_visible_class.html
 t/65-is_visible_hidden.html

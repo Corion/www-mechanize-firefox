@@ -12,6 +12,10 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.65 20120409
+    . Add ->add_header() and ->delete_header
+    . Also allow changing the User-Agent header now via ->agent()
+
 0.64 20120329
     ! Bump prerequisite for MozRepl::RemoteObject to 0.30, which contains
       a bugfix for clobbered $@

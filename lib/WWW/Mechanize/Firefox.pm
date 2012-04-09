@@ -113,6 +113,11 @@ To make errors non-fatal, pass
 
 in the constructor.
 
+=item *
+
+C<agent> - the name of the User Agent to use. This overrides
+how Firefox identifies itself.
+
 =item * 
 
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
@@ -239,7 +244,15 @@ sub new {
     $args{ response } ||= undef;
     $args{ current_form } ||= undef;
     
-    bless \%args, $class;
+    my $agent = delete $args{ agent };
+    
+    my $self= bless \%args, $class;
+    
+    if( defined $agent ) {
+        $self->agent( $agent );
+    };
+    
+    $self
 };
 
 sub DESTROY {
@@ -253,6 +266,29 @@ sub DESTROY {
     };
     #warn "FF cleaned up";
 }
+
+=head2 C<< $mech->agent( $product_id ); >>
+
+    $mech->agent('wonderbot/JS 1.0');
+
+Set the product token that is used to identify the user agent on the network.
+The agent value is sent as the "User-Agent" header in the requests. The default
+is whatever Firefox uses.
+
+To reset the user agent to the Firefox default, pass an empty string:
+
+    $mech->agent('');
+
+=cut
+
+sub agent {
+    my ($self,$name) = @_;
+    if( defined $name ) {
+        $self->add_header('User-Agent',$name);
+    } elsif( $name eq '' ) {
+        $self->delete_header('User-Agent');
+    };
+};
 
 =head1 JAVASCRIPT METHODS
 
@@ -760,6 +796,125 @@ sub get_local {
 
     $self->get("file://$fn", %options);
 }
+
+=head2 C<< $mech->add_header( $name => $value, ... ) >>
+
+    $mech->add_header(
+        'X-WWW-Mechanize-Firefox' => "I'm using it",
+        Encoding => 'text/klingon',
+    );
+
+This method sets up custom headers that will be sent with B<every> HTTP(S)
+request that Firefox makes.
+
+Using multiple instances of WWW::Mechanize::Firefox objects with the same
+application together with changed request headers will most likely have weird
+effects. So don't do that.
+
+=cut
+
+# This subroutine creates the custom header observer. It has a hashref
+# of headers that it will add to EACH request that Firefox sends out.
+# It removes itself when the Perl object gets destroyed.
+sub _custom_header_observer {
+    my ($self, @headers) = @_;
+
+    # This routine was taken from http://d.hatena.ne.jp/oppara/20090410/p1
+    my $on_modify_request = $self->repl->declare(<<'JS');
+        function() { // headers passed via arguments
+            const Cc= Components.classes;
+            const Ci= Components.interfaces;
+            const observerService= Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+            var h= [].slice.call(arguments);
+            var hr= {};
+            for( var i=0; i<h.length; i+=2) {
+                var k= h[i];
+                var v= h[i+1];
+                hr[k]= v;
+            };
+                
+            var myObserver= {
+                headers: hr,
+                observe: function(subject,topic,data) {
+                    if(topic != 'http-on-modify-request') return;
+                    
+                    var http = subject.QueryInterface(Ci.nsIHttpChannel);
+                    for( var k in this.headers) {
+                        var v= this.headers[k];
+                        http.setRequestHeader(k,v, false);
+
+                        if (k== 'Referer' && http.referrer) {
+                            http.referrer.spec = v;
+                        };
+                    };
+                }
+            }
+            observerService.addObserver(myObserver,'http-on-modify-request',false);
+            return myObserver;
+        };      
+JS
+    my $obs = $on_modify_request->(@headers);
+
+    # Clean up after ourselves    
+    $obs->__release_action(<<'JS');
+        const Cc= Components.classes;
+        const Ci= Components.interfaces;
+        const observerService= Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+        try {
+            observerService.removeObserver(self,'http-on-modify-request',false);
+        } catch (e) {}
+JS
+    return $obs;
+};
+
+sub add_header {
+    my ($self, @headers) = @_;
+    $self->{custom_header_observer} ||= $self->_custom_header_observer;
+    if( ref $headers[0]) { # somebody gave us a HTTP::Headers instance
+        # XXX Transform headers hash into list of pairs header: value
+        die "Conversion of references/objects is not implemented (yet)";
+    };
+    
+    # This is slooow, but we only do it when changing the headers...
+    my $h = $self->{custom_header_observer}->{headers};
+    while( my ($k,$v) = splice @headers, 0, 2 ) {
+        $h->{$k} = $v;
+    };
+};
+
+=head2 C<< $mech->delete_header( $name , $name2... ) >>
+
+    $mech->delete_header( 'User-Agent' );
+    
+Removes HTTP headers from the agent's list of special headers. Note
+that Firefox may still send a header with its default value.
+
+=cut
+
+sub delete_header {
+    my ($self, @headers) = @_;
+    
+    if( $self->{custom_header_observer} and @headers ) {
+        # This is slooow, but we only do it when changing the headers...
+        my $h = $self->{custom_header_observer}->{headers};
+        
+        delete $h->{$_}
+            for( @headers );
+    };
+};
+
+=head2 C<< $mech->reset_headers >>
+
+    $mech->reset_headers();
+
+Removes all custom headers and makes Firefox send its defaults again.
+
+=cut
+
+sub reset_headers {
+    my ($self) = @_;
+    delete $self->{custom_header_observer};
+};
 
 # Should I port this to Perl?
 # Should this become part of MozRepl::RemoteObject?
@@ -3528,14 +3683,6 @@ These functions are unlikely to be implemented because
 they make little sense in the context of Firefox.
 
 =over 4
-
-=item *
-
-C<< ->add_header >>
-
-=item *
-
-C<< ->delete_header >>
 
 =item *
 
