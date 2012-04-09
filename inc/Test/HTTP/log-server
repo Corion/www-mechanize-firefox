@@ -4,7 +4,7 @@ use HTTP::Daemon;
 use CGI;
 use Getopt::Long;
 use vars qw($VERSION);
-$VERSION = '0.53';
+$VERSION = '0.55';
 
 $|++;
 
@@ -100,8 +100,9 @@ SERVERLOOP: {
             $session = defined $q->param('session') ? $q->param('session') : 1;
             %cat = map { $_ => 1 } (defined $q->param('cat') ? $q->param('cat') : qw( cat_foo cat_bar ));
             my @categories = map { $cat{$_} ? "checked" : "" } qw( cat_foo cat_bar cat_baz );
-            (my $h = $r->headers->{host}) =~ s/:\d+//;
-            my $rbody = sprintf $body,$location,$session,$query,@categories;
+            my $headers = CGI::escapeHTML( $r->headers->as_string );
+            
+            my $rbody = sprintf $body,$headers, $location,$session,$query,@categories;
             $res = HTTP::Response->new(200, "OK", [
                   'Set-Cookie' => $q->cookie(-name => 'log-server-httponly',-value=>'supersecret', -discard => 1, -httponly=>1),
                   'Set-Cookie' => $q->cookie(-name => 'log-server',-value=>'shazam2', -discard=>1,),
@@ -147,6 +148,10 @@ __DATA__
 <title>WWW::Mechanize::Firefox test page</title>
 </head>
 <body>
+<h1>Request headers</h1>
+<pre id="request_headers">
+%s
+</pre>
 <h1>Location: %s</h1>
 <p>
   <a href="/test">Link /test</a>
