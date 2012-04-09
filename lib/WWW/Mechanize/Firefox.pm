@@ -3794,9 +3794,9 @@ L<http://perlmonks.org/>.
 
 I've given two talks about this module at Perl conferences:
 
-L<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html|German Perl Workshop, German>
+L<German Perl Workshop, German|http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html>
 
-L<http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html|YAPC::Europe 2010, English>
+L<YAPC::Europe 2010, English|http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html>
 
 =head1 BUG TRACKER
 
