@@ -2340,9 +2340,9 @@ sub by_id {
   $mech->click( 'go' );
   $mech->click({ xpath => '//button[@name="go"]' });
 
-Has the effect of clicking a button on the current form. The first argument
-is the C<name> of the button to be clicked. The second and third arguments
-(optional) allow you to specify the (x,y) coordinates of the click.
+Has the effect of clicking a button (or other element) on the current form. The
+first argument is the C<name> of the button to be clicked. The second and third
+arguments (optional) allow you to specify the (x,y) coordinates of the click.
 
 If there is only one button on the form, C<< $mech->click() >> with
 no arguments simply clicks that one button.
@@ -2364,6 +2364,9 @@ C<xpath> - Find the element to click by the XPath query
 
 C<dom> - Click on the passed DOM element
 
+You can use this to click on arbitrary page elements. There is no convenient
+way to pass x/y co-ordinates with this method.
+
 =item *
 
 C<id> - Click on the element with the given id
@@ -2371,7 +2374,7 @@ C<id> - Click on the element with the given id
 This is useful if your document ids contain characters that
 do look like CSS selectors. It is equivalent to
 
-    xpath => qq{//*[\@id="$id"}
+    xpath => qq{//*[\@id="$id"]}
 
 =item *
 
