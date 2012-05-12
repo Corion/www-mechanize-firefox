@@ -184,6 +184,22 @@ distribution.
   print {$fh} $png;
   close $fh;
 
+=head1 HTTP Interaction
+
+=head2 Send a different hostname to the server
+
+If you are testing a new application deployment, it may
+become necessary to lie to the server about the name of
+the webserver you're requesting. You can easily
+switch the name around at the HTTP level by adding a
+custom C<< Host: >> header:
+
+  $mech->add_header(
+      Host => 'http://example.com/',
+  );
+  $mech->get('http://1.2.3.4');
+  # Ask the machine at 1.2.3.4 for the pages of example.com
+
 =head1 Javascript
 
 =head2 Check that your Page has no Javascript compile errors

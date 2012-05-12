@@ -12,6 +12,10 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.66 2012xxxx
+    . Add example plus test on how to request arbitrary hostnames
+      via the Host: header from an IP.
+
 0.65 20120409
     + Add ->add_header() and ->delete_header
       Adapted from code from http://d.hatena.ne.jp/oppara/20090410/p1

@@ -15,7 +15,7 @@ if (my $err = t::helper::default_unavailable) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 20*@instances;
+    plan tests => 21*@instances;
 };
 
 sub new_mech {
@@ -47,6 +47,7 @@ my $ref = 'http://example.com';
 $mech->add_header(
     'Referer' => $ref,
     'X-WWW-Mechanize-Firefox' => "$WWW::Mechanize::Firefox::VERSION",
+    'Host' => 'www.example.com',
 );
 
 $mech->agent( $ua );
@@ -61,6 +62,7 @@ my $headers = $mech->selector('#request_headers', single => 1)->{innerHTML};
 like $headers, qr!^Referer: \Q$ref\E$!m, "We sent the correct Referer header";
 like $headers, qr!^User-Agent: \Q$ua\E$!m, "We sent the correct User-Agent header";
 like $headers, qr!^X-WWW-Mechanize-Firefox: \Q$WWW::Mechanize::Firefox::VERSION\E$!m, "We can add completely custom headers";
+like $headers, qr!^Host: www.example.com\s*$!m, "We can add custom Host: headers";
 # diag $mech->content;
 
 $mech->delete_header(
