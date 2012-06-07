@@ -3175,7 +3175,9 @@ the field names are; you can just say
 
 and the first and second fields will be set accordingly. The method is
 called set_visible because it acts only on visible fields;
-hidden form inputs are not considered. 
+hidden form inputs are not considered. It also respects
+the respective return value of C<< ->is_visible() >> for each
+field, so hiding of fields through CSS affects this too.
 
 The specifiers that are possible in L<WWW::Mechanize> are not yet supported.
 
@@ -3186,14 +3188,22 @@ sub set_visible {
     my $form = $self->current_form;
     my @form;
     if ($form) { @form = (node => $form) };
-    my @visible_fields = $self->xpath(q{//input[not(@type) or (@type != "hidden" and @type!= "button" and @type!="submit")]}, 
+    my @visible_fields = $self->xpath(   q{//input[not(@type) or }
+                                       . q{(@type!= "hidden" and }
+                                       . q{ @type!= "button" and }
+                                       . q{ @type!= "submit" and }
+                                       . q{ @type!= "image")]}, 
                                       @form
                                       );
-    for my $idx (0..$#values) {
-        if ($idx > $#visible_fields) {
-            $self->signal_condition( "Not enough fields on page" );
-        }
-        $self->field( $visible_fields[ $idx ] => $values[ $idx ]);
+
+    @visible_fields = grep { $self->is_visible( $_ ) } @visible_fields;
+    
+    if (@values > @visible_fields) {
+        $self->signal_condition( "Not enough fields on page" );
+    } else {
+        for my $idx (0..$#values) {
+            $self->field( $visible_fields[ $idx ] => $values[ $idx ]);
+        };
     }
 }
 

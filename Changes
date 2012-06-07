@@ -2,7 +2,6 @@ TO DO:
     . Improve test coverage of methods
     . Add test for ->value with 3-args (setting)
     . Add test for ->highlight_node()
-    . Add test for ->set_visible()
     . Add test for ->clickables()
     . Add test for getting/setting ->autodie()
     . Add test for getting/setting ->events()
@@ -15,6 +14,9 @@ TO DO:
 0.66 2012xxxx
     . Add example plus test on how to request arbitrary hostnames
       via the Host: header from an IP.
+    ! ->set_visible() ignores inputs with type="image" now (RT #70730)
+    ! ->set_visible() respects the return value of ->is_visible. This
+      may break your code as now less fields are considered "visible".
 
 0.65 20120409
     + Add ->add_header() and ->delete_header

@@ -95,14 +95,16 @@ SERVERLOOP: {
             my $q = CGI->new($r->uri->query);
 
             # Make sticky form fields
-            my ($query,$session,%cat);
+            my ($query,$botcheck_query,$query2,$session,%cat);
             $query = defined $q->param('query') ? $q->param('query') : "(empty)";
+            $botcheck_query = defined $q->param('botcheck_query') ? $q->param('botcheck_query') : "(empty)";
+            $query2 = defined $q->param('query2') ? $q->param('query2') : "(empty)";
             $session = defined $q->param('session') ? $q->param('session') : 1;
             %cat = map { $_ => 1 } (defined $q->param('cat') ? $q->param('cat') : qw( cat_foo cat_bar ));
             my @categories = map { $cat{$_} ? "checked" : "" } qw( cat_foo cat_bar cat_baz );
             my $headers = CGI::escapeHTML( $r->headers->as_string );
             
-            my $rbody = sprintf $body,$headers, $location,$session,$query,@categories;
+            my $rbody = sprintf $body,$headers, $location,$session,$query,$botcheck_query,$query2,@categories;
             $res = HTTP::Response->new(200, "OK", [
                   'Set-Cookie' => $q->cookie(-name => 'log-server-httponly',-value=>'supersecret', -discard => 1, -httponly=>1),
                   'Set-Cookie' => $q->cookie(-name => 'log-server',-value=>'shazam2', -discard=>1,),
@@ -146,6 +148,9 @@ __DATA__
 <html>
 <head>
 <title>WWW::Mechanize::Firefox test page</title>
+<style>
+.hidden { display: none };
+</style>
 </head>
 <body>
 <h1>Request headers</h1>
@@ -168,9 +173,12 @@ __DATA__
     <tr><td>B1</td><td>B2</td><td>B3</td></tr>
     <tr><td>C1</td><td>C2</td><td>C3</td></tr>
   </table>
-  <form name='f' action="/formsubmit">
+  <form name='f' action="/formsubmit" method="GET">
     <input type="hidden" name="session" value="%s"/>
     <input type="text" name="query" value="%s"/>
+    <input type="text" name="botcheck_query" class="hidden" value="%s"/>
+    <input type="image" name="submit_image" value="Go_img" id="submit_button_image" />
+    <input type="text" name="query2" value="%s"/>
     <input type="submit" name="submit" value="Go" id="submit_button" />
     <input type="checkbox" name="cat" value="cat_foo" %s />
     <input type="checkbox" name="cat" value="cat_bar" %s />
