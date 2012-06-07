@@ -17,6 +17,17 @@ TO DO:
     ! ->set_visible() ignores inputs with type="image" now (RT #70730)
     ! ->set_visible() respects the return value of ->is_visible. This
       may break your code as now less fields are considered "visible".
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.5 (ESR)
+        - 13.0
 
 0.65 20120409
     + Add ->add_header() and ->delete_header
