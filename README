@@ -14,7 +14,7 @@ SYNOPSIS
 
     For more examples see WWW::Mechanize::Firefox::Examples.
 
-METHODS
+CONSTRUCTOR and CONFIGURATION
   `$mech->new( %args )'
       use WWW::Mechanize::Firefox;
       my $mech = WWW::Mechanize::Firefox->new();
@@ -123,6 +123,40 @@ METHODS
 
         $mech->agent('');
 
+  `$mech->autodie( [$state] )'
+      $mech->autodie(0);
+
+    Accessor to get/set whether warnings become fatal.
+
+  `$mech->events()'
+      $mech->events( ['load'] );
+
+    Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
+    will wait for after requesting a new page. Returns an array reference.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+  `$mech->on_event()'
+      $mech->on_event(1); # prints every page load event
+
+      # or give it a callback
+      $mech->on_event(sub { warn "Page loaded with $ev->{name} event" });
+
+    Gets/sets the notification handler for the Javascript event that
+    finished a page load. Set it to `1' to output via `warn', or a code
+    reference to call it with the event.
+
+    This method is special to WWW::Mechanize::Firefox.
+
+  `$mech->cookies()'
+      my $cookie_jar = $mech->cookies();
+
+    Returns a HTTP::Cookies object that was initialized from the live
+    Firefox instance.
+
+    Note: `->set_cookie' is not yet implemented, as is saving the cookie
+    jar.
+
 JAVASCRIPT METHODS
   `$mech->allow( %options )'
     Enables or disables browser features for the current tab. The following
@@ -207,16 +241,16 @@ UI METHODS
     Returns the Firefox::Application object for manipulating more parts of
     the Firefox UI and application.
 
+  `$mech->autoclose_tab'
+      $mech->autoclose_tab( 0 ); # keep tab open after program end
+
+    Set whether to close the tab associated with the instance.
+
   `$mech->tab()'
     Gets the object that represents the Firefox tab used by
     WWW::Mechanize::Firefox.
 
     This method is special to WWW::Mechanize::Firefox.
-
-  `$mech->autodie( [$state] )'
-      $mech->autodie(0);
-
-    Accessor to get/set whether warnings become fatal.
 
   `$mech->progress_listener( $source, %callbacks )'
         my $eventlistener = progress_listener(
@@ -238,35 +272,6 @@ UI METHODS
     Gets the MozRepl::RemoteObject instance that is used.
 
     This method is special to WWW::Mechanize::Firefox.
-
-  `$mech->events()'
-      $mech->events( ['load'] );
-
-    Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
-    will wait for after requesting a new page. Returns an array reference.
-
-    This method is special to WWW::Mechanize::Firefox.
-
-  `$mech->on_event()'
-      $mech->on_event(1); # prints every page load event
-
-      # or give it a callback
-      $mech->on_event(sub { warn "Page loaded with $ev->{name} event" });
-
-    Gets/sets the notification handler for the Javascript event that
-    finished a page load. Set it to `1' to output via `warn', or a code
-    reference to call it with the event.
-
-    This method is special to WWW::Mechanize::Firefox.
-
-  `$mech->cookies()'
-      my $cookie_jar = $mech->cookies();
-
-    Returns a HTTP::Cookies object that was initialized from the live
-    Firefox instance.
-
-    Note: `->set_cookie' is not yet implemented, as is saving the cookie
-    jar.
 
   `$mech->highlight_node( @nodes )'
         my @links = $mech->selector('a');
@@ -719,10 +724,10 @@ EXTRACTION METHODS
       $mech->click( 'go' );
       $mech->click({ xpath => '//button[@name="go"]' });
 
-    Has the effect of clicking a button on the current form. The first
-    argument is the `name' of the button to be clicked. The second and third
-    arguments (optional) allow you to specify the (x,y) coordinates of the
-    click.
+    Has the effect of clicking a button (or other element) on the current
+    form. The first argument is the `name' of the button to be clicked. The
+    second and third arguments (optional) allow you to specify the (x,y)
+    coordinates of the click.
 
     If there is only one button on the form, `$mech->click()' with no
     arguments simply clicks that one button.
@@ -736,12 +741,15 @@ EXTRACTION METHODS
 
     *   `dom' - Click on the passed DOM element
 
+        You can use this to click on arbitrary page elements. There is no
+        convenient way to pass x/y co-ordinates with this method.
+
     *   `id' - Click on the element with the given id
 
         This is useful if your document ids contain characters that do look
         like CSS selectors. It is equivalent to
 
-            xpath => qq{//*[\@id="$id"}
+            xpath => qq{//*[\@id="$id"]}
 
     *   `synchronize' - Synchronize the click (default is 1)
 
@@ -1011,7 +1019,9 @@ FORM METHODS
 
     and the first and second fields will be set accordingly. The method is
     called set_visible because it acts only on visible fields; hidden form
-    inputs are not considered.
+    inputs are not considered. It also respects the respective return value
+    of `->is_visible()' for each field, so hiding of fields through CSS
+    affects this too.
 
     The specifiers that are possible in WWW::Mechanize are not yet
     supported.
@@ -1250,10 +1260,9 @@ SUPPORT
 TALKS
     I've given two talks about this module at Perl conferences:
 
-    http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html
+    German Perl Workshop, German
 
-    http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.h
-    tml
+    YAPC::Europe 2010, English
 
 BUG TRACKER
     Please report bugs in this module via the RT CPAN bug queue at
