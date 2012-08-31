@@ -78,7 +78,7 @@ isa_ok $res, 'HTTP::Response', "Response";
 is $mech->uri, $site, "Navigated to $site";
 
 # Now check for the changes
-my $headers = $mech->selector('#request_headers', single => 1)->{innerHTML};
+$headers = $mech->selector('#request_headers', single => 1)->{innerHTML};
 like $headers, qr!^Referer: \Q$ref\E$!m, "We sent the correct Referer header";
 like $headers, qr!^User-Agent: \Q$ua\E$!m, "We sent the correct User-Agent header";
 unlike $headers, qr!^X-WWW-Mechanize-Firefox: !m, "We can delete cometely custom headers";
