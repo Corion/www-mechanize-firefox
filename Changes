@@ -11,7 +11,23 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.67 to be released
+    . Only fetch slim version of ->response if asked for
+      ->status or ->is_success
     . Fix RT #78706, where $mech->autoclose_tab() was broken
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.5 (ESR)
+        - 13.0
+        - 15.0
+
 0.66 20120607
     . Add example plus test on how to request arbitrary hostnames
       via the Host: header from an IP.

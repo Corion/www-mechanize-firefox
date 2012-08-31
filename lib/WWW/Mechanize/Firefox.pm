@@ -1114,18 +1114,20 @@ sub synchronize {
         };
     };
     
-    $self->signal_http_status; # will also fetch ->response if autodie is on :(
+    $self->signal_http_status;
     if ($need_response) {
-        #warn "Returning response";
         return $self->response
     };
 };
 
-=head2 C<< $mech->res() >> / C<< $mech->response() >>
+=head2 C<< $mech->res() >> / C<< $mech->response(%options) >>
 
-    my $response = $mech->response();
+    my $response = $mech->response(headers => 0);
 
 Returns the current response as a L<HTTP::Response> object.
+
+The C<headers> option tells the module whether to fetch the headers
+from Firefox or not. This is mainly an internal optimization hack.
 
 =cut
 
@@ -1137,17 +1139,18 @@ sub _headerVisitor {
 };
 
 sub _extract_response {
-    my ($self,$request) = @_;
+    my ($self,$request,%options) = @_;
     
     my $nsIHttpChannel = $self->repl->constant('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
-    #warn $httpChannel->{originalURI}->{asciiSpec};
     
     my @headers;
-    my $v = $self->_headerVisitor(sub{push @headers, @_});
-    
-    # If this fails, we're calling it too early :-(
-    $httpChannel->visitResponseHeaders($v);
+    if( $options{ headers }) {
+        my $v = $self->_headerVisitor(sub{push @headers, @_});
+        
+        # If this fails, we're calling it too early :-(
+        $httpChannel->visitResponseHeaders($v);
+    };
     
     my $res = HTTP::Response->new(
         $httpChannel->{responseStatus},
@@ -1159,7 +1162,11 @@ sub _extract_response {
 };
 
 sub response {
-    my ($self) = @_;
+    my ($self, %options) = @_;
+    
+    if( ! exists $options{ headers }) {
+        $options{ headers } = 1;
+    };
     
     # If we still have a valid JS response,
     # create a HTTP::Response from that
@@ -1172,9 +1179,10 @@ sub response {
         if ($ouri) {
             $scheme = $ouri->{scheme};
         };
+    
         if ($scheme and $scheme =~ /^https?/) {
             # We can only extract from a HTTP Response
-            return $self->_extract_response( $js_res );
+            return $self->_extract_response( $js_res, %options );
         } elsif ($scheme and $scheme =~ /^(file|data|about)\b/) {
             # We're cool!
             return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
@@ -1192,9 +1200,8 @@ sub response {
         # this is an error
         return HTTP::Response->new(500)
     };   
-
+    
     # We're cool, except we don't know what we're doing here:
-    #warn "Huh?";
     return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
 }
 *res = \&response;
@@ -1213,7 +1220,7 @@ This is a convenience function that wraps C<< $mech->res->is_success >>.
 =cut
 
 sub success {
-    my $res = $_[0]->response;
+    my $res = $_[0]->response( headers => 0 );
     $res and $res->is_success
 }
 
@@ -1229,7 +1236,8 @@ This is a 3-digit number like 200 for OK, 404 for not found, and so on.
 =cut
 
 sub status {
-    $_[0]->response->code
+    my ($self) = @_;
+    return $self->response( headers => 0 )->code
 };
 
 =head2 C<< $mech->reload( [$bypass_cache] ) >>
@@ -1797,7 +1805,7 @@ sub signal_http_status {
     if ($self->{autodie}) {
         if ($self->status !~ /^2/) {
             # there was an error
-            croak ($self->response->message || sprintf "Got status code %d", $self->status );
+            croak ($self->response(headers => 0)->message || sprintf "Got status code %d", $self->status );
         };
     } else {
         # silent
