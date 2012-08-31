@@ -796,6 +796,7 @@ also exist in WWW::Mechanize through a plugin.
 sub get_local {
     my ($self, $htmlfile, %options) = @_;
     require Cwd;
+    require File::Spec;
     my $fn = File::Spec->rel2abs(
                  File::Spec->catfile(dirname($0),$htmlfile),
                  Cwd::getcwd(),
