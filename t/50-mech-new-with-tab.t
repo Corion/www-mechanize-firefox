@@ -7,7 +7,7 @@ use WWW::Mechanize::Firefox;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
-    autoclose => 0,
+    #autoclose => 0,
     #log => [qw[debug]]
 )};
 
@@ -44,5 +44,6 @@ HTML
 
 is $synth_mech->content, $mech->content, 'Both instances use the same tab';
 
+@tabs = ();
 undef $mech;
 undef $synth_mech;
