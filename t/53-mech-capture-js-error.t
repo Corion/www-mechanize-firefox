@@ -58,9 +58,9 @@ load_file_ok('53-mech-capture-js-error.html', javascript => 1);
 my @errors = grep { $_->{message} !~ /inputEncoding/ } $mech->js_errors;
 is scalar @errors, 1, "One error message found";
 (my $msg) = @errors;
-like $msg->{message}, qr/^\[JavaScript Error: "nonexisting_function is not defined"/, "Errors message";
+like $msg->{message}, qr/^\[JavaScript Error:.*\bnonexisting_function is not defined"/, "Errors message";
 like $msg->{message}, qr!\Q53-mech-capture-js-error.html\E"!, "File name";
-like $msg->{message}, qr!\bline: 5\b!, "Line number";
+like $msg->{message}, qr!\bline: 6\b!, "Line number";
 
 $mech->clear_js_errors;
 is_deeply [$mech->js_errors], [], "No errors reported on page after clearing errors";
