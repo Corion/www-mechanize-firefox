@@ -21,6 +21,6 @@ if (! $mech) {
 #line 2 "foo"
 is eval { $mech->eval_in_page('bar'); 1 }, undef, "Invalid JS gives an error";
 my $err = $@;
-like $err, qr/ at foo line 2$/, "the correct location gets flagged as error";
+like $err, qr/\bat foo line 2\b/, "the correct location gets flagged as error";
 
 undef $mech; # and close that tab
