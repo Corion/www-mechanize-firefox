@@ -589,7 +589,7 @@ Set whether to close the tab associated with the instance.
 
 sub autoclose_tab {
     my $self = shift;
-    $self->application->autoclose_tab(@_);
+    $self->application->autoclose_tab($self->tab, @_);
 };
 
 =head2 C<< $mech->tab() >>

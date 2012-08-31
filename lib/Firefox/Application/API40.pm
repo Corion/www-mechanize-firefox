@@ -160,7 +160,9 @@ JS
 }
 
 sub autoclose_tab {
-    my ($self,$tab) = @_;
+    my ($self,$tab,$close) = @_;
+    $close = 1
+        if( 2 == @_ );
     my $release = join "\n",
           # Find the window our tab lives in
           q<if(!self.collapsed){>,
@@ -178,7 +180,11 @@ sub autoclose_tab {
         q<};>,
 	;
     ;
-    $tab->__release_action($release);
+    if( $close ) {
+        $tab->__release_action($release);
+    } else {
+        $tab->__release_action('');
+    };
 };
 =head2 C<< $ff->selectedTab( %options ) >>
 

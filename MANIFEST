@@ -154,6 +154,7 @@ t/mechanize/content.t
 t/mixi_jp_index.html
 t/rt65615.html
 t/rt65615.t
+t/rt78706.t
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
