@@ -84,6 +84,8 @@ t/50-rt65615.t
 t/50-tick.html
 t/50-tick.t
 t/51-click_button.t
+t/51-click_js.html
+t/51-click_js.t
 t/51-empty-page.html
 t/51-form-number-blakew.html
 t/51-form-number-blakew.t

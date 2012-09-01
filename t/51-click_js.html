@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>51-empty-page.html</title>
+<script>
+var lastclick = [];
+function clicked(id) {
+    lastclick.push(id);
+    return false
+};
+</script>
+<body>
+<div onclick="clicked(this.id)" id="mydiv1">
+<a id="a1" href="#">Clicky1</a>
+</div>
+
+<div onclick="clicked(this.id)" id="mydiv2">
+<a id="a2" href="#" onclick="clicked(this.id)">Clicky2</a>
+</div>
+
+</body>
+</html>
