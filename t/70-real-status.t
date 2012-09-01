@@ -40,14 +40,16 @@ t::helper::run_across_instances(\@instances, $instance_port, \&new_mech, sub {
     is $response->code, 200, 'We got a good response';
 
     undef $mech->{response};
-    $mech->get('http://doesnotexist.example');
+    my ($site) = ('http://'.rand(1000).'.www.doesnotexist.example/');
+
+    $mech->get($site);
     $response = $mech->response;
 
     isn't $response, undef, "We identified a response";
     like $response->code, qr/^(404|5\d\d)$/, 'We got a good response for a nonexistent domain';
     ok ! $mech->success, "And the response is not considered a success";
 
-    $response = $mech->get('http://doesnotexist.example');
+    $response = $mech->get($site);
 
     isn't $response, undef, "We identified a response, directly";
     like $response->code, qr/^(404|5\d\d)$/, 'We got a good response for a nonexistent domain';

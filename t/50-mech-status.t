@@ -18,7 +18,7 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-my ($site,$estatus) = ('http://www.doesnotexist.example/',500);
+my ($site,$estatus) = ('http://'.rand(1000).'.www.doesnotexist.example/',500);
 my $res = $mech->get($site);
 
 is $mech->uri, $site, "Navigating to (nonexisting) $site";
