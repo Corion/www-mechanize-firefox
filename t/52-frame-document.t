@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 2;
+    plan tests => 4;
 };
 
 $mech->get_local("52-frameset.html");
@@ -21,4 +21,11 @@ $mech->get_local("52-frameset.html");
 my @frames = map { $mech->content( document => $_ ) }
     $mech->expand_frames('frame[name="myframe1"]');
 is @frames, 1, "We found the one specified frame";
+like $frames[0], qr{\Q<div id="content">52-subframe.html</div>}, "We found the right subframe";
+
+$mech->get_local("52-iframeset.html");
+
+my @frames = map { $mech->content( document => $_ ) }
+    $mech->expand_frames('iframe');
+is @frames, 1, "We found the one specified iframe";
 like $frames[0], qr{\Q<div id="content">52-subframe.html</div>}, "We found the right subframe";
