@@ -1038,7 +1038,6 @@ sub _install_response_header_listener {
             const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
             const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
             
-            return cb
             return function (progress,request,flags,status) {
                 if (flags & (STATE_STOP|STATE_IS_DOCUMENT) == (STATE_STOP|STATE_IS_DOCUMENT)) {
                     cb(progress,request,flags,status);

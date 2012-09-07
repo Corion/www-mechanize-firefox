@@ -3,6 +3,8 @@
 <title>52-frameset.html</title>
 <body>
 <div id="content">52-iframeset.html</div>
-<iframe src="52-subframe.html">
+<a id="change_frame" onclick="javascript:document.getElementById('iframe').src='50-form2.html';" href="#">Change frame</a>
+<a id="change_frame_404" onclick="javascript:document.getElementById('iframe').src='does-not-exist.html';" href="#">Change frame to 404</a>
+<iframe src="52-subframe.html" id="iframe" name="iframe">
 </body>
 </html>
