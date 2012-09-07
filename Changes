@@ -11,6 +11,9 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.68 to be released
+    . Add a test checking for iframe load events
+
 0.67 20120831
     . Only fetch slim version of ->response if asked for
       ->status or ->is_success

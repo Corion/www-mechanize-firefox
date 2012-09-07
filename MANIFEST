@@ -102,6 +102,7 @@ t/51-mech-set-content.t
 t/51-mech-submit.html
 t/51-mech-submit.t
 t/52-frame-document.t
+t/52-frame-event.t
 t/52-frameset-deep.html
 t/52-frameset-recursive.html
 t/52-frameset.html
