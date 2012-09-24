@@ -14,23 +14,50 @@ to configure Firefox:
 
 =item 1.
 
-Install mozrepl 1.1.0 available from
+Download mozrepl 1.1.0 available from
 
-L<http://wiki.github.com/bard/mozrepl/>
+L<https://github.com/bard/mozrepl/zipball/1.1.0>
 
-respectively
+or a later version from
 
 L<https://github.com/bard/mozrepl/tags>
 
-You will need to edit the C<.zip> file into a C<.xpi> file. You
-may or may not need to enable the "show file extensions" setting
-in your operating system for this.
-
 =item 2.
+
+Unpack the zip archive into a directory.
+
+The archive contains one subdirectory with a name 
+of the form C<bard-mozrepl-abcdefg>.
+
+=item 3.
+
+Create a new zip archive with the files in the subdirectory
+C<bard-mozrepl-abcdefg>. This new archive must have
+the files at the root entry, not in a subdirectory.
+
+The file layout should look like this:
+
+  chrome/
+  components/
+  defaults/
+  chrome.manifest
+  install.rdf
+  logo.png
+
+=item 4.
+
+Rename your new zip archive from C<.zip> to C<.xpi>.
+
+=item 4.
 
 Launch Firefox
 
-=item 3.
+=item 5.
+
+Install the freshly created C<.xpi> file into Firefox.
+For example you can drag and drop the file into Firefox.
+
+=item 6.
 
 Start C<mozrepl> in Firefox by going to the menu:
 
@@ -43,12 +70,11 @@ switch:
 
   firefox -repl
 
+=back
 If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
 this might be because you use the NoScript Mozilla extension
 and have it blocking Javascript for file:// URLs. While this is good,
 the tests need Javascript enabled.
-
-Solution:
 
 =over 4
 
@@ -82,8 +108,6 @@ If tests fail with an error from Firefox that a file could not
 be found, check that the test suite and the Firefox process are
 run using the same user. Otherwise, the Firefox process might not
 have the permissions to access the files created by the test suite.
-
-=back
 
 =head1 AUTHOR
 

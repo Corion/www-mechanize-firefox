@@ -13,6 +13,8 @@ TO DO:
 
 0.68 to be released
     . Add a test checking for iframe load events
+    . Ephemeral documentation reorganized
+    . Separate Installation document
 
 0.67 20120831
     . Only fetch slim version of ->response if asked for
