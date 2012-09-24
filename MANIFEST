@@ -31,7 +31,7 @@ lib/WWW/Mechanize/Firefox/Cookbook.pod
 lib/WWW/Mechanize/Firefox/DSL.pm
 lib/WWW/Mechanize/Firefox/Examples.pm
 lib/WWW/Mechanize/Firefox/FAQ.pod
-lib/WWW/Mechanize/Firefox/Installation.pm
+lib/WWW/Mechanize/Firefox/Installation.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
 MANIFEST			This list of files
