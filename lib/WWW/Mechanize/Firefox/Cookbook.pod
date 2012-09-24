@@ -152,7 +152,6 @@ This does currently not work.
         sleep 1;
     };
 
-
 =head1 Images
 
 =head2 Save the current page as PNG
@@ -178,6 +177,16 @@ distribution.
     height => 200,
   };
   my $png = $mech->content_as_png(undef, $rect);
+  open my $fh, '>', 'page.png'
+      or die "Couldn't save to 'page.png': $!";
+  binmode $fh;
+  print {$fh} $png;
+  close $fh;
+
+=head3 Save a page element of the current page as PNG
+
+  my $shiny = $mech->selector('#shiny', single => 1);
+  my $png = $mech->element_as_png($shiny);
   open my $fh, '>', 'page.png'
       or die "Couldn't save to 'page.png': $!";
   binmode $fh;
