@@ -11,3 +11,4 @@ WWW-Mechanize-Firefox-*/
 .releaserc
 cover_db
 firefox-versions/
+MYMETA.*
