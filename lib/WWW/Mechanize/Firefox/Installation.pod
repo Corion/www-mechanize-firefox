@@ -48,16 +48,16 @@ The file layout should look like this:
 
 Rename your new zip archive from C<.zip> to C<.xpi>.
 
-=item 4.
+=item 5.
 
 Launch Firefox
 
-=item 5.
+=item 6.
 
 Install the freshly created C<.xpi> file into Firefox.
 For example you can drag and drop the file into Firefox.
 
-=item 6.
+=item 7.
 
 Start C<mozrepl> in Firefox by going to the menu:
 
