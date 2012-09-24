@@ -8,7 +8,7 @@ WWW::Mechanize::Firefox::Troubleshooting - Things to watch out for
 
 If you notice that tests get skipped and/or the module installs
 but "does not seem to work", there are some more steps required
-to configure Firefox. Please see M<WWW::Mechanize::Firefox::Installation>
+to configure Firefox. Please see L<WWW::Mechanize::Firefox::Installation>
 for more information.
 
 =head1 Dialogs that break your application
