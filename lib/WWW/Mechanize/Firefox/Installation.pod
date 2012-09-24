@@ -71,6 +71,7 @@ switch:
   firefox -repl
 
 =back
+
 If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
 this might be because you use the NoScript Mozilla extension
 and have it blocking Javascript for file:// URLs. While this is good,
