@@ -92,12 +92,12 @@ Allow Javascript for all file:// URLs
 Re-run tests
 
     perl Makefile.PL
-    nmake
+    nmake test
 
 or if you are using Strawberry Perl or Citrus Perl
 
     perl Makefile.PL
-    dmake
+    dmake test
 
 =item 4.
 
@@ -105,11 +105,18 @@ No test should fail
 
 =back
 
-
 If tests fail with an error from Firefox that a file could not
 be found, check that the test suite and the Firefox process are
 run using the same user. Otherwise, the Firefox process might not
 have the permissions to access the files created by the test suite.
+
+=head1 PPMs
+
+If you use ActiveStates package manager, you can find
+some pre-packaged but untested PPMs at
+L<https://github.com/Corion/www-mechanize-firefox/downloads> .
+
+As I don't use C<ppm>, I can't offer any support for them.
 
 =head1 AUTHOR
 
