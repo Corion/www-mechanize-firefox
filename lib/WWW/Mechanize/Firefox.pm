@@ -621,7 +621,8 @@ in different progress listeners at the same time.
 
 sub progress_listener {
     my ($mech,$source,%handlers) = @_;
-    my $NOTIFY_STATE_DOCUMENT = $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT');
+    my $NOTIFY_STATE = $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL')
+                     + $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATUS');
     my ($obj) = $mech->repl->expr('new Object');
     for my $key (keys %handlers) {
         $obj->{$key} = $handlers{$key};
@@ -665,7 +666,7 @@ JS
         # Clean up some memory leaks
         $release->(@_)
     });
-    $source->addProgressListener($lsn,$NOTIFY_STATE_DOCUMENT);
+    $source->addProgressListener($lsn,$NOTIFY_STATE);
     $lsn
 };
 
