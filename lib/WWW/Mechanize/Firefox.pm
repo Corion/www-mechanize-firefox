@@ -1034,8 +1034,10 @@ sub _install_response_header_listener {
     # Pre-Filter the progress on the JS side of things so we
     # don't get that much traffic back and forth between Perl and JS
     my $make_state_change_filter = $self->repl->declare(<<'JS');
-        function (cb) {
+        function (cb,console) {
+            const STATE_START = Components.interfaces.nsIWebProgressListener.STATE_START;
             const STATE_STOP = Components.interfaces.nsIWebProgressListener.STATE_STOP;
+            const STATE_TRANSFERRING = Components.interfaces.nsIWebProgressListener.STATE_TRANSFERRING;
             const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
             const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
             
