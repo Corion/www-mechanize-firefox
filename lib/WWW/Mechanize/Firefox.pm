@@ -1069,9 +1069,6 @@ JS
                 #warn "Erasing response";
                 undef $self->{ response };
             };
-            #if ($status) {
-            #    warn sprintf "%08x", $status;
-            #};
         };
     });
 
