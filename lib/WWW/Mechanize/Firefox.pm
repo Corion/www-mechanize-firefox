@@ -1353,7 +1353,8 @@ This is WWW::Mechanize::Firefox specific.
 
 sub document {
     my ($self) = @_;
-    $self->tab->MozRepl::RemoteObject::Methods::dive(qw[linkedBrowser contentWindow document]);
+    #$self->tab->MozRepl::RemoteObject::Methods::dive(qw[linkedBrowser contentWindow document]);
+    $self->tab->MozRepl::RemoteObject::Methods::dive(qw[linkedBrowser contentDocument]);
 }
 
 =head2 C<< $mech->docshell() >>
