@@ -25,7 +25,7 @@ like $frames[0], qr{\Q<div id="content">52-subframe.html</div>}, "We found the r
 
 $mech->get_local("52-iframeset.html");
 
-my @frames = map { $mech->content( document => $_ ) }
+   @frames = map { $mech->content( document => $_ ) }
     $mech->expand_frames('iframe');
 is @frames, 1, "We found the one specified iframe";
 like $frames[0], qr{\Q<div id="content">52-subframe.html</div>}, "We found the right subframe";

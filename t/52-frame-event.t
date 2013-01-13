@@ -26,6 +26,6 @@ like $frames[0]->{src}, qr/\b50-form2.html$/, "We found the right subframe";
 $mech->get_local("52-iframeset.html");
 $mech->click({selector => "#change_frame_404"});
 
-my @frames = $mech->selector('#iframe');
+@frames = $mech->selector('#iframe');
 is @frames, 1, "We found the one specified iframe";
 like $frames[0]->{src}, qr/\bdoes-not-exist.html$/, "That frame target was not found";
