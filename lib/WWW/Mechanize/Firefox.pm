@@ -1118,6 +1118,9 @@ sub synchronize {
     if ($need_response) {
         return $self->response
     };
+    
+    undef $response_catcher;
+    # Response catcher gets released here
 };
 
 =head2 C<< $mech->res() >> / C<< $mech->response(%options) >>
