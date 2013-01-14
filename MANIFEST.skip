@@ -15,5 +15,6 @@ CVS/
 ^cover_db/
 ^db/
 ^firefox-versions/
+^ppd/
 t/70-real-status-timeout.t
 ^MYMETA.*
