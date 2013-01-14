@@ -1056,10 +1056,13 @@ JS
     
     my $state_change = $make_state_change_filter->(sub {
         my ($progress,$request,$flags,$status) = @_;
-        #warn sprintf "State     : <progress> <request> %08x %08x\n", $flags, $status;
-        #warn sprintf "                                 %08x\n", $STATE_STOP | $STATE_IS_DOCUMENT;
-        #warn "".$request->{URI}->{asciiSpec};
+        #warn sprintf "State     : <progress> <request> %032b %08x\n", $flags, $status;
+        #warn sprintf "                                 %032b\n", $STATE_STOP | $STATE_IS_DOCUMENT | $STATE_IS_WINDOW ;
+        #warn sprintf "                                 %032b\n", $STATE_IS_WINDOW | $STATE_STOP ;
         
+        #if (($flags & ($STATE_IS_WINDOW | $STATE_STOP )) == ($STATE_IS_WINDOW | $STATE_STOP )) {
+        #    warn "Window loaded, request done?!";
+        #};
         if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
             if ($status == 0) {
                 #warn "Storing request to response";
