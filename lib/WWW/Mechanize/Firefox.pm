@@ -657,7 +657,6 @@ JS
     
     # Declare it here so we don't close over $lsn!
     my $release = sub {
-        #warn "Listener removed";
         $_[0]->bridge->remove_callback(values %handlers);
     };
     my $lsn = $mk_nsIWebProgressListener->($obj,$source);
