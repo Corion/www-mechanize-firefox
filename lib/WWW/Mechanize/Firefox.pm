@@ -1187,7 +1187,7 @@ sub response {
         if ($ouri) {
             $scheme = $ouri->{scheme};
         };
-    
+
         if ($scheme and $scheme =~ /^https?/) {
             # We can only extract from a HTTP Response
             return $self->_extract_response( $js_res, %options );
