@@ -1100,7 +1100,6 @@ event instead.
 If you leave out C<$event>, the value of C<< ->events() >> will
 be used instead.
 
-
 =cut
 
 sub _install_response_header_listener {
