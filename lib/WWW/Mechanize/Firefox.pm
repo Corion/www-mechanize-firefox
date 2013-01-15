@@ -636,7 +636,9 @@ sub progress_listener {
                        "onLocationChange",
                        "onProgressChange",
                        "onStatusChange",
-                       "onSecurityChange",
+                       "onSecurityChange"
+                       // ,"onProgressChange64"
+                       // ,"onRefreshAttempted"
         ];
         for (var h in callbacks) {
             var e = callbacks[h];
@@ -646,8 +648,9 @@ sub progress_listener {
         };
         myListener.QueryInterface = function(aIID) {
             if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
-               aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-               aIID.equals(Components.interfaces.nsISupports))
+                // aIID.equals(Components.interfaces.nsIWebProgressListener2) ||
+                aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+                aIID.equals(Components.interfaces.nsISupports))
                 return this;
             throw Components.results.NS_NOINTERFACE;
         };
