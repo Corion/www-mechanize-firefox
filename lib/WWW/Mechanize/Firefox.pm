@@ -924,78 +924,153 @@ sub reset_headers {
     delete $self->{custom_header_observer};
 };
 
-# Should I port this to Perl?
-# Should this become part of MozRepl::RemoteObject?
-# This should get passed 
-sub _addEventListener {
-    my ($self,@args) = @_;
-    if (@args <= 2 and ref($args[0]) eq 'MozRepl::RemoteObject::Instance') {
-        @args = [@args];
-    };
-    #use Data::Dumper;
-    #local $Data::Dumper::Maxdepth = 2;
-    #print Dumper \@args;
-    for (@args) {
-        $_->[1] ||= $self->events;
-        $_->[1] = [$_->[1]]
-            unless ref $_->[1];
-    };
-    # Now, flatten the arg list again...
-    @args = map { @$_ } @args;
+sub _getMostRecentWindow {
+    my ($self) = @_;
+    my $get = $self->repl->declare(<<'JS');
+    function() {
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        return wm.getMostRecentWindow('navigator:browser');
+    }
+JS
+    return $get->()
+};
 
-    # This registers multiple events for a one-shot event
-    my $make_semaphore = $self->repl->declare(<<'JS');
-function() {
-    var lock = { "busy": 0, "event" : null };
-    var listeners = [];
-    var pairs = arguments;
-    for( var k = 0; k < pairs.length ; k++) {
-        var b = pairs[k];
-        k++;
-        var events = pairs[k];
-        
-        for( var i = 0; i < events.length; i++) {
-            var evname = events[i];
-            var callback = (function(listeners,evname){
-                return function(e) {
-                    if (! lock.busy) {
-                        lock.busy++;
-                        lock.event = e.type;
-                        lock.js_event = {};
-                        lock.js_event.target = e.originalTarget;
-                        lock.js_event.type = e.type;
-                        //alert("Caught first event " + e.type + " " + e.message);
-                    } else {
-                        //alert("Caught duplicate event " + e.type + " " + e.message);
-                    };
-                    for( var j = 0; j < listeners.length; j++) {
-                        listeners[j][0].removeEventListener(listeners[j][1],listeners[j][2],true);
+# XXX Pass list of events in?
+my $id;
+sub _addLoadEventListener {
+    my ($self,%options) = @_;
+    
+    # XXX find "our" window from ->tab()
+    $options{ window } ||= $self->_getMostRecentWindow();
+    $options{ tab } ||= $self->tab;
+    #$options{window}->alert('Hello');
+    my $add_load_listener = $self->repl->declare(<<'JS');
+        function( mainWindow, tab, waitForLoad, id ) {
+            var browser= mainWindow.gBrowser.getBrowserForTab( tab );
+            var lock= { "busy": 1, "id": id, log:[] };
+            var unloadedFrames= [];
+            
+            var onEvent; onEvent= function (e) {
+                var t= e.target;
+                var toplevel= (t == browser.contentDocument);
+                lock.log.push("Event "+e.type);
+                var reloadedFrame= false;
+                lock.log.push( "" + unloadedFrames.length + " frames.");
+                
+                if(    "FRAME" == t.tagName
+                    || "IFRAME" == t.tagName ) {
+                    loc= t.src;
+                } else if( !t.tagName ) {
+                    // Document
+                    loc= t.URL;
+                } else { // ignore
+                    lock.log.push("Ignoring " + e.type + " on " + t.tagName);
+                };
+                
+                if( t instanceof HTMLDocument ) {
+                    // We are only interested in HTML pages here
+                    var container= t.defaultView.frameElement;
+                    if( container ) {
+                        for( var i=0; i < unloadedFrames.length; i++ ) {
+                            lock.log.push( "" + i + " " + unloadedFrames[i].id + " - " + unloadedFrames[i].src );
+                            reloadedFrame=    reloadedFrame
+                                           || unloadedFrames[i] === container;
+                        };
+                
+                        if ("pagehide" == e.type && container ) {
+                            // A frame gets reloaded. We remember it so we can
+                            // tell when it has completed. We won't get a separate
+                            // completion event on the parent document :-(
+                            lock.log.push("Remembering frame parent, for 'load' event");
+                            unloadedFrames.push( container );
+                        };
                     };
                 };
-            })(listeners,evname);
-            listeners.push([b,evname,callback]);
-            b.addEventListener(evname,callback,true);
-        };
-    };
-    return lock
-}
+                
+                if (! toplevel && !reloadedFrame ) { return ; };
+                lock.log.push("<> " + e.type + " on " + loc);
+                
+                if(    (toplevel || reloadedFrame)
+                    // && !waitForLoad
+                    && "DOMContentLoaded" == e.type
+                    ) {
+                    // We loaded a document
+                    // See if it contains (i)frames
+                    // and wait for "load" to fire if so
+                    lock.log.push("DOMContentLoaded for toplevel");
+                    var q= "//IFRAME|//FRAME";
+                    var frames= t.evaluate(q,t,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null ).snapshotLength;
+                    lock.log.push("Found " + frames + " frames");
+                    if( frames ) {
+                        lock.log.push("Waiting for 'load' because we found frames");
+                        waitForLoad= true;
+                    } else if( /^about:neterror\?/.test( loc ) || !waitForLoad ) {
+                        lock.log.push("Early out on DOMContentLoaded");
+                        lock.busy= 0;
+                    };
+                } else if( (toplevel || reloadedFrame)
+                    && (   "load" == e.type 
+                        || "pageshow" == e.type
+                        )) { // We always are done on "load" on toplevel
+                    lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
+                    lock.busy= 0;
+                } else if( (toplevel || reloadedFrame)
+                    && ("error" == e.type || "stop" == e.type)) { // We always are done on "load" on toplevel
+                    lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
+                    lock.busy= 0;
+                };
+            };
+            
+            var events = ['DOMContentLoaded','load', 
+                          'pageshow', // Navigation from cache will use "pageshow"
+                          'pagehide', // 'unload',
+                          'error','abort','stop',
+                          ];
+            for(var i=0; i<events.length; i++) {
+                browser.addEventListener(events[i], onEvent, true);
+            };
+            lock.log.push("Listening");
+            
+            return lock
+        }
 JS
-    # $browser,$events
-    return $make_semaphore->(@args);
-};
+    return $add_load_listener->($options{ window }, $options{ tab }, 1, $id++ );
+}
 
 sub _wait_while_busy {
     my ($self,@elements) = @_;
+    #my $c = $self->tab->{linkedBrowser}->{contentWindow}->{console};
     # Now do the busy-wait
     # Should this also include a ->poll()
     # and a callback?
+
+#    my $timer = time;
+
     while (1) {
         for my $element (@elements) {
-            if ((my $s = $element->{busy} || 0) >= 1) {
+            #warn $element->{busy};
+            if ((my $s = $element->{busy} || 0) < 1) {
+#                for my $element (@elements) {
+#                    for (@{ $element->{log}}) {
+#                        print $_,"\n";
+#                    };
+#                    print "---\n";
+#                };
                 return $element;
             };
         };
         sleep 0.1;
+        
+#        if (time-$timer > 4) {
+#            $timer= time;
+#            for my $element (@elements) {
+#                for (@{ $element->{log}}) {
+#                    print $_,"\n";
+#                };
+#                print "---\n";
+#            };
+#        };
     };
 }
 
@@ -1044,7 +1119,25 @@ sub _install_response_header_listener {
             const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
             
             return function (progress,request,flags,status) {
+                if( 0 && console ) {
+                    const nsIChannel = Components.interfaces.nsIChannel;
+                    var ch = request.QueryInterface(nsIChannel);
+                    
+                    console.log("STATE: "
+                                + (flags & STATE_START ? "s" : "-")
+                                + (flags & STATE_STOP ? "S" : "-")
+                                + (flags & STATE_TRANSFERRING ? "T" : "-")
+                                + (flags & STATE_IS_DOCUMENT ? "D" : "-")
+                                + (flags & STATE_IS_WINDOW ? "W" : "-")
+                                + " " + status
+                                + " " + ch.originalURI.spec
+                                + " -> " + ch.URI.spec
+                                );
+                };
+                // if (flags & (STATE_STOP|STATE_IS_WINDOW) == (STATE_STOP|STATE_IS_WINDOW)) {
                 if (flags & (STATE_STOP|STATE_IS_DOCUMENT) == (STATE_STOP|STATE_IS_DOCUMENT)) {
+                    cb(progress,request,flags,status);
+                } else if ((flags & STATE_STOP) == STATE_STOP) {
                     cb(progress,request,flags,status);
                 }
             }
@@ -1060,13 +1153,10 @@ JS
         my ($progress,$request,$flags,$status) = @_;
         #warn sprintf "State     : <progress> <request> %032b %08x\n", $flags, $status;
         #warn sprintf "                                 %032b\n", $STATE_STOP | $STATE_IS_DOCUMENT | $STATE_IS_WINDOW ;
-        #warn sprintf "                                 %032b\n", $STATE_IS_WINDOW | $STATE_STOP ;
         
-        #if (($flags & ($STATE_IS_WINDOW | $STATE_STOP )) == ($STATE_IS_WINDOW | $STATE_STOP )) {
-        #    warn "Window loaded, request done?!";
-        #};
-        if (($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
-            if ($status == 0) {
+        if (   $STATE_STOP == $flags # some error
+            or ($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
+            if ($status == 0 ) {
                 #warn "Storing request to response";
                 #warn "URI ".$request->{URI}->{asciiSpec};
                 $self->{ response } ||= $request;
@@ -1075,7 +1165,8 @@ JS
                 undef $self->{ response };
             };
         };
-    });
+    #}, $self->tab->{linkedBrowser}->{contentWindow}->{console}, $lock);
+    }, $self->tab->{linkedBrowser}->{contentWindow}->{console});
 
     my $browser = $self->tab->{linkedBrowser};
 
@@ -1102,12 +1193,17 @@ sub synchronize {
     undef $self->{response};
     
     my $need_response = defined wantarray;
+    my $b = $self->tab->{linkedBrowser};
+    my $c = $b->{contentWindow}->{console};
     my $response_catcher = $self->_install_response_header_listener();
+    $c->log("Installed header listener");
     
     # 'load' on linkedBrowser is good for successfull load
     # 'error' on tab is good for failed load :-(
-    my $b = $self->tab->{linkedBrowser};
-    my $load_lock = $self->_addEventListener([$b,$events],[$self->tab,$events]);
+    my $load_lock = $self->_addLoadEventListener( tab => $self->tab );
+    
+    $c->log("Got event lock, now kicking off elements");
+    
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
     if (my $h = $self->{on_event}) {
