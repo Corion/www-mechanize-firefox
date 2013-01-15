@@ -397,7 +397,7 @@ use vars '%known_options';
     'images'        => 'allowImages',
 );
 
-sub allow  {
+sub allow {
     my ($self,%options) = @_;
     my $shell = $self->docshell;
     for my $opt (sort keys %options) {
