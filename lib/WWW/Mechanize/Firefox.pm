@@ -1064,14 +1064,11 @@ sub _wait_while_busy {
 
     while (1) {
         for my $element (@elements) {
-            #warn $element->{busy};
             if ((my $s = $element->{busy} || 0) < 1) {
-#                for my $element (@elements) {
-#                    for (@{ $element->{log}}) {
-#                        print $_,"\n";
-#                    };
-#                    print "---\n";
-#                };
+                for my $element (@elements) {
+                    push @{ $self->{event_log} }, 
+                        join "\n", @{ $element->{log}};
+                };
                 return $element;
             };
         };
