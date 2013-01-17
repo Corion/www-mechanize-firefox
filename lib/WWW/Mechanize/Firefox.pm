@@ -979,7 +979,7 @@ sub _addLoadEventListener {
                 var reloadedFrame= false;
                 lock.log.push( "" + unloadedFrames.length + " frames.");
                 
-                if(    "FRAME" == t.tagName
+                if(    "FRAME"  == t.tagName
                     || "IFRAME" == t.tagName ) {
                     loc= t.src;
                 } else if( !t.tagName ) {
