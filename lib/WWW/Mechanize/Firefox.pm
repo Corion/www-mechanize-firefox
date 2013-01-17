@@ -1079,7 +1079,8 @@ sub _wait_while_busy {
             if ((my $s = $element->{busy} || 0) < 1) {
                 for my $element (@elements) {
                     push @{ $self->{event_log} }, 
-                        join "\n", @{ $element->{log}};
+                        join "\n", "Lock id " . $element->{id},
+                                   @{ $element->{log}};
                 };
                 return $element;
             };
