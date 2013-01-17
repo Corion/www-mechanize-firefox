@@ -948,10 +948,29 @@ sub _addLoadEventListener {
     my $add_load_listener = $self->repl->declare(<<'JS');
         function( mainWindow, tab, waitForLoad, id ) {
             var browser= mainWindow.gBrowser.getBrowserForTab( tab );
-            var lock= { "busy": 1, "id": id, log:[] };
+            const events = [
+                      'DOMContentLoaded','load', 
+                      'pageshow', // Navigation from cache will use "pageshow"
+                      'pagehide', // 'unload',
+                      'error','abort','stop',
+                  ];
+
+            var lock= { 
+                        "busy": 1,
+                        "id": id,
+                        "log":[],
+                        "events": events,
+                        "browser": browser,
+                        "cb": undefined,
+                        "release": function() {
+                            for(var i=0; i<this.events.length; i++) {
+                                this.browser.addEventListener(this.events[i], this.cb, true);
+                            };
+                        }
+                      };
             var unloadedFrames= [];
             
-            var onEvent; onEvent= function (e) {
+            var onEvent; lock.cb= onEvent= function (e) {
                 var t= e.target;
                 var toplevel= (t == browser.contentDocument);
                 lock.log.push("Event "+e.type);
@@ -1020,13 +1039,9 @@ sub _addLoadEventListener {
                     lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
                     lock.busy= 0;
                 };
+                
             };
             
-            var events = ['DOMContentLoaded','load', 
-                          'pageshow', // Navigation from cache will use "pageshow"
-                          'pagehide', // 'unload',
-                          'error','abort','stop',
-                          ];
             for(var i=0; i<events.length; i++) {
                 browser.addEventListener(events[i], onEvent, true);
             };
@@ -1049,11 +1064,14 @@ sub _wait_while_busy {
 
     while (1) {
         for my $element (@elements) {
+            #warn $element->{busy};
             if ((my $s = $element->{busy} || 0) < 1) {
-                for my $element (@elements) {
-                    push @{ $self->{event_log} }, 
-                        join "\n", @{ $element->{log}};
-                };
+#                for my $element (@elements) {
+#                    for (@{ $element->{log}}) {
+#                        print $_,"\n";
+#                    };
+#                    print "---\n";
+#                };
                 return $element;
             };
         };
