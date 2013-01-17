@@ -966,7 +966,7 @@ sub _addLoadEventListener {
                         "cb": undefined,
                         "release": function() {
                             for(var i=0; i<this.events.length; i++) {
-                                this.browser.addEventListener(this.events[i], this.cb, true);
+                                this.browser.removeEventListener(this.events[i], this.cb, true);
                             };
                         }
                       };
