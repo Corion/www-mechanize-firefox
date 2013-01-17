@@ -972,7 +972,7 @@ sub _addLoadEventListener {
                       };
             var unloadedFrames= [];
             
-            var onEvent; lock.cb= onEvent= function (e) {
+            lock.cb= function (e) {
                 var t= e.target;
                 var toplevel= (t == browser.contentDocument);
                 lock.log.push("Event "+e.type);
@@ -1046,7 +1046,7 @@ sub _addLoadEventListener {
             };
             
             for(var i=0; i<events.length; i++) {
-                browser.addEventListener(events[i], onEvent, true);
+                browser.addEventListener(events[i], lock.cb, true);
             };
             lock.log.push("Listening");
             
