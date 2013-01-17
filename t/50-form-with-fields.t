@@ -29,8 +29,13 @@ isa_ok $button, 'MozRepl::RemoteObject::Instance', "The button image";
 ok $mech->submit, 'Sent the page';
 
 $mech->get_local('50-form3.html');
+@{$mech->{event_log}} = ();
 $mech->form_id('snd');
-ok $mech->current_form, "We can find a form by its id";
+if(! ok $mech->current_form, "We can find a form by its id") {
+    for (@{$mech->{event_log}}) {
+        diag $_
+    };
+};
 
 $mech->get_local('50-form3.html');
 $mech->form_with_fields('r1[name]');
