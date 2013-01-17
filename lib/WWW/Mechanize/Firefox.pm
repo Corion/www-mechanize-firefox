@@ -243,6 +243,8 @@ sub new {
     
     $args{ response } ||= undef;
     $args{ current_form } ||= undef;
+
+    $args{ event_log } ||= [];
     
     my $agent = delete $args{ agent };
     
