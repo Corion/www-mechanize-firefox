@@ -1229,13 +1229,16 @@ sub synchronize {
         };
     };
     
+    # Clean up our event listener
+    $load_lock->release;
+    
+    undef $response_catcher;
+    # Response catcher gets released here
+
     $self->signal_http_status;
     if ($need_response) {
         return $self->response
     };
-    
-    undef $response_catcher;
-    # Response catcher gets released here
 };
 
 =head2 C<< $mech->res() >> / C<< $mech->response(%options) >>
