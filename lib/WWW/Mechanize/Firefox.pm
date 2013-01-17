@@ -1028,6 +1028,7 @@ sub _addLoadEventListener {
                         lock.log.push("Early out on DOMContentLoaded");
                         lock.busy= 0;
                     };
+
                 } else if( (toplevel || reloadedFrame)
                     && (   "load" == e.type 
                         || "pageshow" == e.type
