@@ -1220,10 +1220,8 @@ sub synchronize {
     my $response_catcher = $self->_install_response_header_listener();
     
     my $load_lock = $self->_addLoadEventListener( tab => $self->tab );
-    
-    #$c->log("Got event lock, now kicking off elements");
-    
     $callback->();
+    
     my $ev = $self->_wait_while_busy($load_lock);
     if (my $h = $self->{on_event}) {
         if (ref $h eq 'CODE') {
