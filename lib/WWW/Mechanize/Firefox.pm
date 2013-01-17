@@ -1204,16 +1204,11 @@ sub synchronize {
     undef $self->{response};
     
     my $need_response = defined wantarray;
-    my $b = $self->tab->{linkedBrowser};
-    my $c = $b->{contentWindow}->{console};
     my $response_catcher = $self->_install_response_header_listener();
-    $c->log("Installed header listener");
     
-    # 'load' on linkedBrowser is good for successfull load
-    # 'error' on tab is good for failed load :-(
     my $load_lock = $self->_addLoadEventListener( tab => $self->tab );
     
-    $c->log("Got event lock, now kicking off elements");
+    #$c->log("Got event lock, now kicking off elements");
     
     $callback->();
     my $ev = $self->_wait_while_busy($load_lock);
