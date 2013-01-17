@@ -988,37 +988,45 @@ sub _addLoadEventListener {
                 } else { // ignore
                     lock.log.push("Ignoring " + e.type + " on " + t.tagName);
                 };
-                
+                try {
                 if( t instanceof HTMLDocument ) {
                     // We are only interested in HTML pages here
-                    var container= t.defaultView.frameElement;
-                    if( container ) {
+                        var container= t.defaultView.frameElement || browser.contentWindow;
                         for( var i=0; i < unloadedFrames.length; i++ ) {
-                            lock.log.push( "" + i + " " + unloadedFrames[i].id + " - " + unloadedFrames[i].src );
-                            reloadedFrame=    reloadedFrame
-                                           || unloadedFrames[i] === container;
+                            try {
+                                // lock.log.push( "" + i + " " + unloadedFrames[i].id + " - " + unloadedFrames[i].src );
+                                reloadedFrame=    reloadedFrame
+                                               || unloadedFrames[i] === container;
+                            } catch (e) {
+                                // alert("Some frame element has gone away already...");
+                            };
+                            // alert("Caught " + e.type + " on remembered element. Great - " + reloadedFrame);
                         };
                 
                         if ("pagehide" == e.type && container ) {
+                            // alert("pagehide on container /lock"+lock.id);
+                            // A frame or window gets reloaded.
                             // A frame gets reloaded. We remember it so we can
                             // tell when it has completed. We won't get a separate
                             // completion event on the parent document :-(
                             lock.log.push("Remembering frame parent, for 'load' event");
                             unloadedFrames.push( container );
+                            // Maybe we should just attach all events here?!
                         };
-                    };
                 };
+            } catch (e) { alert("Error while looking: " + e.message+" " + e.line) };
                 
-                if (! toplevel && !reloadedFrame ) { return ; };
+                // if (! toplevel && !reloadedFrame ) { return ; };
                 lock.log.push("<> " + e.type + " on " + loc);
                 
-                if(    (toplevel || reloadedFrame)
+                if(    (reloadedFrame)
                     // && !waitForLoad
                     && "DOMContentLoaded" == e.type
                     ) {
                     // We loaded a document
                     // See if it contains (i)frames
                     // and wait for "load" to fire if so
+                    // alert("Reloaded a container /lock:" + lock.id);
                     lock.log.push("DOMContentLoaded for toplevel");
                     var q= "//IFRAME|//FRAME";
                     var frames= t.evaluate(q,t,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null ).snapshotLength;
@@ -1031,12 +1039,13 @@ sub _addLoadEventListener {
                         lock.busy= 0;
                     };
 
-                } else if( (toplevel || reloadedFrame)
+                } else if( (reloadedFrame)
                     && (   "load" == e.type 
                         || "pageshow" == e.type
                         )) { // We always are done on "load" on toplevel
                     lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
                     lock.busy= 0;
+
                 } else if( (toplevel || reloadedFrame)
                     && ("error" == e.type || "stop" == e.type)) { // We always are done on "load" on toplevel
                     lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
