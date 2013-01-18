@@ -1739,7 +1739,7 @@ sub save_url {
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
-function (source,filetarget,progress) {
+function (source,filetarget,progress,tab) {
     //new obj_URI object
     var obj_URI = Components.classes["@mozilla.org/network/io-service;1"]
         .getService(Components.interfaces.nsIIOService).newURI(source, null, null);
@@ -1754,7 +1754,7 @@ function (source,filetarget,progress) {
     //set file with path
     obj_target.initWithPath(filetarget);
 
-    //new persitence object
+    //new persistence object
     var obj_Persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
         .createInstance(Components.interfaces.nsIWebBrowserPersist);
 
@@ -1769,13 +1769,29 @@ function (source,filetarget,progress) {
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
                                      ;
     obj_Persist.progressListener = progress;
+    
+    // Since Firefox 18, we need to provide a proper privacyContext
+    // This is cobbled together from half-documented parts in various places
+    // of the Mozilla documentation. The changes file does not list the
+    // necessary steps :-(
+    // https://developer.mozilla.org/en-US/docs/Supporting_per-window_private_browsing
+    // The documentation is even wrong. It recommends to import("chrome://gre/modules/PrivateBrowsingUtils.jsm")
+    // but the correct URL is "resource://gre/modules/PrivateBrowsingUtils.jsm".
+    // Also, the method is not named "getPrivacyContextFromWindow" but "privacyContextFromWindow".
+    var privacyContext;
+    var version = Components.classes["@mozilla.org/xre/app-info;1"]
+                  .getService(Components.interfaces.nsIXULAppInfo).version;
+    if( version >= 18.0 ) {
+        Components.utils.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+        privacyContext = PrivateBrowsingUtils.privacyContextFromWindow(tab.linkedBrowser.contentDocument.defaultView);
+    };
 
     //save file to target
-    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target);
+    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target,privacyContext);
     return obj_Persist
 };
 JS
-    $transfer_file->("$url" => $localname, $options{progress});
+    $transfer_file->("$url" => $localname, $options{progress}, $self->tab);
 }
 
 =head2 C<< $mech->base() >>
