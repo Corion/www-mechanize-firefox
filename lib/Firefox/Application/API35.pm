@@ -144,8 +144,9 @@ function() {
     
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                        .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    if (win) {
+    var en = wm.getEnumerator('navigator:browser');
+    while( en.hasMoreElements() ) {
+        var win= en.getNext();
         var browser = win.getBrowser();
         Array.prototype.forEach.call(
             browser.tabContainer.childNodes, 

@@ -210,8 +210,9 @@ function() {
     
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                        .getService(Components.interfaces.nsIWindowMediator);
-    var win = wm.getMostRecentWindow('navigator:browser');
-    if (win) {
+    var en = wm.getEnumerator('navigator:browser');
+    while( en.hasMoreElements() ) {
+        var win= en.getNext();
         var tabbrowser = win.gBrowser;
         var numTabs = tabbrowser.browsers.length;
         for (var index = 0; index < numTabs; index++) {
