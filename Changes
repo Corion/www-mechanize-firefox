@@ -11,6 +11,39 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.69 20130118
+    ! Redid the "page completed" logic because Firefox 18 fires
+      events in an order that breaks WWW::Mechanize::Firefox.
+      Please test this module version before upgrading!
+      
+      Code that sets $mech->events() will need review, because
+      WWW::Mechanize::Firefox is now heavily tied to receiving
+      "pagehide", "DOMContentLoaded" and "load" events, in that order.
+      
+    ! File downloads are now synchronous by default. Pass
+      "progress" => {} to ->save_url()
+      if you want them to run in the background.
+    ! Compatibility fix for location changes
+    ! Various compatibility fixes for Firefox 18, which broke backwards
+      compatibility in various undocumented ways.
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.5 (ESR)
+        - 13.0
+        - 15.0
+        - 17.0.2 (Simplified Chinese)
+        - 18.0
+        - 19.0 beta
+    . Added HTML content encoding comments to shut up Firefox while testing
+    . Slight diving optimizations in ->document()
+
 0.68 20120924
     . Add a test checking for iframe load events
     . Ephemeral documentation reorganized
