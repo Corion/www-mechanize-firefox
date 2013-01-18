@@ -149,7 +149,7 @@ __DATA__
 <head>
 <title>WWW::Mechanize::Firefox test page</title>
 <style>
-.hidden { display: none };
+.hidden { display: none; }
 </style>
 </head>
 <body>
