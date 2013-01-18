@@ -129,16 +129,16 @@ C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
 =item * 
 
 C<events> - the set of default Javascript events to listen for while
-waiting for a reply
+waiting for a reply. In fact, WWW::Mechanize::Firefox will almost always
+wait until a 'DOMContentLoaded' or 'load' event. 'pagehide' events
+will tell it for what frames to wait.
 
 The default set is
 
-  DOMFrameContentLoaded
-  DOMContentLoaded
-  pageshow
-  error
-  abort
-  stop
+  'DOMContentLoaded','load', 
+  'pageshow',
+  'pagehide',
+  'error','abort','stop',
 
 =item * 
 
@@ -226,7 +226,12 @@ sub new {
     };
     if (! exists $args{ autodie }) { $args{ autodie } = 1 };
     
-    $args{ events } ||= [qw[DOMFrameContentLoaded DOMContentLoaded pageshow error abort stop]];
+    $args{ events } ||= [
+                      'DOMContentLoaded','load', 
+                      'pageshow', # Navigation from cache will use "pageshow"
+                      'pagehide',
+                      'error','abort','stop',
+    ];
     $args{ on_event } ||= undef;
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
@@ -308,6 +313,9 @@ sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
 Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
 will wait for after requesting a new page. Returns an array reference.
+
+Changing the set of events will most likely make WWW::Mechanize::Firefox
+stall while waiting for a response.
 
 This method is special to WWW::Mechanize::Firefox.
 
@@ -957,23 +965,15 @@ sub reset_headers {
     delete $self->{custom_header_observer};
 };
 
-
-# XXX Pass list of events in?
 sub _addLoadEventListener {
     my ($self,%options) = @_;
     
     $options{ tab } ||= $self->tab;
     $options{ window } ||= $self->application->getMostRecentWindow;
-    #$options{window}->alert('Hello');
+    $options{ events } ||= $self->events;
     my $add_load_listener = $self->repl->declare(<<'JS');
-        function( mainWindow, tab, waitForLoad, id ) {
+        function( mainWindow, tab, waitForLoad, events ) {
             var browser= mainWindow.gBrowser.getBrowserForTab( tab );
-            const events = [
-                      'DOMContentLoaded','load', 
-                      'pageshow', // Navigation from cache will use "pageshow"
-                      'pagehide', // 'unload',
-                      'error','abort','stop',
-                  ];
 
             var lock= { 
                         "busy": 1,
@@ -1286,7 +1286,7 @@ sub synchronize {
     my $need_response = defined wantarray;
     my $response_catcher = $self->_install_response_header_listener();
     
-    my $load_lock = $self->_addLoadEventListener( tab => $self->tab );
+    my $load_lock = $self->_addLoadEventListener( tab => $self->tab, events => $events );
     $callback->();
     
     my $ev = $self->_wait_while_busy($load_lock);

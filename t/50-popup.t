@@ -8,7 +8,7 @@ exit;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 0,
-    events => [ 'DOMWindowOpened', 'DOMContentLoaded', 'load'], # domwindowclosed
+    #events => [ 'DOMWindowOpened', 'DOMContentLoaded', 'load'], # domwindowclosed
     # then add a window.onload handler to check whether it's a new browser
 )};
 
