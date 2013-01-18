@@ -990,7 +990,6 @@ sub _addLoadEventListener {
 
             var lock= { 
                         "busy": 1,
-                        "id": id,
                         "log":[],
                         "events": events,
                         "browser": browser,
@@ -1164,8 +1163,7 @@ sub _wait_while_busy {
             if ((my $s = $element->{busy} || 0) < 1) {
                 for my $element (@elements) {
                     push @{ $self->{event_log} }, 
-                        join "\n", "Lock id " . $element->{id},
-                                   @{ $element->{log}};
+                        join "\n", @{ $element->{log}};
                 };
                 return $element;
             };
