@@ -1095,6 +1095,66 @@ JS
     return $add_load_listener->($options{ window }, $options{ tab }, 1, $id++ );
 }
 
+sub _addEventListener {
+    my ($self,@args) = @_;
+    if (@args <= 2 and ref($args[0]) eq 'MozRepl::RemoteObject::Instance') {
+        @args = [@args];
+    };
+    for (@args) {
+        $_->[1] ||= $self->events;
+        $_->[1] = [$_->[1]]
+            unless ref $_->[1];
+    };
+    # Now, flatten the arg list again...
+    @args = map { @$_ } @args;
+
+    
+    # XXX find "our" window from ->tab()
+    #$options{ window } ||= $self->_getMostRecentWindow();
+    #$options{ tab } ||= $self->tab;
+    #$options{window}->alert('Hello');
+    
+    # This registers multiple events for a one-shot event
+    my $make_semaphore = $self->repl->declare(<<'JS');
+function() {
+    var lock = { "busy": 0, "event" : null };
+    var listeners = [];
+    var pairs = arguments;
+    for( var k = 0; k < pairs.length ; k++) {
+        var b = pairs[k];
+        k++;
+        var events = pairs[k];
+        
+        for( var i = 0; i < events.length; i++) {
+            var evname = events[i];
+            var callback = (function(listeners,evname){
+                return function(e) {
+                    if (! lock.busy) {
+                        lock.busy++;
+                        lock.event = e.type;
+                        lock.js_event = {};
+                        lock.js_event.target = e.originalTarget;
+                        lock.js_event.type = e.type;
+                        //alert("Caught first event " + e.type + " " + e.message);
+                    } else {
+                        //alert("Caught duplicate event " + e.type + " " + e.message);
+                    };
+                    for( var j = 0; j < listeners.length; j++) {
+                        listeners[j][0].removeEventListener(listeners[j][1],listeners[j][2],true);
+                    };
+                };
+            })(listeners,evname);
+            listeners.push([b,evname,callback]);
+            b.addEventListener(evname,callback,true);
+        };
+    };
+    return lock
+}
+JS
+    # $browser,$events
+    return $make_semaphore->(@args);
+};
+
 sub _wait_while_busy {
     my ($self,@elements) = @_;
     #my $c = $self->tab->{linkedBrowser}->{contentWindow}->{console};
