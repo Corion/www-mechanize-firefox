@@ -1109,12 +1109,6 @@ sub _addEventListener {
     # Now, flatten the arg list again...
     @args = map { @$_ } @args;
 
-    
-    # XXX find "our" window from ->tab()
-    #$options{ window } ||= $self->_getMostRecentWindow();
-    #$options{ tab } ||= $self->tab;
-    #$options{window}->alert('Hello');
-    
     # This registers multiple events for a one-shot event
     my $make_semaphore = $self->repl->declare(<<'JS');
 function() {
