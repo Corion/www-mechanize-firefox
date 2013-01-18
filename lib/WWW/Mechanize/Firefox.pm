@@ -699,6 +699,7 @@ sub progress_listener {
     
     $lsn->__release_action('if(self.source)self.source.removeProgressListener(self)');
     my $NOTIFY_STATE = $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL')
+                     + $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_LOCATION')
                      + $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATUS');
     $source->addProgressListener($lsn,$NOTIFY_STATE);
     $lsn
