@@ -385,6 +385,24 @@ sub browser {
 JS
 };
 
+=head2 C<< $ff->getMostRecentWindow >>
+
+Returns the most recently used Firefox window.
+
+=cut
+
+sub getMostRecentWindow {
+    my ($self) = @_;
+    my $get = $self->repl->declare(<<'JS');
+    function() {
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        return wm.getMostRecentWindow('navigator:browser');
+    }
+JS
+    return $get->()
+};
+
 =head2 C<< $ff->set_tab_content( $tab, $html [,$repl] ) >>
 
     $ff->set_tab_content('<html><h1>Hello</h1></html>');

@@ -957,17 +957,6 @@ sub reset_headers {
     delete $self->{custom_header_observer};
 };
 
-sub _getMostRecentWindow {
-    my ($self) = @_;
-    my $get = $self->repl->declare(<<'JS');
-    function() {
-        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                           .getService(Components.interfaces.nsIWindowMediator);
-        return wm.getMostRecentWindow('navigator:browser');
-    }
-JS
-    return $get->()
-};
 
 # XXX Pass list of events in?
 my $id;
@@ -975,8 +964,8 @@ sub _addLoadEventListener {
     my ($self,%options) = @_;
     
     # XXX find "our" window from ->tab()
-    $options{ window } ||= $self->_getMostRecentWindow();
     $options{ tab } ||= $self->tab;
+    $options{ window } ||= $self->application->getMostRecentWindow;
     #$options{window}->alert('Hello');
     my $add_load_listener = $self->repl->declare(<<'JS');
         function( mainWindow, tab, waitForLoad, id ) {
