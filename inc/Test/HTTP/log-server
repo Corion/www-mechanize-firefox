@@ -114,7 +114,7 @@ SERVERLOOP: {
                   'Connection' => 'close',
                   'Content-Length' => length($rbody),
               ], $rbody);
-            $res->content_type('text/html');
+            $res->content_type('text/html; charset=ISO-8859-1');
             debug "Request " . ($r->uri->path || "/");
         };
       };
