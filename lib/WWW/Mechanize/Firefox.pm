@@ -959,11 +959,9 @@ sub reset_headers {
 
 
 # XXX Pass list of events in?
-my $id;
 sub _addLoadEventListener {
     my ($self,%options) = @_;
     
-    # XXX find "our" window from ->tab()
     $options{ tab } ||= $self->tab;
     $options{ window } ||= $self->application->getMostRecentWindow;
     #$options{window}->alert('Hello');
@@ -1081,7 +1079,7 @@ sub _addLoadEventListener {
             return lock
         }
 JS
-    return $add_load_listener->($options{ window }, $options{ tab }, 1, $id++ );
+    return $add_load_listener->($options{ window }, $options{ tab }, 1, $options{ events } );
 }
 
 sub _addEventListener {
@@ -1140,12 +1138,9 @@ JS
 
 sub _wait_while_busy {
     my ($self,@elements) = @_;
-    #my $c = $self->tab->{linkedBrowser}->{contentWindow}->{console};
     # Now do the busy-wait
     # Should this also include a ->poll()
     # and a callback?
-
-#    my $timer = time;
 
     while (1) {
         for my $element (@elements) {
