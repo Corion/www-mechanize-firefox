@@ -604,27 +604,28 @@ This method is special to WWW::Mechanize::Firefox.
 
 sub tab { $_[0]->{tab} };
 
-=head2 C<< $mech->progress_listener( $source, %callbacks ) >>
+=head2 C<< $mech->make_progress_listener( %callbacks ) >>
 
-    my $eventlistener = progress_listener(
-        $browser,
-        onLocationChange => \&onLocationChange,
+    my $eventlistener = $mech->progress_listener(
+        onStateChange => \&onStateChange,
     );
 
-Sets up the callbacks for the C<< nsIWebProgressListener >> interface
-to be the Perl subroutines you pass in.
+Creates an unconnected C<< nsIWebProgressListener >> interface
+which calls the Perl subroutines you pass in.
 
 Returns a handle. Once the handle gets released, all callbacks will
 get stopped. Also, all Perl callbacks will get deregistered from the
 Javascript bridge, so make sure not to use the same callback
 in different progress listeners at the same time.
+The sender may still call your callbacks.
 
 =cut
 
-sub progress_listener {
-    my ($mech,$source,%handlers) = @_;
+sub make_progress_listener {
+    my ($mech,%handlers) = @_;
     my $NOTIFY_STATE = $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL')
-                     + $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATUS');
+                     + $mech->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATUS')
+                     ;
     my ($obj) = $mech->repl->expr('new Object');
     for my $key (keys %handlers) {
         $obj->{$key} = $handlers{$key};
@@ -632,8 +633,7 @@ sub progress_listener {
     #warn "Listener created";
     
     my $mk_nsIWebProgressListener = $mech->repl->declare(<<'JS');
-    function (myListener,source) {
-        myListener.source = source;
+    function (myListener) {
         var callbacks = ["onStateChange",
                        "onLocationChange",
                        "onProgressChange",
@@ -646,6 +646,8 @@ sub progress_listener {
             var e = callbacks[h];
             if (! myListener[e]) {
                 myListener[e] = function(){}
+            } else {
+                // alert("Setting callback for " + e);
             };
         };
         myListener.QueryInterface = function(aIID) {
@@ -664,12 +666,40 @@ JS
     my $release = sub {
         $_[0]->bridge->remove_callback(values %handlers);
     };
-    my $lsn = $mk_nsIWebProgressListener->($obj,$source);
-    $lsn->__release_action('self.source.removeProgressListener(self)');
-    $lsn->__on_destroy(sub {
-        # Clean up some memory leaks
-        $release->(@_)
-    });
+    my $lsn = $mk_nsIWebProgressListener->($obj);
+    $lsn->__on_destroy($release);
+    $lsn
+};
+
+
+=head2 C<< $mech->progress_listener( $source, %callbacks ) >>
+
+    my $eventlistener = progress_listener(
+        $browser,
+        onLocationChange => \&onLocationChange,
+    );
+
+Sets up the callbacks for the C<< nsIWebProgressListener >> interface
+to be the Perl subroutines you pass in.
+
+C< $source > needs to support C<.addProgressListener> and C<.removeProgressListener>.
+
+Returns a handle. Once the handle gets released, all callbacks will
+get stopped. Also, all Perl callbacks will get deregistered from the
+Javascript bridge, so make sure not to use the same callback
+in different progress listeners at the same time.
+
+=cut
+
+sub progress_listener {
+    my ($self,$source,%handlers) = @_;
+    
+    my $lsn = $self->make_progress_listener(%handlers);
+    $lsn->{source} = $source;
+    
+    $lsn->__release_action('if(self.source)self.source.removeProgressListener(self)');
+    my $NOTIFY_STATE = $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL')
+                     + $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATUS');
     $source->addProgressListener($lsn,$NOTIFY_STATE);
     $lsn
 };
@@ -1714,17 +1744,19 @@ Saves the given URL to the given filename. The URL will be
 fetched from the cache if possible, avoiding unnecessary network
 traffic.
 
-Returns a C<nsIWebBrowserPersist> object through which you can cancel the
-download by calling its C<< ->cancelSave >> method. Also, you can poll
-the download status through the C<< ->{currentState} >> property.
-
 If you are interested in the intermediate download progress, create
 a ProgressListener through C<< $mech->progress_listener >>
 and pass it in the C<progress> option.
-
 The download will
 continue in the background. It will also not show up in the
 Download Manager.
+
+If the C<progress> option is not passed in, C< ->save_url >
+will only return after the download has finished.
+
+Returns a C<nsIWebBrowserPersist> object through which you can cancel the
+download by calling its C<< ->cancelSave >> method. Also, you can poll
+the download status through the C<< ->{currentState} >> property.
 
 =cut
 
@@ -1736,6 +1768,24 @@ sub save_url {
     if (! -f $localname) {
     	open my $fh, '>', $localname
     	    or die "Couldn't create '$localname': $!";
+    };
+    
+    my $res;
+    if( ! $options{ progress }) {
+        $options{ wait } = 1;
+        # We will do a synchronous download
+        my $STATE_FINISHED = $self->repl->constant('Components.interfaces.nsIWebBrowserPersist.PERSIST_STATE_FINISHED');
+        $options{ progress }= $self->make_progress_listener(onStateChange => sub {
+            my ($webprogress,$request,$flags,$status) = @_;
+            if( $res->{currentState} == $STATE_FINISHED) {
+                $options{ wait }= 0;
+            };
+        },
+        # onProgressChange => sub {
+        #    my ($aWebProgress, $aRequest, $aCurSelfProgress, $aMaxSelfProgress, $aCurTotalProgress, $aMaxTotalProgress)= @_;
+            #diag sprintf "%03.2f", $aCurTotalProgress / ($aMaxTotalProgress||1) * 100;
+        #}
+        );
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
@@ -1769,6 +1819,27 @@ function (source,filetarget,progress,tab) {
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
                                      ;
     obj_Persist.progressListener = progress;
+    /* {
+        "onStateChange": function() {
+            var myargs= Array.slice(arguments);
+            alert("onStateChange (" + myargs.join(",")+")");
+            try {
+                progress.onStateChange.apply(null,arguments);
+            } catch(e) {
+                alert(e.message);
+            };
+        },
+        "onProgressChange": function() {
+            var myargs= Array.slice(arguments);
+            alert("onProgressChange (" + myargs.join(",")+")");
+            try {
+                progress.onProgressChange.apply(null,arguments);
+            } catch(e) {
+                alert(e.message);
+            };
+        }
+    };
+    */
     
     // Since Firefox 18, we need to provide a proper privacyContext
     // This is cobbled together from half-documented parts in various places
@@ -1791,7 +1862,13 @@ function (source,filetarget,progress,tab) {
     return obj_Persist
 };
 JS
-    $transfer_file->("$url" => $localname, $options{progress}, $self->tab);
+    $res= $transfer_file->("$url" => $localname, $options{progress}, $self->tab);
+    while( $options{ wait }) {
+        $self->repl->poll;
+        sleep 1
+            if $options{ wait };
+    };
+    $res
 }
 
 =head2 C<< $mech->base() >>

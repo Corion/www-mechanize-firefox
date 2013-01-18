@@ -61,11 +61,15 @@ like $log, qr/^Cookie:.*? \Qlog-server\E/m, "We sent the webserver cookie";
 my @cleanup = "$0.tmp";
 END { unlink $_ for @cleanup };
 
-$mech->save_url($server->url . "save_url_test" => "$0.tmp");
+$mech->save_url($server->url . "save_url_test" => $cleanup[0]);
 
 $log = $server->get_log;
-like $log, qr/^Cookie:.*? \Qwww_mechanize_firefox_test=$magic\E/m, "We sent the magic cookie";
-like $log, qr/^Cookie:.*? \Qlog-server\E/m, "We sent the webserver cookie";
+(my $cookie) = ($log =~ /^(Cookie:.*?)$/m);
+like $log, qr/^Cookie:.*? \Qwww_mechanize_firefox_test=$magic\E/m, "We sent the magic cookie"
+    or diag $cookie;
+
+like $log, qr/^Cookie:.*? \Qlog-server\E/m, "We sent the webserver cookie"
+    or diag $cookie;
 
 # Scan for HTTPOnly cookie
 $cookies->scan(sub{ $count++ if $_[1] eq 'log-server-httponly' and $_[2] eq 'supersecret' });
