@@ -12,6 +12,12 @@ TO DO:
     . Add tests for _field_by_name for #foo and .foo case
 
 0.70 to be released
+    ! Fix crash when using ->*_visible and Firefox navigates away from
+      the watched page. This resulted in
+        TypeError: can't access dead object
+      "Dead objects" appear since Firefox 15+. Dead objects are objects
+      within a page that has been closed or left already, and are just
+      (fatal) placeholders.
     + ->openTabs() now returns tabs from all windows,
       not only the topmost browser window.
       This fixes RT #82006.
