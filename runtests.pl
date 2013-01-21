@@ -20,13 +20,13 @@ my $port = 4243;
 # if I find out how to make the mozrepl port dynamic
 for my $instance (@instances) {
     # Launch firefox
-    warn $instance || "live Firefox";
+    my $vis_instance = $instance ? $instance : "local instance";
+    warn $vis_instance;
     my @launch = $instance
                ? (launch => [$instance,'-repl', $port, 'about:blank'])
                : ()
                ;
 
-    my $vis_instance = $instance ? $instance : "local instance";
     if( $instance ) {
         $ENV{TEST_WWW_MECHANIZE_FIREFOX_VERSIONS} = $instance;
         $ENV{MOZREPL}= "localhost:$port";
@@ -34,14 +34,21 @@ for my $instance (@instances) {
         $ENV{TEST_WWW_MECHANIZE_FIREFOX_VERSIONS} = "don't test other instances";
         delete $ENV{MOZREPL}; # my local setup ...
     };
-
-    my $ff= Firefox::Application->new(
-        @launch,
-    );
-    #$mech->update_html("<html><head><title>Running tests on $vis_instance</title></head><body><h2>$vis_instance</h2></body></html>");
+    my $retries = 3;
+    
+    my $ff;
+    while( $retries-- and !$ff) {
+        $ff= eval {
+            Firefox::Application->new(
+                @launch,
+            );
+        };
+    };
+    die "Couldn't launch Firefox instance from $instance"
+        unless $ff;
     
     system("$Config{ make } test") == 0
-        or die "Error while testing";
+        or die "Error while testing $vis_instance";
     
     if( $instance ) {
         # Close firefox again
@@ -57,5 +64,6 @@ for my $instance (@instances) {
 JS
     };
     undef $ff;
-    sleep 1; # So the browser can shut down before we try to connect
+    # Safe wait until shutdown
+    sleep 5;
 };
