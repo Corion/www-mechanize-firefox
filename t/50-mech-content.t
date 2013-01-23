@@ -19,7 +19,7 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
 my $html = $mech->content;
-is $html, '<html><head></head><body>WWW::Mechanize::Firefox</body></html>', "We can get the plain HTML";
+like $html, qr!<html><head>(<title></title>)?</head><body>WWW::Mechanize::Firefox</body></html>!, "We can get the plain HTML";
 
 my $html2 = $mech->content( format => 'html' );
 is $html2, $html, "When asking for HTML explicitly, we get the same text";
