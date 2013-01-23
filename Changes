@@ -11,7 +11,7 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
-0.70 to be released
+0.70 20130123
     ! Fix crash when using ->*_visible and Firefox navigates away from
       the watched page. This resulted in
         TypeError: can't access dead object
