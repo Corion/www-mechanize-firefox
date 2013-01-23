@@ -21,6 +21,8 @@ TO DO:
     + ->openTabs() now returns tabs from all windows,
       not only the topmost browser window.
       This fixes RT #82006.
+    + Compatibility fixes for 3.0.19 - I'm not sure how I broke compatibility
+      without the test suite noticing.
     + WWW::Mechanize::Firefox is currently tested against the following versions
         - 3.0.19
         - 3.5.19
