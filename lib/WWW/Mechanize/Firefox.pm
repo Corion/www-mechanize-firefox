@@ -2780,7 +2780,7 @@ sub click_button {
         $user_message = "Button name '$v' unknown";
     } elsif (exists $options{ number }) {
         my $v = delete $options{ number };
-        $xpath = sprintf '//*[translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "button" or (local-name() = "input" and @type="submit")][%s]', $v;
+        $xpath = sprintf '//*[translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "button" or (translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "input" and @type="submit")][%s]', $v;
         $user_message = "Button number '$v' out of range";
     };
     #warn $xpath;
