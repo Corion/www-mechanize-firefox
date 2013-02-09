@@ -1730,7 +1730,7 @@ sub save_content {
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
-function (document,filetarget,rscdir,progress) {
+function (document,filetarget,rscdir,progress,persistflags) {
     //new file object
     var obj_target;
     if (filetarget) {
@@ -1756,6 +1756,7 @@ function (document,filetarget,rscdir,progress) {
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
+									 | persistflags
                                      ;
     
     obj_Persist.progressListener = progress;
@@ -1770,7 +1771,8 @@ JS
         $self->document,
         $localname,
         $resource_directory,
-        $options{progress}
+        $options{progress},
+		$options{persist}
     );
 }
 
