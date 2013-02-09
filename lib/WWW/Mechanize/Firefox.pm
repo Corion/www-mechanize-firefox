@@ -1699,6 +1699,15 @@ Returns a C<nsIWebBrowserPersist> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
+If you need to set persist flags pass the unsigned long value in the
+C<persist> option.
+
+$mech->get('http://zombisoft.com');
+$mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
+
+A list of flags and their values can be found at 
+https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist 
+
 If you are interested in the intermediate download progress, create
 a ProgressListener through C<< $mech->progress_listener >>
 and pass it in the C<progress> option.
