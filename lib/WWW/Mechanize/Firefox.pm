@@ -1699,6 +1699,15 @@ Returns a C<nsIWebBrowserPersist> object through which you can cancel the
 download by calling its C<< ->cancelSave >> method. Also, you can poll
 the download status through the C<< ->{currentState} >> property.
 
+If you need to set persist flags pass the unsigned long value in the
+C<persist> option.
+
+$mech->get('http://zombisoft.com');
+$mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
+
+A list of flags and their values can be found at 
+https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist 
+
 If you are interested in the intermediate download progress, create
 a ProgressListener through C<< $mech->progress_listener >>
 and pass it in the C<progress> option.
@@ -1730,7 +1739,7 @@ sub save_content {
     };
     
     my $transfer_file = $self->repl->declare(<<'JS');
-function (document,filetarget,rscdir,progress) {
+function (document,filetarget,rscdir,progress,persistflags) {
     //new file object
     var obj_target;
     if (filetarget) {
@@ -1756,6 +1765,7 @@ function (document,filetarget,rscdir,progress) {
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
+									 | persistflags
                                      ;
     
     obj_Persist.progressListener = progress;
@@ -1770,7 +1780,8 @@ JS
         $self->document,
         $localname,
         $resource_directory,
-        $options{progress}
+        $options{progress},
+		$options{persist}
     );
 }
 
