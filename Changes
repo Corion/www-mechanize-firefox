@@ -12,8 +12,25 @@ TO DO:
     . Add tests for _field_by_name for #foo and .foo case
 
 0.71 20130209
-    + Added 'persist' option to the ->save_content() method to allow user to set different PERSIST flags
-      Flag information - https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist
+    + Added 'persist' option to the ->save_content() method to allow user to
+      set different PERSIST flags. Flag information -
+      https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist
+      Contributed by Sam Cleveland
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.12 (ESR)
+        - 13.0
+        - 15.0
+        - 17.0.2 (Simplified Chinese)
+        - 18.0.2
+        - 19.0 beta
 
 0.70 20130123
     ! Fix crash when using ->*_visible and Firefox navigates away from
