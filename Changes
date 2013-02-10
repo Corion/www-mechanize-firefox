@@ -11,6 +11,10 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.71 20130209
+    + Added 'persist' option to the ->save_content() method to allow user to set different PERSIST flags
+      Flag information - https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist
+
 0.70 20130123
     ! Fix crash when using ->*_visible and Firefox navigates away from
       the watched page. This resulted in
