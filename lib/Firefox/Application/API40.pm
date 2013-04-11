@@ -149,9 +149,13 @@ function(tab) {
 	  while (be.hasMoreElements()) {
 	    var browserWin = be.getNext();
 	    var tabbrowser = browserWin.gBrowser;
-	    if( tabbrowser.getBrowserForTab(tab)) {
-	      tabbrowser.removeTab(tab);
-	      break;
+	    if( tabbrowser ) {
+	      for( var i=0; i< tabbrowser.tabs.length; i++) {
+	          if( tabbrowser.tabs.item( i ) === tab ) {
+                      tabbrowser.removeTab(tab);
+                      break;
+                  };
+              };
 	    };
           };
 }
@@ -169,16 +173,19 @@ sub autoclose_tab {
               q<var be = Components.classes["@mozilla.org/appshell/window-mediator;1"]>,
                                  q<.getService(Components.interfaces.nsIWindowMediator)>,
                                  q<.getEnumerator("navigator:browser");>,
-              q<while (!self.collapsed && be.hasMoreElements()) {>,
+              q<while (be.hasMoreElements()) {>,
                 q<var browserWin = be.getNext();>,
                 q<var tabbrowser = browserWin.gBrowser;>,
-                q<if( tabbrowser.getBrowserForTab(self)) {>,
-                q<tabbrowser.removeTab(self);>,
-                q<break;>,
+                q<if( tabbrowser ) {>,
+                  q!for( var i=0; i< tabbrowser.tabs.length; i++) {!,
+                      q<if( tabbrowser.tabs.item( i ) === self ) {>,
+                          q<tabbrowser.removeTab(self);>,
+                          q<break;>,
+                      q<};>,
+                  q<};>,
                 q<};>,
               q<};>,
         q<};>,
-	;
     ;
     if( $close ) {
         $tab->__release_action($release);

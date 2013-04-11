@@ -163,3 +163,4 @@ t/rt78706.t
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
+t/rt84418.t
