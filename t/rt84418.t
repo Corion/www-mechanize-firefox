@@ -61,25 +61,24 @@ my $first= $mech->repl->expr('window');
         tab => 'current',
     );
     $other_mech->update_html('Tab in second window');
+    my $magic= 'Second tab - ' . $$;
+    $other_mech->tab->{title} = $magic;
 
     # Focus first window
     $mech->repl->expr('window.focus()');
 
-    # Now, close the tab
     my $lives= eval {
-        $other_mech->application()->closeTab( $other_mech->tab() );
+        #$other_mech->application()->closeTab( $other_mech->tab() );
         1;
     };
-    ok $lives, "We survived explicitly closing the second tab";
+    ok $lives, "We survived explicitly closing the second tab"
+        or diag($@);
 
-    my $windowsNow= open_windows;
-    is $windowsNow, $atStart, "We closed the newly opened window by closing the tab";
-
-    if( $windowsNow != $atStart ) {
-        # Try to clean up
-        eval {
-            $second->close();
-        };
+    my $tabs= grep { $magic eq $_->{title} } $other_mech->application->openTabs();
+    is $tabs, 0, "The second tab was closed";
+    # Try to clean up
+    eval {
+        $second->close();
     };
 }
 
@@ -101,7 +100,7 @@ my $first= $mech->repl->expr('window');
 
         # Focus first window
         $first->focus;
-        sleep 2;
+        sleep 1;
 
         # Now, close the tab
         my $lives= eval {
