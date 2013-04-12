@@ -11,6 +11,28 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.72
+    + Fix RT #84418
+      This should make closing the Mechanize tab upon program exit more
+      stable, especially when multiple Firefox windows are involved.
+
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.11 (ESR)
+        - 13.0
+        - 15.0
+        - 17.0.5 (ESR)
+        - 18.0.2
+        - 19.0
+        - 20.0.1
+
 0.71 20130209
     + Added 'persist' option to the ->save_content() method to allow user to
       set different PERSIST flags. Flag information -
@@ -28,9 +50,9 @@ TO DO:
         - 10.0.12 (ESR)
         - 13.0
         - 15.0
-        - 17.0.2 (Simplified Chinese)
+        - 17.0.5 (Simplified Chinese)
         - 18.0.2
-        - 19.0 beta
+        - 19.0
 
 0.70 20130123
     ! Fix crash when using ->*_visible and Firefox navigates away from
