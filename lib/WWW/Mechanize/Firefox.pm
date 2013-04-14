@@ -865,6 +865,8 @@ Using multiple instances of WWW::Mechanize::Firefox objects with the same
 application together with changed request headers will most likely have weird
 effects. So don't do that.
 
+Note that currently, we only support one value per header.
+
 =cut
 
 # This subroutine creates the custom header observer. It has a hashref
