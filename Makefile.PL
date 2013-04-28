@@ -34,6 +34,7 @@ WriteMakefile1(
                         'HTTP::Date' => 0, # get a date online?!
                         'HTML::Selector::XPath' => 0,
                         'WWW::Mechanize' => 0, # for link filtering and 1:1 API compatibility
+                        'HTTP::Request::Common' => 0, # for convenient request manufacturing
                         'WWW::Mechanize::Link' => 0, # for API compatibility
                         'MIME::Base64' => 0,
                         'Shell::Command' => 0, # just for cleanup of a test

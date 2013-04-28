@@ -33,12 +33,12 @@ lib/WWW/Mechanize/Firefox/Examples.pm
 lib/WWW/Mechanize/Firefox/FAQ.pod
 lib/WWW/Mechanize/Firefox/Installation.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
-runtests.pl
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.skip
 README
 README.mkdn
+runtests.pl
 t/00-load.t
 t/01-mech-destroy.t
 t/401-server
@@ -76,6 +76,7 @@ t/50-mech-multi-event.t
 t/50-mech-new-dsl.t
 t/50-mech-new-with-tab.t
 t/50-mech-new.t
+t/50-mech-post.t
 t/50-mech-save-dialog.t
 t/50-mech-set-fields-875912.htm
 t/50-mech-set-fields-875912.t
@@ -105,9 +106,9 @@ t/51-mech-submit.t
 t/52-frame-document.t
 t/52-frame-event.t
 t/52-frameset-deep.html
+t/52-frameset-partly-404.html
 t/52-frameset-recursive.html
 t/52-frameset.html
-t/52-frameset-partly-404.html
 t/52-iframeset.html
 t/52-mech-api-find_link-frames.t
 t/52-mech-api-find_link.html
@@ -160,7 +161,7 @@ t/mixi_jp_index.html
 t/rt65615.html
 t/rt65615.t
 t/rt78706.t
+t/rt84418.t
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
-t/rt84418.t

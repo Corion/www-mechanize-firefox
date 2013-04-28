@@ -11,6 +11,9 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.73 20130428
+    . Added ->post, code and test contributed by dfaure
+
 0.72 20130412
     + Fix RT #84418
       This should make closing the Mechanize tab upon program exit more
