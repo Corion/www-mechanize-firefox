@@ -92,7 +92,9 @@ SERVERLOOP: {
                die "Planned error after headers";
             });
         } else {
-            my $q = CGI->new($r->uri->query);
+            my $q = $r->content
+                    ? CGI->new($r->content )
+                    : CGI->new($r->uri->query);
 
             # Make sticky form fields
             my ($query,$botcheck_query,$query2,$session,%cat);
