@@ -27,7 +27,7 @@ my $result = eval {
 ok $result, "We lived"
     or diag $@;
 
-my $result = eval {
+   $result = eval {
     $mech->autoclose_tab( 1 );
     1
 };
