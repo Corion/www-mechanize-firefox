@@ -257,6 +257,8 @@ sub new {
     
     my $self= bless \%args, $class;
     
+    $self->_initXpathResultTypes;
+
     if( defined $agent ) {
         $self->agent( $agent );
     };
@@ -2496,7 +2498,13 @@ sub follow_link {
     my @para = $mech->xpath('//p');
     # Collects all paragraphs
 
+    my @para_text = $mech->xpath('//p/text()', type => $mech->xpathResult('STRING_TYPE'));
+    # Collects all paragraphs as text
+
 Runs an XPath query in Firefox against the current document.
+
+If you need more information about the returned results,
+use the C<< ->xpathEx() >> function.
 
 The options allow the following keys:
 
@@ -2550,9 +2558,26 @@ for each usage in scalar context without any of the above restricting options.
 
 C<< any >> - no error is raised, no matter if an item is found or not.
 
+=item *
+
+C<< type >> - force the return type of the query.
+
+  type => $mech->xpathResult('ORDERED_NODE_SNAPSHOT_TYPE'),
+
+WWW::Mechanize::Firefox tries a best effort in giving you the appropriate
+result of your query, be it a DOM node or a string or a number. In the case
+you need to restrict the return type, you can pass this in.
+
+The allowed strings are documented in the MDN. Interesting types are
+
+  ANY_TYPE     (default, uses whatever things the query returns)
+  STRING_TYPE
+  NUMBER_TYPE
+  ORDERED_NODE_SNAPSHOT_TYPE
+
 =back
 
-Returns the matched nodes.
+Returns the matched results.
 
 You can pass in a list of queries as an array reference for the first parameter.
 The result will then be the list of all elements matching any of the queries.
@@ -2566,45 +2591,185 @@ L<WWW::Mechanize>.
 
 sub xpath {
     my ($self,$query,%options) = @_;
-    if ('ARRAY' ne (ref $query||'')) {
-        $query = [$query];
-    };
-    
-    if ($options{ node }) {
-        $options{ document } ||= $options{ node }->{ownerDocument};
-        #warn "Have node, searching below node";
-    } else {
-        $options{ document } ||= $self->document;
-    };
-    
-    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
-    my $single = delete $options{ single };
-    my $first  = delete $options{ one };
-    my $maybe  = delete $options{ maybe };
-    my $any    = delete $options{ any };
-    
+
+    my $single = $options{ single };
+    my $first  = $options{ one };
+    my $maybe  = $options{ maybe };
+    my $any    = $options{ any };
+    my $return_first_element = ($single or $first or $maybe or $any );
+
     # Construct some helper variables
     my $zero_allowed = not ($single or $first);
     my $two_allowed  = not( $single or $maybe);
-    my $return_first = ($single or $first or $maybe or $any);
-    #warn "Zero: $zero_allowed";
-    #warn "Two : $two_allowed";
-    #warn "Ret : $return_first";
-    
+
     # Sanity check for the common error of
     # my $item = $mech->xpath("//foo");
-    if (! exists $options{ all } and not ($return_first)) {
+    if (! exists $options{ all } and not ($return_first_element)) {
         $self->signal_condition(join "\n",
             "You asked for many elements but seem to only want a single item.",
             "Did you forget to pass the 'single' option with a true value?",
             "Pass 'all => 1' to suppress this message and receive the count of items.",
         ) if defined wantarray and !wantarray;
     };
+
+    # How can we return here a set of strings
+    # if we don't return an array in .result?!
+    my @res= map {
+          !defined $_->{resultType}
+        ? ()
+        :    $_->{ resultType } == $self->{ XpathResultTypes }->{ORDERED_NODE_SNAPSHOT_TYPE }
+          || $_->{ resultType } == $self->{ XpathResultTypes }->{UNORDERED_NODE_SNAPSHOT_TYPE }
+          || $_->{ resultType } == $self->{ XpathResultTypes }->{ORDERED_NODE_ITERATOR_TYPE }
+          || $_->{ resultType } == $self->{ XpathResultTypes }->{UNORDERED_NODE_ITERATOR_TYPE }
+        ? @{ $_->{result} }
+        : $_->{ result }
+    } $self->xpathEx(
+        $query,
+        #type => $self->{XpathResultTypes}->{ORDERED_NODE_SNAPSHOT_TYPE},
+        type => $self->{XpathResultTypes}->{ANY_TYPE},
+        return_first => $return_first_element,
+        %options
+    );
+
+    if (! $zero_allowed and @res == 0) {
+        $self->signal_condition( "No elements found for $options{ user_info }" );
+    };
+
+    if (! $two_allowed and @res > 1) {
+        $self->highlight_node(@res);
+        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
+    };
+
+    $return_first_element ? $res[0] : @res
+};
+
+sub _initXpathResultTypes {
+    my( $self )= @_;
+    $self->{XpathResultTypes} ||= {
+      ANY_TYPE                     => $self->repl->constant('XPathResult.ANY_TYPE'),
+      NUMBER_TYPE                  => $self->repl->constant('XPathResult.NUMBER_TYPE'),
+      STRING_TYPE                  => $self->repl->constant('XPathResult.STRING_TYPE'),
+      BOOLEAN_TYPE                 => $self->repl->constant('XPathResult.BOOLEAN_TYPE'),
+      UNORDERED_NODE_ITERATOR_TYPE => $self->repl->constant('XPathResult.UNORDERED_NODE_ITERATOR_TYPE'),
+      ORDERED_NODE_ITERATOR_TYPE   => $self->repl->constant('XPathResult.ORDERED_NODE_ITERATOR_TYPE'),
+      UNORDERED_NODE_SNAPSHOT_TYPE => $self->repl->constant('XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE'),
+      ORDERED_NODE_SNAPSHOT_TYPE   => $self->repl->constant('XPathResult.ORDERED_NODE_SNAPSHOT_TYPE'),
+      ANY_UNORDERED_TYPE           => $self->repl->constant('XPathResult.ANY_UNORDERED_NODE_TYPE'),
+      FIRST_ORDERED_NODE_TYPE      => $self->repl->constant('XPathResult.FIRST_ORDERED_NODE_TYPE'),
+    };
+
+    $self->{XpathResultTypenames} = +{ reverse %{ $self->{XpathResultTypes} } };
+};
+
+sub xpathResultType { $_[0]->{ XpathResultTypenames }->{ $_[1] } };
+sub xpathResult     { $_[0]->{XpathResultTypes}{$_[1]}; }
+
+=head2 C<< $mech->xpathEx( $query, %options ) >>
+
+    my @links = $mech->xpathEx('//a[id="clickme"]');
+
+Runs an XPath query in Firefox against a document. Returns a list
+of found elements. Each element in the result has the following properties:
+
+=over 4
+
+=item *
+
+C<< resultType >> - the type of the result. The numerical value of C<< $mech->xpathResult() >>.
+
+=item *
+
+C<< resultSize >> - the number of elements in this result. This is 1 for atomic results like
+strings or numbers, and the number of elements for nodesets.
+
+=item *
+
+C<< result >> - the best result available. This is the nodeset
+or the text or number, depending on the query.
+
+=back
+
+=cut
+
+sub xpathEx {
+    # Returns verbose information about how things matched
+    my ($self, $query, %options) = @_;
+
+    if ('ARRAY' ne (ref $query||'')) {
+        $query = [$query];
+    };
+
+    if ($options{ node }) {
+        $options{ document } ||= $options{ node }->{ownerDocument};
+        #warn "Have node, searching below node";
+    } else {
+        $options{ document } ||= $self->document;
+        #warn "Searching below given document";
+        #$options{node} = $options{document};
+    };
+    
+    $options{type} ||= $self->{XpathResult}->{ANY_TYPE};
+
+    $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
+    
+    # Sanity check for the common error of
+    # my $item = $mech->xpathEx("//foo");
+    if (! wantarray) {
+        $self->signal_condition(join "\n",
+            "->xpathEx needs to be called in list context.",
+        );
+    };
     
     if (not exists $options{ frames }) {
         $options{frames} = $self->{frames};
     };
-    
+
+    my $query_xpath = $self->repl->declare(<<'JS');
+      function(doc, q, ref, type) {
+        var xpr = doc.evaluate(q, ref, null, type, null);
+        var r = { resultType: xpr.resultType, resultSize: 0, result: null };
+        switch(xpr.resultType) {
+        case XPathResult.NUMBER_TYPE:
+          r.result= r.numberValue = xpr.numberValue;
+          r.resultSize= 1;
+          break;
+        case XPathResult.STRING_TYPE:
+          r.result= r.stringValue = xpr.stringValue;
+          r.resultSize= 1;
+          break;
+        case XPathResult.BOOLEAN_TYPE:
+          r.result= r.booleanValue = xpr.booleanValue;
+          r.resultSize= 1;
+          break;
+        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+        case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
+          r.result= r.nodeSet = [];
+          var n;
+          while (n = xpr.iterateNext()) {
+            r.nodeSet.push(n);
+            r.resultSize++;
+          }
+          break;
+        case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
+        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
+          r.result= r.nodeSet = [];
+          r.resultSize= xpr.snapshotLength;
+          for (var i = 0 ; i < xpr.snapshotLength; i++ ) {
+            r.nodeSet[i] = xpr.snapshotItem(i);
+          }
+          break;
+        case XPathResult.ANY_UNORDERED_NODE_TYPE:
+        case XPathResult.FIRST_ORDERED_NODE_TYPE:
+          r.result= r.singleNodeValue = xpr.singleNodeValue;
+          r.resultSize= 1;
+          break;
+        default:
+          break;
+        }
+        return r;
+      }
+JS
+
     my @res;
     
     DOCUMENTS: {            
@@ -2624,15 +2789,18 @@ sub xpath {
             # Munge the multiple @$queries into one:
             my $q = join "|", @$query;
             #warn $q;
-            my @found = map { $doc->__xpath($_, $n) } $q; # @$query;
+            my @found = $query_xpath->($doc, $q, $n, $options{type});
             push @res, @found;
             
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
-            last DOCUMENTS if @res and $first;        
+            if( @res and $options{ return_first } and grep { $_->{resultSize} } @res ) {
+                @res= grep { $_->{resultSize} } @res;
+                last DOCUMENTS;
+            };
             
             if ($options{ frames } and not $options{ node }) {
-                #warn "$nesting>Expanding below " . $doc->{title};
+                #warn ">Expanding below " . $doc->{title};
                 #local $nesting .= "--";
                 my @d = $self->expand_frames( $options{ frames }, $doc );
                 #warn "Found $_->{title}" for @d;
@@ -2641,17 +2809,8 @@ sub xpath {
         };
     };
     
-    if (! $zero_allowed and @res == 0) {
-        $self->signal_condition( "No elements found for $options{ user_info }" );
-    };
-    
-    if (! $two_allowed and @res > 1) {
-        $self->highlight_node(@res);
-        $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
-    };
-    
-    return $return_first ? $res[0] : @res;
-};
+    @res
+}
 
 =head2 C<< $mech->selector( $css_selector, %options ) >>
 

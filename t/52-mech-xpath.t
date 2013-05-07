@@ -13,7 +13,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 3;
+    plan tests => 11;
 };
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
@@ -44,3 +44,21 @@ is scalar @n, 2, 'Querying stuff via XPath works';
 
 @n = $mech->xpath('//b');
 is scalar @n, 2, 'Querying stuff via XPath works via the immediate interface';
+
+# Test that we can query for things other than nodes:
+my @res= $mech->xpath('//p');
+is 0+@res, 1, "We find one //p result";
+isa_ok $res[0], 'MozRepl::RemoteObject::Instance', "... and it is a node";
+
+   @res= $mech->xpath('//p/text()', type => $mech->xpathResult('STRING_TYPE'));
+is 0+@res, 1, "We find one //p/text() result";
+is $res[0], "Hello ", "... and it is text";
+
+   @res= $mech->xpath('substring(//p,1,4)');
+is 0+@res, 1, "We find one substring(//p,1,4) result";
+is $res[0], "Hell", "... and it is text";
+
+   @res= $mech->xpath('string-length(//p)');
+is 0+@res, 1, "We find one string-length(//p) result";
+is $res[0], 29, "... and it is a number";
+

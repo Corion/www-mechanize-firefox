@@ -12,6 +12,38 @@ TO DO:
     . Add tests for _field_by_name for #foo and .foo case
 
 0.74 201305xx to be released
+    + ->xpath() now returns the best result depending on the query.
+      This result type depends on the Firefox XPath implementation.
+        //p will return a list of nodes
+        string-length(//p) will return a list of string lengths
+      To force the old behaviour, you need to call ->xpath() with
+      the following option:
+
+        $mech->xpath( $query,
+            type => $mech->xpathResult('ORDERED_NODE_SNAPSHOT_TYPE')
+        );
+      Implementation and tests contributed by dfaure again
+
+    + ->xpathEx() returns more information about the type of
+      each query result instead of returning the best guess
+
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.11 (ESR)
+        - 13.0
+        - 15.0
+        - 17.0.5 (ESR)
+        - 18.0.2
+        - 19.0
+        - 20.0.1
+
     . Skip t/rt65615.t on FF 5.x, 6.x
       See L<https://bugzilla.mozilla.org/show_bug.cgi?id=649924>, that
       version has problems with GPU acceleration. Debugging the exact conditions
