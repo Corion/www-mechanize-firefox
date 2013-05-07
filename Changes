@@ -11,7 +11,7 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
-0.74 201305xx to be released
+0.74 20130507
     + ->xpath() now returns the best result depending on the query.
       This result type depends on the Firefox XPath implementation.
         //p will return a list of nodes
