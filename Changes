@@ -11,6 +11,12 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.74 201305xx to be released
+    . Skip t/rt65615.t on FF 5.x, 6.x
+      See L<https://bugzilla.mozilla.org/show_bug.cgi?id=649924>, that
+      version has problems with GPU acceleration. Debugging the exact conditions
+      is propably not worth it.
+
 0.73 20130429
     . Added ->post, code and test contributed by dfaure
 
