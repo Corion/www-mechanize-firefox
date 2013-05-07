@@ -674,7 +674,8 @@ JS
     
     # Declare it here so we don't close over $lsn!
     my $release = sub {
-        $_[0]->bridge->remove_callback(values %handlers);
+        $_[0]->bridge->remove_callback(values %handlers)
+            if $_[0]->bridge;
     };
     my $lsn = $mk_nsIWebProgressListener->($obj);
     $lsn->__on_destroy($release);
