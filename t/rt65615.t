@@ -15,11 +15,11 @@ if (! $mech) {
     plan tests => 1;
 };
 
-# Skip on FF 5.x , 6.x - some GPU drivers are problematic
+# Skip on FF 5.x , 6.x, 7.x - some GPU drivers are problematic
 # with certain canvas sizes. No use in tracking down the
 # exact conditions.
 SKIP: {
-if( $mech->application->appinfo->{version} =~ /^([56]\..*)/ ) {
+if( $mech->application->appinfo->{version} =~ /^([567]\..*)/ ) {
     skip "Skipping on FF $1 (canvas has a known memory leak here)", 1;
 };
 
