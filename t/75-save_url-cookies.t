@@ -44,7 +44,7 @@ $cookies->set_cookie(
            $server->url->port,
            undef,
            undef,
-           5, # 5 seconds expiry
+           15, # 15 seconds expiry
 );
 
 my $count;
