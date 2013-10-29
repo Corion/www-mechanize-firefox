@@ -11,6 +11,14 @@
 use strict;
 use warnings;
 
+BEGIN {
+    use Devel::CheckOS qw(os_is);
+    require 'open.pm';
+    if ( os_is('Unix') ) {
+        open::import( 'open', 'locale' );
+    }
+}
+
 use Modern::Perl;
 use LWP::UserAgent;
 
@@ -20,15 +28,21 @@ use Pod::Usage;
 use WWW::Mechanize::Firefox;
 use HTML::Entities;
 use Carp;
+use English qw(-no_match_vars);
+use Try::Tiny;
 
-use open ':locale';
+use Encode qw(decode encode);
+use Term::Encoding qw(term_encoding);
+
+use Readonly;
+use Time::HiRes qw(usleep);
 
 our $VERSION = '0.02';
 our $EMPTY   = q{};
 
 my $man         = 0;
 my $help        = 0;
-my $from        = 'en';
+my $from        = 'fr';
 my $to          = 'ru';
 my $text        = 'yapc';
 my $url_mashine = 'http://translate.google.com/translate_t?langpair=';
@@ -49,17 +63,16 @@ main( \@translate_param );
 exit;
 
 sub main {
-    my ($in_param) = @_;
-    my @out;
-    my $google_text = translate_text($in_param);
-    push @out, "google say:\n";
-    push @out, $google_text;
-
+    my ($in_param)        = @_;
     my $translate_ru_text = translate_ru_text($in_param);
-    push @out, "\ntranslate.ru say:\n";
-    push @out, $translate_ru_text;
-    my $out = join $EMPTY, @out;
-    say $out;
+    my $google_text       = translate_text($in_param);
+    my $out_text =
+      decode_entities("{g}:${google_text}{t}:${translate_ru_text}");
+
+    if ( os_is('MSWin32') ) {
+        $out_text = encode( term_encoding, $out_text );
+    }
+    say $out_text;
     return 1;
 }
 
@@ -85,9 +98,48 @@ sub translate_ru_text {
     my ( $src, $trg, $words, $url_translate ) = @{$translate_param};
     my $url = 'http://www.translate.ru/';
     my $firemech;
-    $firemech = WWW::Mechanize::Firefox->new( tab => qr/PROMT/sm, );
-    croak "Cannot connect to $url\n" if !$firemech->success();
+    try {
+        $firemech = WWW::Mechanize::Firefox->new( tab => qr/PROMT/sm, );
+    }
+    catch {
+        given ($_) {
+            my ( $err_connection, $err_conn_refused ) =
+              ( 'Failed to connect to', 'Connection refused' );
+            when (/\Q$err_connection\E|\Q$err_conn_refused\E/xsm) {
+                my $path_to_firefox =
+                  os_is('MSWin32')
+                  ? 'C:/Program Files (x86)/Mozilla Firefox/firefox.exe'
+                  : '/usr/bin/firefox';
+                $firemech = WWW::Mechanize::Firefox->new(
+                    tab    => 'current',
+                    launch => $path_to_firefox
+                );
+                $firemech = invoke_firefox( $url, $firemech );
+            }
+
+            #Couldn't find a tab matching /(?^ums:PROMT)/ at trans.pl line 100.
+            when (/\QCouldn't find a tab matching\E/xsm) {
+                say 'we match error' . $_;
+                $firemech = invoke_firefox( $url, $firemech );
+            }
+        }
+    };
+    if ( !$firemech ) {
+        $firemech = invoke_firefox( $url, $firemech );
+    }
     return fill_translate_ru_page( $firemech, $words );
+}
+
+sub invoke_firefox {
+    my ( $url, $firemech ) = shift;
+    if ( !$firemech ) {
+        $firemech = WWW::Mechanize::Firefox->new( tab => 'current', );
+    }
+    $firemech->get($url);
+    if ( !$firemech->success() ) {
+        die "Cannot connect to $url\n";
+    }
+    return $firemech;
 }
 
 sub fill_translate_ru_page {
@@ -96,6 +148,7 @@ sub fill_translate_ru_page {
     my $submit_button = 'id="bTranslate"';
     wait_for( $mech, $submit_button );
     $mech->field( 'ctl00$SiteContent$sourceText' => $words );
+
     $mech->eval_in_page(<<'JS');
 key="";
 var globalJsonVar;
@@ -125,19 +178,21 @@ console.warn('line1 '+res.result);
 
 JS
 
-    sleep 1;
+    Readonly my $MICROSECONDS => 100_000;
+
+    usleep($MICROSECONDS);
+
     my ( $value, $type ) = $mech->eval(<<'JS');
 console.warn('line2 '+$("#editResult_test")[0].innerHTML);	
 $("#editResult_test")[0].innerHTML;
 JS
 
-    return decode_entities($value);
+    return $value;
 }
 
 sub wait_for {
     my $mech   = shift;
     my $choice = shift;
-    use Readonly;
     Readonly my $NUMBER_OF_RETRIES => 10;
     my $retries = $NUMBER_OF_RETRIES;
     while ( $retries--
