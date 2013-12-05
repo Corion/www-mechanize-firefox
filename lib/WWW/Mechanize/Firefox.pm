@@ -2442,7 +2442,7 @@ sub find_all_links {
 =head2 C<< $mech->find_all_links_dom %options >>
 
   print $_->{innerHTML} . "\n"
-      for $mech->find_link_dom( text_regex => qr/google/i );
+      for $mech->find_all_links_dom( text_regex => qr/google/i );
 
 Finds all matching linky DOM nodes in the document.
 The options are documented in C<< ->find_link_dom >>.
