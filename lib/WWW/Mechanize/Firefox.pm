@@ -2390,7 +2390,7 @@ sub find_link_dom {
 =head2 C<< $mech->find_link( %options ) >>
 
   print $_->text . "\n"
-      for $mech->find_link_dom( text_contains => 'CPAN' );
+      for $mech->find_link( text_contains => 'CPAN' );
 
 A method quite similar to L<WWW::Mechanize>'s method.
 The options are documented in C<< ->find_link_dom >>.
@@ -2416,7 +2416,7 @@ sub find_link {
 =head2 C<< $mech->find_all_links( %options ) >>
 
   print $_->text . "\n"
-      for $mech->find_link_dom( text_regex => qr/google/i );
+      for $mech->find_all_links( text_regex => qr/google/i );
 
 Finds all links in the document.
 The options are documented in C<< ->find_link_dom >>.
