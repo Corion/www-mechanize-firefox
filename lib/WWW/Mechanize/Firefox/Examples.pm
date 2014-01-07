@@ -235,7 +235,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 =head2 Example: bcat.pl
 
 Find out whether we have HTML:
-if (! $encode_type) {
+
     #!perl -w
     use strict;
     use WWW::Mechanize::Firefox;
@@ -782,7 +782,7 @@ Download this example: L<http://cpansearch.perl.org/src/CORION/WWW-Mechanize-Fir
 =head2 Example: proxy-settings.pl
 
 Check the network proxy settings
-my $prefs = $ff->repl->expr(<<'JS');
+
     #!perl -w
     use strict;
     use Getopt::Long;
