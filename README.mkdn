@@ -1224,9 +1224,9 @@ The public support forum of this module is
 
 I've given two talks about this module at Perl conferences:
 
-L<German Perl Workshop, German>
+[German Perl Workshop, German](http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html)
 
-L<YAPC::Europe 2010, English>
+[YAPC::Europe 2010, English](http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html)
 
 # BUG TRACKER
 
