@@ -180,7 +180,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2010-2013 by Max Maischein C<corion@cpan.org>.
+Copyright 2010-2014 by Max Maischein C<corion@cpan.org>.
 
 All Rights Reserved. This module is free software. It may be used,
 redistributed and/or modified under the same terms as Perl itself.
