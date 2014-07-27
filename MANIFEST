@@ -34,6 +34,7 @@ lib/WWW/Mechanize/Firefox/FAQ.pod
 lib/WWW/Mechanize/Firefox/Installation.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
+makeppd.pl
 MANIFEST			This list of files
 MANIFEST.skip
 README
