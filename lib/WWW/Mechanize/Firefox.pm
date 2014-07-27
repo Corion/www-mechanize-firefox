@@ -4133,7 +4133,7 @@ sub element_as_png {
 
     my $shiny = $mech->selector('#shiny', single => 1);
     my ($pos) = $mech->element_coordinates($shiny);
-    print $pos->{x},',', $pos->{y};
+    print $pos->{left},',', $pos->{top};
 
 Returns the page-coordinates of the C<$element>
 in pixels as a hash with four entries, C<left>, C<top>, C<width> and C<height>.
