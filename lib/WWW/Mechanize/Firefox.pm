@@ -19,7 +19,7 @@ use Encode qw(encode decode);
 use Carp qw(carp croak );
 
 use vars qw'$VERSION %link_spec @CARP_NOT';
-$VERSION = '0.74';
+$VERSION = '0.75';
 @CARP_NOT = ('MozRepl::RemoteObject',
              'MozRepl::AnyEvent',
              'MozRepl::RemoteObject::Instance'

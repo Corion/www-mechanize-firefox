@@ -80,16 +80,16 @@ CONSTRUCTOR and CONFIGURATION
         enough
 
     *   `events' - the set of default Javascript events to listen for while
-        waiting for a reply
+        waiting for a reply. In fact, WWW::Mechanize::Firefox will almost
+        always wait until a 'DOMContentLoaded' or 'load' event. 'pagehide'
+        events will tell it for what frames to wait.
 
         The default set is
 
-          DOMFrameContentLoaded
-          DOMContentLoaded
-          pageshow
-          error
-          abort
-          stop
+          'DOMContentLoaded','load', 
+          'pageshow',
+          'pagehide',
+          'error','abort','stop',
 
     *   `app' - a premade Firefox::Application
 
@@ -133,6 +133,9 @@ CONSTRUCTOR and CONFIGURATION
 
     Sets or gets the set of Javascript events that WWW::Mechanize::Firefox
     will wait for after requesting a new page. Returns an array reference.
+
+    Changing the set of events will most likely make WWW::Mechanize::Firefox
+    stall while waiting for a response.
 
     This method is special to WWW::Mechanize::Firefox.
 
@@ -252,6 +255,20 @@ UI METHODS
 
     This method is special to WWW::Mechanize::Firefox.
 
+  `$mech->make_progress_listener( %callbacks )'
+        my $eventlistener = $mech->progress_listener(
+            onStateChange => \&onStateChange,
+        );
+
+    Creates an unconnected `nsIWebProgressListener' interface which calls
+    the Perl subroutines you pass in.
+
+    Returns a handle. Once the handle gets released, all callbacks will get
+    stopped. Also, all Perl callbacks will get deregistered from the
+    Javascript bridge, so make sure not to use the same callback in
+    different progress listeners at the same time. The sender may still call
+    your callbacks.
+
   `$mech->progress_listener( $source, %callbacks )'
         my $eventlistener = progress_listener(
             $browser,
@@ -260,6 +277,9 @@ UI METHODS
 
     Sets up the callbacks for the `nsIWebProgressListener' interface to be
     the Perl subroutines you pass in.
+
+    ` $source ' needs to support `.addProgressListener' and
+    `.removeProgressListener'.
 
     Returns a handle. Once the handle gets released, all callbacks will get
     stopped. Also, all Perl callbacks will get deregistered from the
@@ -325,6 +345,27 @@ NAVIGATION METHODS
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
 
+  `$mech->post( $url, %options )'
+      $mech->post( 'http://example.com',
+          params => { param => "Hello World" },
+          headers => {
+            "Content-Type" => 'application/x-www-form-urlencoded',
+          },
+          charset => 'utf-8',
+      );
+
+    Sends a POST request to `$url'.
+
+    A `Content-Length' header will be automatically calculated if it is not
+    given.
+
+    The following options are recognized:
+
+    *   `headers' - a hash of HTTP headers to send. If not given, the
+        content type will be generated automatically.
+
+    *   `data' - the raw data to send, if you've encoded it already.
+
   `$mech->add_header( $name => $value, ... )'
         $mech->add_header(
             'X-WWW-Mechanize-Firefox' => "I'm using it",
@@ -337,6 +378,8 @@ NAVIGATION METHODS
     Using multiple instances of WWW::Mechanize::Firefox objects with the
     same application together with changed request headers will most likely
     have weird effects. So don't do that.
+
+    Note that currently, we only support one value per header.
 
   `$mech->delete_header( $name , $name2... )'
         $mech->delete_header( 'User-Agent' );
@@ -373,10 +416,13 @@ NAVIGATION METHODS
     If you leave out `$event', the value of `->events()' will be used
     instead.
 
-  `$mech->res()' / `$mech->response()'
-        my $response = $mech->response();
+  `$mech->res()' / `$mech->response(%options)'
+        my $response = $mech->response(headers => 0);
 
     Returns the current response as a HTTP::Response object.
+
+    The `headers' option tells the module whether to fetch the headers from
+    Firefox or not. This is mainly an internal optimization hack.
 
   `$mech->success()'
         $mech->get('http://google.com');
@@ -488,6 +534,16 @@ CONTENT METHODS
     download by calling its `->cancelSave' method. Also, you can poll the
     download status through the `->{currentState}' property.
 
+    If you need to set persist flags pass the unsigned long value in the
+    `persist' option.
+
+        $mech->get('http://zombisoft.com');
+        $mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
+
+    A list of flags and their values can be found at
+    https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWe
+    bBrowserPersist
+
     If you are interested in the intermediate download progress, create a
     ProgressListener through `$mech->progress_listener' and pass it in the
     `progress' option.
@@ -501,16 +557,17 @@ CONTENT METHODS
     Saves the given URL to the given filename. The URL will be fetched from
     the cache if possible, avoiding unnecessary network traffic.
 
+    If you are interested in the intermediate download progress, create a
+    ProgressListener through `$mech->progress_listener' and pass it in the
+    `progress' option. The download will continue in the background. It will
+    also not show up in the Download Manager.
+
+    If the `progress' option is not passed in, ` -'save_url > will only
+    return after the download has finished.
+
     Returns a `nsIWebBrowserPersist' object through which you can cancel the
     download by calling its `->cancelSave' method. Also, you can poll the
     download status through the `->{currentState}' property.
-
-    If you are interested in the intermediate download progress, create a
-    ProgressListener through `$mech->progress_listener' and pass it in the
-    `progress' option.
-
-    The download will continue in the background. It will also not show up
-    in the Download Manager.
 
   `$mech->base()'
       print $mech->base;
@@ -599,7 +656,7 @@ EXTRACTION METHODS
 
   `$mech->find_link( %options )'
       print $_->text . "\n"
-          for $mech->find_link_dom( text_contains => 'CPAN' );
+          for $mech->find_link( text_contains => 'CPAN' );
 
     A method quite similar to WWW::Mechanize's method. The options are
     documented in `->find_link_dom'.
@@ -610,7 +667,7 @@ EXTRACTION METHODS
 
   `$mech->find_all_links( %options )'
       print $_->text . "\n"
-          for $mech->find_link_dom( text_regex => qr/google/i );
+          for $mech->find_all_links( text_regex => qr/google/i );
 
     Finds all links in the document. The options are documented in
     `->find_link_dom'.
@@ -621,7 +678,7 @@ EXTRACTION METHODS
 
   `$mech->find_all_links_dom %options'
       print $_->{innerHTML} . "\n"
-          for $mech->find_link_dom( text_regex => qr/google/i );
+          for $mech->find_all_links_dom( text_regex => qr/google/i );
 
     Finds all matching linky DOM nodes in the document. The options are
     documented in `->find_link_dom'.
@@ -648,7 +705,13 @@ EXTRACTION METHODS
         my @para = $mech->xpath('//p');
         # Collects all paragraphs
 
+        my @para_text = $mech->xpath('//p/text()', type => $mech->xpathResult('STRING_TYPE'));
+        # Collects all paragraphs as text
+
     Runs an XPath query in Firefox against the current document.
+
+    If you need more information about the returned results, use the
+    `->xpathEx()' function.
 
     The options allow the following keys:
 
@@ -685,7 +748,23 @@ EXTRACTION METHODS
 
     *   `any' - no error is raised, no matter if an item is found or not.
 
-    Returns the matched nodes.
+    *   `type' - force the return type of the query.
+
+          type => $mech->xpathResult('ORDERED_NODE_SNAPSHOT_TYPE'),
+
+        WWW::Mechanize::Firefox tries a best effort in giving you the
+        appropriate result of your query, be it a DOM node or a string or a
+        number. In the case you need to restrict the return type, you can
+        pass this in.
+
+        The allowed strings are documented in the MDN. Interesting types are
+
+          ANY_TYPE     (default, uses whatever things the query returns)
+          STRING_TYPE
+          NUMBER_TYPE
+          ORDERED_NODE_SNAPSHOT_TYPE
+
+    Returns the matched results.
 
     You can pass in a list of queries as an array reference for the first
     parameter. The result will then be the list of all elements matching any
@@ -695,6 +774,22 @@ EXTRACTION METHODS
 
     In the long run, this should go into a general plugin for
     WWW::Mechanize.
+
+  `$mech->xpathEx( $query, %options )'
+        my @links = $mech->xpathEx('//a[id="clickme"]');
+
+    Runs an XPath query in Firefox against a document. Returns a list of
+    found elements. Each element in the result has the following properties:
+
+    *   `resultType' - the type of the result. The numerical value of
+        `$mech->xpathResult()'.
+
+    *   `resultSize' - the number of elements in this result. This is 1 for
+        atomic results like strings or numbers, and the number of elements
+        for nodesets.
+
+    *   `result' - the best result available. This is the nodeset or the
+        text or number, depending on the query.
 
   `$mech->selector( $css_selector, %options )'
       my @text = $mech->selector('p.content');
@@ -906,6 +1001,7 @@ FORM METHODS
       pre
       post
       name
+      node
       value
 
     in addition to all keys that `$mech->xpath' supports.
@@ -1139,7 +1235,7 @@ IMAGE METHODS
   `$mech->element_coordinates( $element )'
         my $shiny = $mech->selector('#shiny', single => 1);
         my ($pos) = $mech->element_coordinates($shiny);
-        print $pos->{x},',', $pos->{y};
+        print $pos->{left},',', $pos->{top};
 
     Returns the page-coordinates of the `$element' in pixels as a hash with
     four entries, `left', `top', `width' and `height'.
@@ -1204,9 +1300,7 @@ INCOMPATIBILITIES WITH WWW::Mechanize
 
         I have no use for it
 
-    *   `->post'
-
-        I have no use for it
+    *
 
 TODO
     *   Add `limit' parameter to `->xpath()' to allow an early exit-case
