@@ -36,7 +36,7 @@ lib/WWW/Mechanize/Firefox/Troubleshooting.pod
 Makefile.PL
 makeppd.pl
 MANIFEST			This list of files
-MANIFEST.skip
+MANIFEST.SKIP
 README
 README.mkdn
 runtests.pl
