@@ -67,7 +67,7 @@ SERVERLOOP: {
         if ($location =~ m!^/redirect/(.*)$!) {
             $res = HTTP::Response->new(302);
             $res->header('location', $d->url . $1);
-        } elsif ($location =~ m!^/error/notfound/(.*)$!) {
+        } elsif ($location =~ m!^/error/notfound/(.*)$! or $location =~ m!^/favicon.ico!) {
             $res = HTTP::Response->new(404, "Not found", [Connection => 'close']);
         } elsif ($location =~ m!^/error/timeout/(\d+)$!) {
             sleep $1;
@@ -146,10 +146,12 @@ SERVERLOOP: {
 };
 END { debug "Server stopped" };
 
+# The below <link> tag should stop the browser from requesting a favicon.ico, but we still see it...
 __DATA__
-<html>
+<html lang="en">
 <head>
 <title>WWW::Mechanize::Firefox test page</title>
+<link rel="shortcut icon" href="#">
 <style>
 .hidden { display: none; }
 </style>
