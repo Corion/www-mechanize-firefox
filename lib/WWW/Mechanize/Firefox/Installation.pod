@@ -14,17 +14,21 @@ to configure Firefox:
 
 =item 1.
 
-Download mozrepl 1.1.0 available from
+Download mozrepl 1.1.2 available from
 
-L<https://github.com/bard/mozrepl/zipball/1.1.0>
+L<https://addons.mozilla.org/en-US/firefox/addon/mozrepl/versions/?page=1#version-1.1.2>
 
 or a later version from
 
 L<https://github.com/bard/mozrepl/tags>
 
+
 =item 2.
 
-Unpack the zip archive into a directory.
+If you downloaded the version from C<mozilla.org>, skip to 5.
+
+If you downloaded a version from github, unpack the zip archive into a directory.
+The version distributed by C<mozilla.org> is ready for direct installation.
 
 The archive contains one subdirectory with a name 
 of the form C<bard-mozrepl-abcdefg>.
@@ -54,7 +58,7 @@ Launch Firefox
 
 =item 6.
 
-Install the freshly created C<.xpi> file into Firefox.
+Install the downloaded or freshly created C<.xpi> file into Firefox.
 For example you can drag and drop the file into Firefox.
 
 =item 7.
