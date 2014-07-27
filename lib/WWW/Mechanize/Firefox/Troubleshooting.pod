@@ -11,6 +11,30 @@ but "does not seem to work", there are some more steps required
 to configure Firefox. Please see L<WWW::Mechanize::Firefox::Installation>
 for more information.
 
+=head2 C<< Failed to connect to , problem connecting to "localhost", port 4242: Connection refused at ... >>
+
+The C<mozrepl> plugin is not correctly installed or not configured
+to listen in Firefox on port 4242.
+
+=over 4
+
+=item 1.
+
+Check that Firefox is listening on port 4242:
+
+  telnet localhost 4242
+
+If this does fail with some error message, you have either a firewall
+issue or the C<mozrepl> extension is not properly installed.
+
+=item 2.
+
+Go through the steps in
+L<WWW::Mechanize::Firefox::Installation> to verify that the C<mozrepl>
+extension is installed.
+
+=back
+
 =head1 Dialogs that break your application
 
 This section lists things that can (and will) happen which might
