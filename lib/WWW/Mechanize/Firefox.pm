@@ -3297,6 +3297,7 @@ with a different API. Supported keys are:
   pre
   post
   name
+  node
   value
 
 in addition to all keys that C<< $mech->xpath >> supports.
@@ -3306,7 +3307,7 @@ in addition to all keys that C<< $mech->xpath >> supports.
 sub _field_by_name {
     my ($self,%options) = @_;
     my @fields;
-    my $name  = delete $options{ name };
+    my $name  = delete $options{ node } || delete $options{ name };
     my $attr = 'name';
     if ($name =~ s/^\^//) { # if it starts with ^, it's supposed to be a name
         $attr = 'name'
@@ -3332,7 +3333,7 @@ sub get_set_value {
     my $value = delete $options{ value };
     my $pre   = delete $options{pre}  || $self->{pre_value};
     my $post  = delete $options{post} || $self->{post_value};
-    my $name  = delete $options{ name };
+    my $name  = delete $options{ node } || delete $options{ name };
     my @fields = $self->_field_by_name(
                      name => $name, 
                      user_info => "input with name '$name'",
