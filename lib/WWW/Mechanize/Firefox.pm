@@ -275,7 +275,6 @@ sub DESTROY {
         # as the last thing, now:
         $app = undef;
     };
-    #warn "FF cleaned up";
 }
 
 =head2 C<< $mech->agent( $product_id ); >>
