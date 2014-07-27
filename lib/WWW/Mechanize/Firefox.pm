@@ -3530,7 +3530,7 @@ sub tick {
     };
     
     my $target = $boxes[0];
-    my $is_set = $target->{checked} eq 'true';
+    my $is_set = $self->application->bool_ff_to_perl( $target->{checked} );
     if ($set xor $is_set) {
         if ($set) {
             $target->{checked}= 'checked';

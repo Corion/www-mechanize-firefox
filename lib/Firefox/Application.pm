@@ -455,6 +455,38 @@ JS
     $s->quit($flags);
 };
 
+=head2 C<< $ff->bool_ff_to_perl $val >>
+
+Normalizes the (checkbox) truth value C<$val> to 1 or 0.
+
+Different Firefox versions return C<true> or C<false>
+as the checkbox values. This function converts
+a Firefox checkbox value to 1 or 0.
+
+=cut
+
+# FF 31 has 1,0
+sub bool_ff_to_perl {
+    my( $self, $value )= @_;
+    $value
+}
+
+=head2 C<< $ff->bool_perl_to_ff $val >>
+
+Normalizes the truth value C<$val> to 1 or 0.
+
+Different Firefox versions want C<true> or C<false>
+as the checkbox values. This function converts
+a Perl truth value to 1 or 0 respectively C<true> or C<false>,
+depending on what Firefox wants.
+
+=cut
+
+# FF 31 has 1,0
+sub bool_perl_to_ff {
+    my( $self, $value )= @_;
+    $value ? 1 : 0
+}
 
 =head1 TODO
 
