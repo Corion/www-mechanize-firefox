@@ -6,7 +6,7 @@ use Test::More;
 use File::Find;
 use File::Spec;
 
-my @files = qw( MANIFEST MANIFEST.skip );
+my @files = qw( MANIFEST MANIFEST.SKIP );
 plan tests => scalar @files * 4 
               +1 # MANIFEST existence check
               ;
