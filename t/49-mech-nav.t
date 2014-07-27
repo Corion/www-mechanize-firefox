@@ -22,7 +22,9 @@ if (! $mech) {
     plan tests => 3;
 };
 
-my $server = Test::HTTP::LocalServer->spawn();
+my $server = Test::HTTP::LocalServer->spawn(
+    #debug => 1,
+);
 
 $mech->get($server->url);
 
