@@ -2632,10 +2632,12 @@ sub xpath {
     );
 
     if (! $zero_allowed and @res == 0) {
+        $options{ user_info } ||= $query;
         $self->signal_condition( "No elements found for $options{ user_info }" );
     };
 
     if (! $two_allowed and @res > 1) {
+        $options{ user_info } ||= $query;
         $self->highlight_node(@res);
         $self->signal_condition( (scalar @res) . " elements found for $options{ user_info }" );
     };
