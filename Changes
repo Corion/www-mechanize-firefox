@@ -11,6 +11,32 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.75 20140727
+    + Be even more paranoid about environment variables in Test::HTTP::LocalServer
+      (change gleaned from WWW::Mechanize , as contributed by Karen Etheridge)
+    + Allow the 'node' parameter to ->get_set_value() to fire the appropriate
+      Javascript events when setting a field value.
+    + Updated installation instructions and troubleshooting instructions
+    + WWW::Mechanize::Firefox is currently tested against the following versions
+        - 3.0.19
+        - 3.5.19
+        - 3.6.21
+        - 5.0.1
+        - 6.0.1
+        - 7.0.1
+        - 8.0
+        - 9.0
+        - 10.0.11 (ESR)
+        - 13.0
+        - 15.0
+        - 17.0.9 (ESR) (currently fails t/60-mech-custom-headers.t)
+        - 18.0.2
+        - 19.0
+        - 20.0.1
+        - 24.0.7 (ESR) (currently fails t/60-mech-custom-headers.t)
+        - 31.0.0
+      
+
 0.74 20130507
     + ->xpath() now returns the best result depending on the query.
       This result type depends on the Firefox XPath implementation.
