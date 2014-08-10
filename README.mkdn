@@ -577,7 +577,7 @@ If you need to set persist flags pass the unsigned long value in the
     $mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
 
 A list of flags and their values can be found at 
-["/developer.mozilla.org/en-US/docs/XPCOM\_Interface\_Reference/nsIWebBrowserPersist " in https:](https://metacpan.org/pod/https:#developer.mozilla.org-en-US-docs-XPCOM_Interface_Reference-nsIWebBrowserPersist)
+[https://developer.mozilla.org/en-US/docs/XPCOM\_Interface\_Reference/nsIWebBrowserPersist](https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist).
 
 If you are interested in the intermediate download progress, create
 a ProgressListener through `$mech->progress_listener`

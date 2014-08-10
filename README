@@ -542,7 +542,7 @@ CONTENT METHODS
 
     A list of flags and their values can be found at
     https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWe
-    bBrowserPersist
+    bBrowserPersist.
 
     If you are interested in the intermediate download progress, create a
     ProgressListener through `$mech->progress_listener' and pass it in the

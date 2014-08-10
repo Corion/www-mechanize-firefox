@@ -11,6 +11,10 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.76 20140810
+    . Fix a POD error, causing a POD self-test to fail
+    . No need to upgrade from 0.75
+
 0.75 20140727
     + Be even more paranoid about environment variables in Test::HTTP::LocalServer
       (change gleaned from WWW::Mechanize , as contributed by Karen Etheridge)

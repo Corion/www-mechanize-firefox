@@ -3,7 +3,7 @@ use strict;
 use parent 'Firefox::Application';
 use vars qw($VERSION %addon_types);
 use MozRepl::RemoteObject qw(as_list);
-$VERSION = '0.75';
+$VERSION = '0.76';
 
 =head1 NAME
 
