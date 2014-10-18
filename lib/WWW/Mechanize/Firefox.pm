@@ -2981,7 +2981,7 @@ sub click {
         
     $self->_sync_call(
         $options{ synchronize }, sub { # ,'abort'
-            $buttons[0]->__click();
+            $buttons[0]->__click($x,$y);
         }
     );
 
