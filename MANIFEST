@@ -56,6 +56,9 @@ t/50-app-new.t
 t/50-app-profile.t
 t/50-click.html
 t/50-click.t
+t/50-click-coordinates-js.html
+t/50-click-coordinates-js.t
+t/50-click-coordinates.t
 t/50-follow-link.t
 t/50-form-with-fields.t
 t/50-form2.html

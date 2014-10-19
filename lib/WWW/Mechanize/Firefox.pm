@@ -2935,6 +2935,10 @@ As a deviation from the WWW::Mechanize API, you can also pass a
 hash reference as the first parameter. In it, you can specify
 the parameters to search much like for the C<find_link> calls.
 
+Note: Currently, clicking on images with the C<ismap> attribute
+does not trigger the move to the new URL. A workaround is to program
+the new URL into your script.
+
 =cut
 
 sub click {
