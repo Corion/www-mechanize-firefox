@@ -4,6 +4,16 @@ use t::helper;
 use WWW::Mechanize::Firefox;
 use File::Glob qw( bsd_glob );
 use Config;
+use Getopt::Long;
+
+GetOptions(
+    't|test:s' => \my $tests,
+    'c|continue' => \my $continue,
+);
+my @tests;
+if( $tests ) {
+    @tests= bsd_glob( $tests );
+};
 
 =head1 NAME
 
@@ -47,8 +57,17 @@ for my $instance (@instances) {
     die "Couldn't launch Firefox instance from $instance"
         unless $ff;
     
-    system("$Config{ make } test") == 0
-        or die "Error while testing $vis_instance";
+    if( @tests ) {
+        for my $test (@tests) {
+            system(qq{perl -w "$test"}) == 0
+                or ($continue and warn "Error while testing $vis_instance: $!/$?")
+                or die "Error while testing $vis_instance: $!/$?";
+        };
+    } else { # run all tests
+        system("$Config{ make } test") == 0
+            or ($continue and warn "Error while testing $vis_instance: $!/$?")
+            or die "Error while testing $vis_instance";
+    };
     
     if( $instance ) {
         # Close firefox again
