@@ -964,6 +964,11 @@ effects. So don't do that.
 
 Note that currently, we only support one value per header.
 
+Some versions of Firefox don't work with the method that is used to set
+the custom headers. Please see C<t/60-mech-custom-headers.t> for the exact
+versions where the implemented mechanism doesn't work. Roughly, this is
+for versions 17 to 24 of Firefox.
+
 =cut
 
 # This subroutine creates the custom header observer. It has a hashref

@@ -24,6 +24,13 @@ my $server = Test::HTTP::LocalServer->spawn(
     #debug => 1
 );
 
+diag $mech->application->appinfo->{version};
+if( $mech->application->appinfo->{version} =~ /^(17|18|19|20|24)\./ ) {
+    SKIP: {
+        skip "Version $1 of Firefox can't set custom HTTP headers", 21;
+    };
+    exit
+};
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
