@@ -395,6 +395,11 @@ effects. So don't do that.
 
 Note that currently, we only support one value per header.
 
+Some versions of Firefox don't work with the method that is used to set
+the custom headers. Please see `t/60-mech-custom-headers.t` for the exact
+versions where the implemented mechanism doesn't work. Roughly, this is
+for versions 17 to 24 of Firefox.
+
 ## `$mech->delete_header( $name , $name2... )`
 
     $mech->delete_header( 'User-Agent' );
