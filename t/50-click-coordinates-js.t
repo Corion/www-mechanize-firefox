@@ -23,12 +23,13 @@ if (! $mech) {
 $mech->get_local("50-click-coordinates-js.html");
 
 my $clicky_image = $mech->selector('#maplink', single => 1 );
+my $pos= $clicky_image->getBoundingClientRect();
 isa_ok( $clicky_image, 'MozRepl::RemoteObject::Instance', 'Found the image' );
 
 my $resp = $mech->click({ dom => $clicky_image, synchronize => 0 }, 10, 12 );
 
 my( $type,$co );
 ($co,$type)= $mech->eval_in_page('cX');
-is( $co, 10, 'X co-ordinates got transmitted OK' );
+is( $co - $pos->{left}, 10, 'X co-ordinates got transmitted OK' );
 ($co,$type)= $mech->eval_in_page('cY');
-is( $co, 12, 'Y co-ordinates got transmitted OK' );
+is( $co - $pos->{top}, 12, 'Y co-ordinates got transmitted OK' );
