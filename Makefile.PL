@@ -24,7 +24,7 @@ WriteMakefile1(
     'NAME'          => 'WWW::Mechanize::Firefox',
     'LICENSE'       => 'perl',
     'VERSION_FROM'  => 'lib/WWW/Mechanize/Firefox.pm', # finds $VERSION
-    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.38, # ->click($node, $x,$y)
+    'PREREQ_PM'     => { 'MozRepl::RemoteObject' => 0.39, # fixed ->click($node, $x,$y)
                         'URI' => 0,
                         'URI::data' => 0,
                         'Cwd' => 0, # only needed in ->get_local, mostly exercised by the tests
