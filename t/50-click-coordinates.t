@@ -8,6 +8,8 @@ use WWW::Mechanize::Firefox;
 use lib 'inc', '../inc';
 use Test::HTTP::LocalServer;
 
+plan skip_all => "ISMAP seems unsupported from Javascript. Need to investigate further.";
+
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 1,
     #log => [qw[debug]],
@@ -27,10 +29,6 @@ my $server = Test::HTTP::LocalServer->spawn();
 $mech->get($server->url);
 
 SKIP: {
-    #local $TODO = q{ISMAP seems unsupported from Javascript. Need to investigate further.};
-    skip "ISMAP seems unsupported from Javascript. Need to investigate further.", 2;
-
-    #my $clicky_button = $form->find_input( undef, 'submit' );
     my $clicky_image = $mech->selector('#ismap', single => 1 );
     isa_ok( $clicky_image, 'MozRepl::RemoteObject::Instance', 'Found the image' );
 
