@@ -11,6 +11,10 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+0.78 20141026
+    . Pull in fixed prerequisite MozRepl::RemoteObject v0.39
+    . Test fixes
+
 0.77 20141020
     + Actually support coordinates for ->click({...}, $x, $y )
     . Test fixes
