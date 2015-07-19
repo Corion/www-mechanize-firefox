@@ -1943,8 +1943,9 @@ sub save_url {
     my $transfer_file = $self->repl->declare(<<'JS');
 function (source,filetarget,progress,tab) {
     //new obj_URI object
-    var obj_URI = Components.classes["@mozilla.org/network/io-service;1"]
-        .getService(Components.interfaces.nsIIOService).newURI(source, null, null);
+    var ios = Components.classes["@mozilla.org/network/io-service;1"]
+                        .getService(Components.interfaces.nsIIOService)
+    var obj_URI = ios.newURI(source, null, null);
 
     //new file object
     var obj_target;
@@ -2010,7 +2011,11 @@ function (source,filetarget,progress,tab) {
     };
 
     //save file to target
-    obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target,privacyContext);
+    if( version < 36.0 ) {
+        obj_Persist.saveURI(obj_URI,null,null,null,null,obj_target,privacyContext);
+    } else {
+        obj_Persist.saveURI(obj_URI,null,null, ios.referrerPolicy, null,null,obj_target,privacyContext);
+    }
     return obj_Persist
 };
 JS
