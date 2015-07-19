@@ -907,7 +907,6 @@ sub post {
     # If we don't have data, encode the parameters:
     if( !$options{ data }) {
         my $req= HTTP::Request::Common::POST( $url, $options{params} );
-        warn $req->content;
         $options{ data } = $req->content;
     };
 
