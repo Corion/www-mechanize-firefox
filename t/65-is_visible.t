@@ -37,9 +37,9 @@ eval {
 };
 if (! $triggered) {
     SKIP: {
-        skip(12 +4, "Couldn't get at 'timer'. Do you have a Javascript blocker?");
+        skip("Couldn't get at 'timer'. Do you have a Javascript blocker?", 12*@files +4);
     };
-    return
+    exit;
 };
 # Check that we can trigger the timeout
 for my $file ($files[0]) {
