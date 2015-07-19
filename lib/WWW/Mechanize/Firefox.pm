@@ -4364,6 +4364,10 @@ L<German Perl Workshop, German|http://corion.net/talks/WWW-Mechanize-FireFox/www
 
 L<YAPC::Europe 2010, English|http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html>
 
+=head1 ARTICLES
+
+L<http://perltricks.com/article/138/2014/12/8/Controlling-Firefox-from-Perl>
+
 =head1 BUG TRACKER
 
 Please report bugs in this module via the RT CPAN bug queue at
