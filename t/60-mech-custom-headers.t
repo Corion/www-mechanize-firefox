@@ -80,7 +80,7 @@ is $mech->uri, $site, "Navigated to $site";
 $headers = $mech->selector('#request_headers', single => 1)->{innerHTML};
 like $headers, qr!^Referer: \Q$ref\E$!m, "We sent the correct Referer header";
 like $headers, qr!^User-Agent: \Q$ua\E$!m, "We sent the correct User-Agent header";
-unlike $headers, qr!^X-WWW-Mechanize-Firefox: !m, "We can delete cometely custom headers";
+unlike $headers, qr!^X-WWW-Mechanize-Firefox: !m, "We can delete completely custom headers";
 like $headers, qr!^X-Another-Header: !m, "We can add other headers and still keep the current header settings";
 # diag $mech->content;
 

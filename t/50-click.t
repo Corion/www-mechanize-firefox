@@ -30,8 +30,8 @@ eval {
 };
 
 if (! $clicked) {
-    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 15; };
-    return;
+    SKIP: { skip "Couldn't get at 'clicked'. Do you have a Javascript blocker?", 26; };
+    exit;
 };
 
 ok $clicked, "We found 'clicked'";

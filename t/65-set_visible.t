@@ -38,6 +38,7 @@ $mech->form_name('f');
 
 $mech->set_visible(@values);
 $mech->submit();
+sleep 1; # better stability ...
 # Check that we got the right values passed back
 is $mech->value('query'), 'test_query', "First visible field does get filled";
 is $mech->value('botcheck_query'), '(empty)', "A hidden field does not get filled";

@@ -30,7 +30,7 @@ eval {
     $ok = 1;
 };
 if (! $triggered) {
-    SKIP: { skip "Couldn't get at 'lastclick'. Do you have a Javascript blocker?", 10; };
+    SKIP: { skip "Couldn't get at 'lastclick'. Do you have a Javascript blocker?", 3; };
     exit;
 };
 ok $triggered, "We have JS enabled";

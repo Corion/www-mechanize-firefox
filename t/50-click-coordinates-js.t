@@ -26,6 +26,20 @@ my $clicky_image = $mech->selector('#maplink', single => 1 );
 my $pos= $clicky_image->getBoundingClientRect();
 isa_ok( $clicky_image, 'MozRepl::RemoteObject::Instance', 'Found the image' );
 
+# Check if we can get to stuff in the page at all (FF 40+ is bad there)
+my ($val,$type,$ok);
+eval {
+    ($val, $type) = $mech->eval_in_page('cX');
+    $ok = 1;
+};
+
+if( ! $ok) {
+    SKIP: {
+        skip "Your version of Firefox doesn't let us see JS variables in a page", 2;
+    };
+    exit;
+};
+
 my $resp = $mech->click({ dom => $clicky_image, synchronize => 0 }, 10, 12 );
 
 my( $type,$co );
