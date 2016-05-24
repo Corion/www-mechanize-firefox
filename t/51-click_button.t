@@ -19,7 +19,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 22;
+    plan tests => 30;
 };
 
 my $server = Test::HTTP::LocalServer->spawn();
@@ -35,17 +35,39 @@ CLICK_BY_NUMBER: {
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by number' );
     like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
     like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
-    $mech->back;
+    $mech->get($server->url);
 
     ok(! eval { $mech->click_button(number => 2); 1 }, 'Button number out of range');
 }
 
+#sleep 5;
 CLICK_BY_NAME: {
     $mech->click_button(name => 'submit');
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
     like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
     like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
-    $mech->back;
+    $mech->get($server->url);
+
+    ok(! eval { $mech->click_button(name => 'bogus'); 1 }, 'Button name unknown');
+}
+sleep 5;
+CLICK_BY_NAME_CLICK: {
+    $mech->click('submit');
+    like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
+    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    $mech->get($server->url);
+
+    ok(! eval { $mech->click_button(name => 'bogus'); 1 },
+    'Button name unknown');
+}
+
+CLICK_BY_NAME_CLICK_NAME: {
+    $mech->click({ name => 'submit' });
+    like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
+    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    $mech->get($server->url);
 
     ok(! eval { $mech->click_button(name => 'bogus'); 1 },
     'Button name unknown');
@@ -56,7 +78,7 @@ CLICK_BY_ID: {
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
     like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
     like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
-    $mech->back;
+    $mech->get($server->url);
 
     ok(! eval { $mech->click_button(id => 'no_such_button'); 1 },
     'Button name unknown');
@@ -69,7 +91,7 @@ CLICK_BY_VALUE: {
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by value' );
     like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
     like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
-    $mech->back;
+    $mech->get($server->url);
 
     ok(! eval { $mech->click_button(value => 'bogus'); 1 },
     'Button value unknown');
@@ -91,5 +113,5 @@ CLICK_BY_OBJECT_REFERENCE: {
     like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
     like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
 
-    $mech->back;
+    $mech->get($server->url);
 }
