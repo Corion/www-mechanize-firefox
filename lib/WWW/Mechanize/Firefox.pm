@@ -231,7 +231,7 @@ sub new {
     $args{ events } ||= [
                       'DOMContentLoaded','load', 
                       'pageshow', # Navigation from cache will use "pageshow"
-                      'pagehide',
+                      #'pagehide',
                       'error','abort','stop',
     ];
     $args{ on_event } ||= undef;
