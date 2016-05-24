@@ -1246,8 +1246,10 @@ sub _wait_while_busy {
     # Now do the busy-wait
     # Should this also include a ->poll()
     # and a callback?
-
+    my $i=0;
     while (1) {
+        $i++;
+  	last if($i == 30 ); 
         for my $element (@elements) {
             if ((my $s = $element->{busy} || 0) < 1) {
                 for my $element (@elements) {
