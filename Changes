@@ -11,6 +11,25 @@ TO DO:
     . Make ->set_visible also support select+option inputs
     . Add tests for _field_by_name for #foo and .foo case
 
+    . Fix cloning of values for ->eval_in_page was broken by FF 30+
+      https://blog.mozilla.org/addons/2014/04/10/changes-to-unsafewindow-for-the-add-on-sdk/
+      
+0.79 20160524
+    ! Remove the 'pagehide' event from events that are considered
+      completion events for a loaded page
+      
+      This should improve the stability of the test suite and other
+      programs. If you find that some programs don't work anymore,
+      you will need to add 'pagehide' to the 'events' array.
+    . Fix spurious debug output (contributed by ???)
+    . Fix ->save_url for Firefox 36+ (Thanks to Olivier Trichet)
+      Firefox isn't as tied to backwards compatibility as Perl is:
+       https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIWebBrowserPersist#saveURI()
+    . Fix infinite loop while waiting (Thanks to Alexander)
+    
+    * Note that Firefox 40+ doesn't nicely support getting at Javascript
+      variables within a page anymore.
+
 0.78 20141026
     . Pull in fixed prerequisite MozRepl::RemoteObject v0.39
     . Test fixes
