@@ -79,7 +79,8 @@ sub spawn {
   my $self = { %args };
   bless $self,$class;
 
-  local $ENV{TEST_HTTP_VERBOSE} = 1
+  local $ENV{TEST_HTTP_VERBOSE};
+  $ENV{TEST_HTTP_VERBOSE}= 1
     if (delete $args{debug});
 
   $self->{delete} = [];
@@ -104,7 +105,9 @@ sub spawn {
   push @opts, "-e" => qq{"} . delete($args{ eval }) . qq{"}
       if $args{ eval };
 
-  my $pid = open my $server, qq'$^X "$server_file" "$web_page" "$logfile" @opts|'
+  my $cmd= qq'$^X "$server_file" "$web_page" "$logfile" @opts|';
+  #warn "[$cmd]";
+  my $pid = open my $server, $cmd
     or croak "Couldn't spawn local server $server_file : $!";
   my $url = <$server>;
   chomp $url;
@@ -152,6 +155,7 @@ url.
 
 sub stop {
   get( $_[0]->{_server_url} . "quit_server" );
+  close $_[0]->{_fh};
   undef $_[0]->{_server_url}
 };
 
@@ -186,6 +190,9 @@ sub DESTROY {
   $_[0]->stop if $_[0]->{_server_url};
   for my $file (@{$_[0]->{delete}}) {
     unlink $file or warn "Couldn't remove tempfile $file : $!\n";
+  };
+  if( $_[0]->{_pid } and CORE::kill( 0 => $_[0]->{_pid })) {
+      $_[0]->kill; # boom
   };
 };
 

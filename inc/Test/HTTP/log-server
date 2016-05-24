@@ -142,7 +142,8 @@ SERVERLOOP: {
     undef($c);
     last SERVERLOOP
       if $quitserver;
-  }
+  };
+  undef $d;
 };
 END { debug "Server stopped" };
 
