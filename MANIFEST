@@ -1,4 +1,5 @@
 .gitignore
+.travis.yml
 Changes
 examples/bcat.pl
 examples/dump-links.pl
@@ -169,3 +170,10 @@ t/rt84418.t
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
+xt/99-changes.t
+xt/99-examples.t
+xt/99-manifest.t
+xt/99-pod.t
+xt/99-todo.t
+xt/99-unix-text.t
+xt/99-versions.t
