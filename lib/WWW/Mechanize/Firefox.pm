@@ -1941,7 +1941,7 @@ sub save_url {
         #}
         );
     };
-    
+
     my $transfer_file = $self->repl->declare(<<'JS');
 function (source,filetarget,progress,tab) {
     //new obj_URI object
@@ -2021,6 +2021,7 @@ function (source,filetarget,progress,tab) {
     return obj_Persist
 };
 JS
+
     $res= $transfer_file->("$url" => $localname, $options{progress}, $self->tab);
     while( $options{ wait }) {
         $self->repl->poll;
