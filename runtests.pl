@@ -59,7 +59,7 @@ for my $instance (@instances) {
     
     if( @tests ) {
         for my $test (@tests) {
-            system(qq{perl -w "$test"}) == 0
+            system(qq{perl -Ilib -w "$test"}) == 0
                 or ($continue and warn "Error while testing $vis_instance: $!/$?")
                 or die "Error while testing $vis_instance: $!/$?";
         };
