@@ -47,7 +47,11 @@ separate instance:
     $ff = Firefox::Application->new(
         autodie => 0,
         #log => [qw[debug]],
-        launch => ['c:/Path/to/portable/FirefoxPortable.exe', '-repl', $instance_port],
+        
+        launch => ['c:/Path/to/portable/FirefoxPortable.exe',
+                   '-P', "ProfileName",
+                   '-repl', $instance_port
+                  ],
         repl => "localhost:$instance_port",
     );
 
