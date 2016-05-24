@@ -2956,7 +2956,6 @@ sub click {
     my ($self,$name,$x,$y) = @_;
     my %options;
     my @buttons;
-    
     if (! defined $name) {
         croak("->click called with undef link");
     } elsif (ref $name and blessed($name) and $name->can('__click')) {
@@ -2966,7 +2965,6 @@ sub click {
     } else {
         $options{ name } = $name;
     };
-    
     if (exists $options{ name }) {
         $name = quotemeta($options{ name }|| '');
         $options{ xpath } = [
@@ -3067,7 +3065,6 @@ sub click_button {
         $xpath = sprintf '//*[translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "button" or (translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "input" and @type="submit")][%s]', $v;
         $user_message = "Button number '$v' out of range";
     };
-    #warn $xpath;
     $node ||= $self->xpath( $xpath,
                           node => $self->current_form,
                           single => 1,
