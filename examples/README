@@ -17,6 +17,7 @@ manipulate-javascript.pl        Make changes to Javascript values in a webpage
 javascript.pl                   Execute Javascript in the webpage context
 js-console.pl                   Send messages to the Error Console
 tail-console.pl                 Display messages from the Error Console to STDOUT
+g_and_p_trans.pl                Use Ajax in javascript to translate sentence
 
 Advanced / Firefox application
 ========
