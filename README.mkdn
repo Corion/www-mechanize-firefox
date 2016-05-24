@@ -154,7 +154,7 @@ This method is special to WWW::Mechanize::Firefox.
 Returns a [HTTP::Cookies](https://metacpan.org/pod/HTTP::Cookies) object that was initialized
 from the live Firefox instance.
 
-__Note:__ `->set_cookie` is not yet implemented,
+**Note:** `->set_cookie` is not yet implemented,
 as is saving the cookie jar.
 
 # JAVASCRIPT METHODS
@@ -226,7 +226,7 @@ write the Javascript yourself.
 
 This method is special to WWW::Mechanize::Firefox.
 
-Also, using this method opens a potential __security risk__ as
+Also, using this method opens a potential **security risk** as
 the returned values can be objects and using these objects
 can execute malicious code in the context of the Firefox application.
 
@@ -386,7 +386,7 @@ the content type will be generated automatically.
         Encoding => 'text/klingon',
     );
 
-This method sets up custom headers that will be sent with __every__ HTTP(S)
+This method sets up custom headers that will be sent with **every** HTTP(S)
 request that Firefox makes.
 
 Using multiple instances of WWW::Mechanize::Firefox objects with the same
@@ -1079,7 +1079,7 @@ in addition to all keys that `$mech->xpath` supports.
 
 Given the name of a `select` field, set its value to the value
 specified.  If the field is not `<select multiple>` and the
-`$value` is an array, only the __first__ value will be set. 
+`$value` is an array, only the **first** value will be set. 
 Passing `$value` as a hash with
 an `n` key selects an item by number (e.g.
 `{n => 3}` or `{n => [2,4]}`).
@@ -1121,7 +1121,7 @@ Causes the checkbox to be unticked. Shorthand for
 
     $mech->submit;
 
-Submits the form. Note that this does __not__ fire the `onClick`
+Submits the form. Note that this does **not** fire the `onClick`
 event and thus also does not fire eventual Javascript handlers.
 Maybe you want to use `$mech->click` instead.
 
@@ -1432,6 +1432,10 @@ I've given two talks about this module at Perl conferences:
 [German Perl Workshop, German](http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html)
 
 [YAPC::Europe 2010, English](http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html)
+
+# ARTICLES
+
+[http://perltricks.com/article/138/2014/12/8/Controlling-Firefox-from-Perl](http://perltricks.com/article/138/2014/12/8/Controlling-Firefox-from-Perl)
 
 # BUG TRACKER
 
