@@ -60,7 +60,7 @@ The following options are recognized:
 
 =over 4
 
-=item * 
+=item *
 
 C<tab> - regex for the title of the tab to reuse. If no matching tab is
 found, the constructor dies.
@@ -82,14 +82,14 @@ the criteria given in C<tab> can be found.
 
 C<activate> - make the tab the active tab
 
-=item * 
+=item *
 
 C<launch> - name of the program to launch if we can't connect to it on
 the first try.
 
 =item *
 
-C<frames> - an array reference of ids of subframes to include when 
+C<frames> - an array reference of ids of subframes to include when
 searching for elements on a page.
 
 If you want to always search through all frames, just pass C<1>. This
@@ -104,7 +104,7 @@ of frame selectors:
 
           frames => ['#content_frame']
 
-=item * 
+=item *
 
 C<autodie> - whether web failures converted are fatal Perl errors. See
 the C<autodie> accessor. True by default to make error checking easier.
@@ -120,7 +120,7 @@ in the constructor.
 C<agent> - the name of the User Agent to use. This overrides
 how Firefox identifies itself.
 
-=item * 
+=item *
 
 C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
 
@@ -128,7 +128,7 @@ C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObjec
 
 C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
 
-=item * 
+=item *
 
 C<events> - the set of default Javascript events to listen for while
 waiting for a reply. In fact, WWW::Mechanize::Firefox will almost always
@@ -137,16 +137,16 @@ will tell it for what frames to wait.
 
 The default set is
 
-  'DOMContentLoaded','load', 
+  'DOMContentLoaded','load',
   'pageshow',
   'pagehide',
   'error','abort','stop',
 
-=item * 
+=item *
 
 C<app> - a premade L<Firefox::Application>
 
-=item * 
+=item *
 
 C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
 suitable for initializing one
@@ -165,12 +165,12 @@ C<js_JSON> - whether to use native JSON encoder of Firefox
 The default is to autodetect whether a native JSON encoder is available and
 whether the transport is UTF-8 safe.
 
-=item * 
+=item *
 
 C<pre_events> - the events that are sent to an input field before its
 value is changed. By default this is C<[focus]>.
 
-=item * 
+=item *
 
 C<post_events> - the events that are sent to an input field after its
 value is changed. By default this is C<[blur, change]>.
@@ -181,16 +181,16 @@ value is changed. By default this is C<[blur, change]>.
 
 sub new {
     my ($class, %args) = @_;
-    
+
     if (! ref $args{ app }) {
         my @passthrough = qw(launch repl bufsize log use_queue js_JSON);
-        my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () } 
+        my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () }
                       @passthrough;
         $args{ app } = Firefox::Application->new(
             %options
         );
     };
-        
+
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
             if ($tabname eq 'current') {
@@ -227,9 +227,9 @@ sub new {
         $args{ app }->autoclose_tab($args{ tab });
     };
     if (! exists $args{ autodie }) { $args{ autodie } = 1 };
-    
+
     $args{ events } ||= [
-                      'DOMContentLoaded','load', 
+                      'DOMContentLoaded','load',
                       'pageshow', # Navigation from cache will use "pageshow"
                       #'pagehide',
                       'error','abort','stop',
@@ -243,26 +243,26 @@ sub new {
 
     die "No tab found"
         unless $args{tab};
-        
+
     if (delete $args{ activate }) {
         $args{ app }->activateTab( $args{ tab });
     };
-    
+
     $args{ response } ||= undef;
     $args{ current_form } ||= undef;
 
     $args{ event_log } ||= [];
-    
+
     my $agent = delete $args{ agent };
-    
+
     my $self= bless \%args, $class;
-    
+
     $self->_initXpathResultTypes;
 
     if( defined $agent ) {
         $self->agent( $agent );
     };
-    
+
     $self
 };
 
@@ -370,25 +370,25 @@ The following options are recognized:
 
 =over 4
 
-=item * 
+=item *
 
-C<plugins> 	 - Whether to allow plugin execution.
+C<plugins>   - Whether to allow plugin execution.
 
-=item * 
+=item *
 
-C<javascript> 	 - Whether to allow Javascript execution.
+C<javascript>    - Whether to allow Javascript execution.
 
-=item * 
+=item *
 
 C<metaredirects> - Attribute stating if refresh based redirects can be allowed.
 
-=item * 
+=item *
 
-C<frames>, C<subframes> 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
+C<frames>, C<subframes>      - Attribute stating if it should allow subframes (framesets/iframes) or not.
 
-=item * 
+=item *
 
-C<images> 	 - Attribute stating whether or not images should be loaded.
+C<images>    - Attribute stating whether or not images should be loaded.
 
 =back
 
@@ -487,7 +487,7 @@ Returns a pair of value and Javascript type.
 This allows access to variables and functions declared
 "globally" on the web page.
 
-The returned result needs to be treated with 
+The returned result needs to be treated with
 extreme care because
 it might lead to Javascript execution in the context of
 your application instead of the context of the webpage.
@@ -517,7 +517,7 @@ sub eval_in_page {
     $env ||= {};
     my $js_env = {};
     $doc ||= $self->document;
-    
+
     # do a manual transfer of keys, to circumvent our stupid
     # transformation routine:
     if (keys %$env) {
@@ -528,7 +528,7 @@ JS
             $js_env->{$k} = $env->{$k};
         };
     };
-    
+
     my $eval_in_sandbox = $self->repl->declare(<<'JS', 'list');
     function (w,d,str,env,caller,line) {
         var unsafeWin = w.wrappedJSObject;
@@ -551,9 +551,9 @@ JS
     # Report errors from scope of caller
     # This feels weirdly backwards here, but oh well:
     #local @CARP_NOT = (ref $self->repl); # we trust this
-    
+
     my ($caller,$line) = (caller)[1,2];
-    
+
     $eval_in_sandbox->($window,$doc,$str,$js_env,$caller,$line);
 };
 *eval = \&eval_in_page;
@@ -642,7 +642,7 @@ sub make_progress_listener {
         $obj->{$key} = $handlers{$key};
     };
     #warn "Listener created";
-    
+
     my $mk_nsIWebProgressListener = $mech->repl->declare(<<'JS');
     function (myListener) {
         var callbacks = ["onStateChange",
@@ -672,7 +672,7 @@ sub make_progress_listener {
         return myListener
     }
 JS
-    
+
     # Declare it here so we don't close over $lsn!
     my $release = sub {
         $_[0]->bridge->remove_callback(values %handlers)
@@ -705,10 +705,10 @@ in different progress listeners at the same time.
 
 sub progress_listener {
     my ($self,$source,%handlers) = @_;
-    
+
     my $lsn = $self->make_progress_listener(%handlers);
     $lsn->{source} = $source;
-    
+
     $lsn->__release_action('if(self.source)try{self.source.removeProgressListener(self)}catch(e){}');
     my $NOTIFY_STATE = $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL')
                      + $self->repl->constant('Components.interfaces.nsIWebProgress.NOTIFY_LOCATION')
@@ -803,7 +803,7 @@ sub get {
     my ($self,$url, %options) = @_;
     my $b = $self->tab->{linkedBrowser};
     $self->clear_current_form;
-    
+
     my $flags = 0;
     if ($options{ no_cache }) {
         $flags = $self->repl->constant('nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE');
@@ -816,7 +816,7 @@ sub get {
                                 ? $self->events
                                 : []
     };
-    
+
     $self->_sync_call( $options{ synchronize }, sub {
         if (my $target = delete $options{":content_file"}) {
             $self->save_url($url => ''.$target, %options);
@@ -989,12 +989,12 @@ sub _custom_header_observer {
                 var v= h[i+1];
                 hr[k]= v;
             };
-                
+
             var myObserver= {
                 headers: hr,
                 observe: function(subject,topic,data) {
                     if(topic != 'http-on-modify-request') return;
-                    
+
                     var http = subject.QueryInterface(Ci.nsIHttpChannel);
                     for( var k in this.headers) {
                         var v= this.headers[k];
@@ -1008,11 +1008,11 @@ sub _custom_header_observer {
             }
             observerService.addObserver(myObserver,'http-on-modify-request',false);
             return myObserver;
-        };      
+        };
 JS
     my $obs = $on_modify_request->(@headers);
 
-    # Clean up after ourselves    
+    # Clean up after ourselves
     $obs->__release_action(<<'JS');
         const Cc= Components.classes;
         const Ci= Components.interfaces;
@@ -1027,7 +1027,7 @@ JS
 sub add_header {
     my ($self, @headers) = @_;
     $self->{custom_header_observer} ||= $self->_custom_header_observer;
-    
+
     # This is slooow, but we only do it when changing the headers...
     my $h = $self->{custom_header_observer}->{headers};
     while( my ($k,$v) = splice @headers, 0, 2 ) {
@@ -1038,7 +1038,7 @@ sub add_header {
 =head2 C<< $mech->delete_header( $name , $name2... ) >>
 
     $mech->delete_header( 'User-Agent' );
-    
+
 Removes HTTP headers from the agent's list of special headers. Note
 that Firefox may still send a header with its default value.
 
@@ -1046,11 +1046,11 @@ that Firefox may still send a header with its default value.
 
 sub delete_header {
     my ($self, @headers) = @_;
-    
+
     if( $self->{custom_header_observer} and @headers ) {
         # This is slooow, but we only do it when changing the headers...
         my $h = $self->{custom_header_observer}->{headers};
-        
+
         delete $h->{$_}
             for( @headers );
     };
@@ -1071,7 +1071,7 @@ sub reset_headers {
 
 sub _addLoadEventListener {
     my ($self,%options) = @_;
-    
+
     $options{ tab } ||= $self->tab;
     $options{ window } ||= $self->application->getMostRecentWindow;
     $options{ events } ||= $self->events;
@@ -1079,7 +1079,7 @@ sub _addLoadEventListener {
         function( mainWindow, tab, waitForLoad, events ) {
             var browser= mainWindow.gBrowser.getBrowserForTab( tab );
 
-            var lock= { 
+            var lock= {
                         "busy": 1,
                         "log":[],
                         "events": events,
@@ -1092,14 +1092,14 @@ sub _addLoadEventListener {
                         }
                       };
             var unloadedFrames= [];
-            
+
             lock.cb= function (e) {
                 var t= e.target;
                 var toplevel= (t == browser.contentDocument);
                 lock.log.push("Event "+e.type);
                 var reloadedFrame= false;
                 lock.log.push( "" + unloadedFrames.length + " frames.");
-                
+
                 if(    "FRAME"  == t.tagName
                     || "IFRAME" == t.tagName ) {
                     loc= t.src;
@@ -1123,7 +1123,7 @@ sub _addLoadEventListener {
                             };
                             // alert("Caught " + e.type + " on remembered element. Great - " + reloadedFrame);
                         };
-                
+
                         if ("pagehide" == e.type && container ) {
                             // alert("pagehide on container /lock"+lock.id);
                             // A frame or window gets reloaded.
@@ -1136,10 +1136,10 @@ sub _addLoadEventListener {
                         };
                 };
             } catch (e) { alert("Error while looking: " + e.message+" " + e.line) };
-                
+
                 // if (! toplevel && !reloadedFrame ) { return ; };
                 lock.log.push("<> " + e.type + " on " + loc);
-                
+
                 if(    (reloadedFrame)
                     // && !waitForLoad
                     && "DOMContentLoaded" == e.type
@@ -1161,7 +1161,7 @@ sub _addLoadEventListener {
                     };
 
                 } else if( (reloadedFrame)
-                    && (   "load" == e.type 
+                    && (   "load" == e.type
                         || "pageshow" == e.type
                         )) { // We always are done on "load" on toplevel
                     lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
@@ -1172,14 +1172,14 @@ sub _addLoadEventListener {
                     lock.log.push("'" + e.type + "' on top level, old state was " + lock.busy);
                     lock.busy= 0;
                 };
-                
+
             };
-            
+
             for(var i=0; i<events.length; i++) {
                 browser.addEventListener(events[i], lock.cb, true);
             };
             lock.log.push("Listening");
-            
+
             return lock
         }
 JS
@@ -1209,7 +1209,7 @@ function() {
         var b = pairs[k];
         k++;
         var events = pairs[k];
-        
+
         for( var i = 0; i < events.length; i++) {
             var evname = events[i];
             var callback = (function(listeners,evname){
@@ -1248,18 +1248,18 @@ sub _wait_while_busy {
     my $i=0;
     while (1) {
         $i++;
-  	last if($i == 30 ); 
+        last if($i == 30 );
         for my $element (@elements) {
             if ((my $s = $element->{busy} || 0) < 1) {
                 for my $element (@elements) {
-                    push @{ $self->{event_log} }, 
+                    push @{ $self->{event_log} },
                         join "\n", @{ $element->{log}};
                 };
                 return $element;
             };
         };
         sleep 0.1;
-        
+
 #        if (time-$timer > 4) {
 #            $timer= time;
 #            for my $element (@elements) {
@@ -1302,7 +1302,7 @@ be used instead.
 
 sub _install_response_header_listener {
     my ($self) = @_;
-    
+
     weaken $self;
 
     # Pre-Filter the progress on the JS side of things so we
@@ -1314,12 +1314,12 @@ sub _install_response_header_listener {
             const STATE_TRANSFERRING = Components.interfaces.nsIWebProgressListener.STATE_TRANSFERRING;
             const STATE_IS_DOCUMENT = Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT;
             const STATE_IS_WINDOW = Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW;
-            
+
             return function (progress,request,flags,status) {
                 if( 0 && console ) {
                     const nsIChannel = Components.interfaces.nsIChannel;
                     var ch = request.QueryInterface(nsIChannel);
-                    
+
                     console.log("STATE: "
                                 + (flags & STATE_START ? "s" : "-")
                                 + (flags & STATE_STOP ? "S" : "-")
@@ -1345,12 +1345,12 @@ JS
     my $STATE_STOP = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_STOP');
     my $STATE_IS_DOCUMENT = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_DOCUMENT');
     my $STATE_IS_WINDOW = $self->repl->constant('Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW');
-    
+
     my $state_change = $make_state_change_filter->(sub {
         my ($progress,$request,$flags,$status) = @_;
         #warn sprintf "State     : <progress> <request> %032b %08x\n", $flags, $status;
         #warn sprintf "                                 %032b\n", $STATE_STOP | $STATE_IS_DOCUMENT | $STATE_IS_WINDOW ;
-        
+
         if (   $STATE_STOP == $flags # some error
             or ($flags & ($STATE_STOP | $STATE_IS_DOCUMENT)) == ($STATE_STOP | $STATE_IS_DOCUMENT)) {
             if ($status == 0 ) {
@@ -1383,18 +1383,18 @@ sub synchronize {
         $callback = $events;
         $events = $self->events;
     };
-    
+
     $events = [ $events ]
         unless ref $events;
-    
+
     undef $self->{response};
-    
+
     my $need_response = defined wantarray;
     my $response_catcher = $self->_install_response_header_listener();
-    
+
     my $load_lock = $self->_addLoadEventListener( tab => $self->tab, events => $events );
     $callback->();
-    
+
     my $ev = $self->_wait_while_busy($load_lock);
     if (my $h = $self->{on_event}) {
         if (ref $h eq 'CODE') {
@@ -1404,10 +1404,10 @@ sub synchronize {
             #warn "$ev->{event}->{text}"";
         };
     };
-    
+
     # Clean up our event listener
     $load_lock->release;
-    
+
     undef $response_catcher;
     # Response catcher gets released here
 
@@ -1437,18 +1437,18 @@ sub _headerVisitor {
 
 sub _extract_response {
     my ($self,$request,%options) = @_;
-    
+
     my $nsIHttpChannel = $self->repl->constant('Components.interfaces.nsIHttpChannel');
     my $httpChannel = $request->QueryInterface($nsIHttpChannel);
-    
+
     my @headers;
     if( $options{ headers }) {
         my $v = $self->_headerVisitor(sub{push @headers, @_});
-        
+
         # If this fails, we're calling it too early :-(
         $httpChannel->visitResponseHeaders($v);
     };
-    
+
     my $res = HTTP::Response->new(
         $httpChannel->{responseStatus},
         $httpChannel->{responseStatusText},
@@ -1460,11 +1460,11 @@ sub _extract_response {
 
 sub response {
     my ($self, %options) = @_;
-    
+
     if( ! exists $options{ headers }) {
         $options{ headers } = 1;
     };
-    
+
     # If we still have a valid JS response,
     # create a HTTP::Response from that
     if (my $js_res = $self->{ response }) {
@@ -1489,15 +1489,15 @@ sub response {
             #carp "Making up a response for unknown URL scheme '$scheme' (from '$url')";
         };
     };
-    
+
     # Otherwise, make up a reason:
     my $eff_url = $self->document->{documentURI};
     #warn $eff_url;
     if ($eff_url =~ /^about:neterror/) {
         # this is an error
         return HTTP::Response->new(500)
-    };   
-    
+    };
+
     # We're cool, except we don't know what we're doing here:
     return HTTP::Response->new( 200, '', ['Content-Encoding','UTF-8'], encode 'UTF-8' => $self->content);
 }
@@ -1570,7 +1570,7 @@ sub _sync_call {
         $self->synchronize( $events, $cb );
     } else {
         $cb->();
-    };    
+    };
 };
 
 =head2 C<< $mech->back( [$synchronize] ) >>
@@ -1591,7 +1591,7 @@ sub back {
                      ? $self->events
                      : []
     };
-    
+
     $self->_sync_call($synchronize, sub {
         $self->tab->{linkedBrowser}->goBack;
     });
@@ -1615,7 +1615,7 @@ sub forward {
                      ? $self->events
                      : []
     };
-    
+
     $self->_sync_call($synchronize, sub {
         $self->tab->{linkedBrowser}->goForward;
     });
@@ -1702,7 +1702,7 @@ The allowed values are C<html> and C<text>. The default is C<html>.
 sub content {
     my ($self, %options) = @_;
     $options{ format } ||= 'html';
-    
+
     my $d = delete $options{ document } || $self->document; # keep a reference to it!
     my $format = delete $options{ format } || 'html';
     my $content;
@@ -1744,7 +1744,7 @@ HTML, $mech will die.
 
 sub text {
     my $self = shift;
-    
+
     # Waugh - this is highly inefficient but conveniently short to write
     # Maybe this should skip SCRIPT nodes...
     join '', map { $_->{nodeValue} } $self->xpath('//*/text()');
@@ -1810,7 +1810,7 @@ C<persist> option.
     $mech->get('http://zombisoft.com');
     $mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
 
-A list of flags and their values can be found at 
+A list of flags and their values can be found at
 L<https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist>.
 
 If you are interested in the intermediate download progress, create
@@ -1825,12 +1825,12 @@ Download Manager.
 
 sub save_content {
     my ($self,$localname,$resource_directory,%options) = @_;
-    
-    $localname = File::Spec->rel2abs($localname, '.');    
+
+    $localname = File::Spec->rel2abs($localname, '.');
     # Touch the file
     if (! -f $localname) {
-    	open my $fh, '>', $localname
-    	    or die "Couldn't create '$localname': $!";
+        open my $fh, '>', $localname
+            or die "Couldn't create '$localname': $!";
     };
 
     if ($resource_directory) {
@@ -1842,7 +1842,7 @@ sub save_content {
                 or die "Couldn't create '$resource_directory': $!";
         };
     };
-    
+
     my $transfer_file = $self->repl->declare(<<'JS');
 function (document,filetarget,rscdir,progress,persistflags) {
     //new file object
@@ -1870,9 +1870,9 @@ function (document,filetarget,rscdir,progress,persistflags) {
     const flags = nsIWBP.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
-									 | persistflags
+                                     | persistflags
                                      ;
-    
+
     obj_Persist.progressListener = progress;
 
     //save file to target
@@ -1886,7 +1886,7 @@ JS
         $localname,
         $resource_directory,
         $options{progress},
-		$options{persist}
+        $options{persist}
     );
 }
 
@@ -1916,14 +1916,14 @@ the download status through the C<< ->{currentState} >> property.
 
 sub save_url {
     my ($self,$url,$localname,%options) = @_;
-    
+
     $localname = File::Spec->rel2abs($localname, '.');
-    
+
     if (! -f $localname) {
-    	open my $fh, '>', $localname
-    	    or die "Couldn't create '$localname': $!";
+        open my $fh, '>', $localname
+            or die "Couldn't create '$localname': $!";
     };
-    
+
     my $res;
     if( ! $options{ progress }) {
         $options{ wait } = 1;
@@ -1969,7 +1969,7 @@ function (source,filetarget,progress,tab) {
     // Also make it send the proper cookies
     // If we are on a 3.0 Firefox, PERSIST_FLAGS_FORCE_ALLOW_COOKIES does
     // not exist, so we need to get creative:
-    
+
     obj_Persist.persistFlags = flags | nsIWBP.PERSIST_FLAGS_FROM_CACHE
                                      | nsIWBP["PERSIST_FLAGS_FORCE_ALLOW_COOKIES"]
                                      ;
@@ -1995,7 +1995,7 @@ function (source,filetarget,progress,tab) {
         }
     };
     */
-    
+
     // Since Firefox 18, we need to provide a proper privacyContext
     // This is cobbled together from half-documented parts in various places
     // of the Mozilla documentation. The changes file does not list the
@@ -2078,7 +2078,7 @@ HTTP headers.
 
 =cut
 
-sub is_html {       
+sub is_html {
     my $self = shift;
     return defined $self->ct && ($self->ct eq 'text/html');
 }
@@ -2125,12 +2125,12 @@ or C<< ->selector >> when you want more control.
 sub make_link {
     my ($self,$node,$base) = @_;
     my $tag = lc $node->{tagName};
-    
+
     if (! exists $link_spec{ $tag }) {
         warn "Unknown tag '$tag'";
     };
     my $url = $node->{ $link_spec{ $tag }->{url} };
-    
+
     if ($tag eq 'meta') {
         my $content = $url;
         if ( $content =~ /^\d+\s*;\s*url\s*=\s*(\S+)/i ) {
@@ -2141,7 +2141,7 @@ sub make_link {
             undef $url;
         }
     };
-    
+
     if (defined $url) {
         my $res = WWW::Mechanize::Link->new({
             tag   => $tag,
@@ -2151,7 +2151,7 @@ sub make_link {
             text  => $node->{innerHTML},
             attrs => {},
         });
-        
+
         $res
     } else {
         ()
@@ -2302,14 +2302,14 @@ sub quote_xpath($) {
 sub find_link_dom {
     my ($self,%opts) = @_;
     my %xpath_options;
-    
+
     for (qw(node document frames)) {
         # Copy over XPath options that were passed in
         if (exists $opts{ $_ }) {
             $xpath_options{ $_ } = delete $opts{ $_ };
         };
     };
-    
+
     my $single = delete $opts{ single };
     my $one = delete $opts{ one } || $single;
     if ($single and exists $opts{ n }) {
@@ -2319,7 +2319,7 @@ sub find_link_dom {
     $n--
         if ($n ne 'all'); # 1-based indexing
     my @spec;
-    
+
     # Decode text and text_contains into XPath
     for my $lvalue (qw( text id name class )) {
         my %lefthand = (
@@ -2355,8 +2355,8 @@ sub find_link_dom {
     if (my $p = delete $opts{ tag_regex }) {
         @tags = grep /$p/, @tags;
     };
-    
-    my $q = join '|', 
+
+    my $q = join '|',
             map {
                 my @full = map {qq{($_)}} grep {defined} (@spec, $link_spec{$_}->{xpath});
                 if (@full) {
@@ -2366,20 +2366,20 @@ sub find_link_dom {
                 };
             }  (@tags);
     #warn $q;
-    
+
     my @res = $self->xpath($q, %xpath_options );
-    
+
     if (keys %opts) {
         # post-filter the remaining links through WWW::Mechanize
         # for all the options we don't support with XPath
-        
+
         my $base = $self->base;
         require WWW::Mechanize;
-        @res = grep { 
-            WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts) 
+        @res = grep {
+            WWW::Mechanize::_match_any_link_parms($self->make_link($_,$base),\%opts)
         } @res;
     };
-    
+
     if ($one) {
         if (0 == @res) { $self->signal_condition( "No link found matching '$q'" )};
         if ($single) {
@@ -2391,7 +2391,7 @@ sub find_link_dom {
             };
         };
     };
-    
+
     if ($n eq 'all') {
         return @res
     };
@@ -2720,11 +2720,11 @@ sub xpathEx {
         #warn "Searching below given document";
         #$options{node} = $options{document};
     };
-    
+
     $options{type} ||= $self->{XpathResult}->{ANY_TYPE};
 
     $options{ user_info } ||= join " or ", map {qq{'$_'}} @$query;
-    
+
     # Sanity check for the common error of
     # my $item = $mech->xpathEx("//foo");
     if (! wantarray) {
@@ -2732,7 +2732,7 @@ sub xpathEx {
             "->xpathEx needs to be called in list context.",
         );
     };
-    
+
     if (not exists $options{ frames }) {
         $options{frames} = $self->{frames};
     };
@@ -2784,11 +2784,11 @@ sub xpathEx {
 JS
 
     my @res;
-    
-    DOCUMENTS: {            
+
+    DOCUMENTS: {
         my @documents = $options{ document };
         #warn "Invalid root document" unless $options{ document };
-        
+
         # recursively join the results of sub(i)frames if wanted
         # This should maybe go into the loop to expand every frame as we descend
         # into the available subframes
@@ -2804,14 +2804,14 @@ JS
             #warn $q;
             my @found = $query_xpath->($doc, $q, $n, $options{type});
             push @res, @found;
-            
+
             # A small optimization to return if we already have enough elements
             # We can't do this on $return_first as there might be more elements
             if( @res and $options{ return_first } and grep { $_->{resultSize} } @res ) {
                 @res= grep { $_->{resultSize} } @res;
                 last DOCUMENTS;
             };
-            
+
             if ($options{ frames } and not $options{ node }) {
                 #warn ">Expanding below " . $doc->{title};
                 #local $nesting .= "--";
@@ -2821,7 +2821,7 @@ JS
             };
         };
     };
-    
+
     @res
 }
 
@@ -2873,7 +2873,7 @@ sub by_id {
     if ('ARRAY' ne (ref $query||'')) {
         $query = [$query];
     };
-    $options{ user_info } ||= "id " 
+    $options{ user_info } ||= "id "
                             . join(" or ", map {qq{'$_'}} @$query)
                             . " found";
     $query = [map { qq{.//*[\@id="$_"]} } @$query];
@@ -2943,7 +2943,7 @@ as the list of events to wait for.
 
 Returns a L<HTTP::Response> object.
 
-As a deviation from the WWW::Mechanize API, you can also pass a 
+As a deviation from the WWW::Mechanize API, you can also pass a
 hash reference as the first parameter. In it, you can specify
 the parameters to search much like for the C<find_link> calls.
 
@@ -2969,16 +2969,16 @@ sub click {
     if (exists $options{ name }) {
         $name = quotemeta($options{ name }|| '');
         $options{ xpath } = [
-                       sprintf( q{//*[(translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="button" and @name="%s") or (translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="input" and (@type="button" or @type="submit" or @type="image") and @name="%s")]}, $name, $name), 
+                       sprintf( q{//*[(translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="button" and @name="%s") or (translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="input" and (@type="button" or @type="submit" or @type="image") and @name="%s")]}, $name, $name),
         ];
         if ($options{ name } eq '') {
-            push @{ $options{ xpath }}, 
+            push @{ $options{ xpath }},
                        q{//*[(translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "button" or translate(local-name(.), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz")="input") and @type="button" or @type="submit" or @type="image"]},
             ;
         };
         $options{ user_info } = "Button with name '$name'";
     };
-    
+
     if (! exists $options{ synchronize }) {
         $options{ synchronize } = $self->events;
     } elsif( ! ref $options{ synchronize }) {
@@ -2986,13 +2986,13 @@ sub click {
                                 ? $self->events
                                 : [],
     };
-    
+
     if ($options{ dom }) {
         @buttons = $options{ dom };
     } else {
         @buttons = $self->_option_query(%options);
     };
-        
+
     $self->_sync_call(
         $options{ synchronize }, sub { # ,'abort'
             $buttons[0]->__click($x,$y);
@@ -3074,10 +3074,10 @@ sub click_button {
     if ($node) {
         $self->click({ dom => $node, %options });
     } else {
-        
+
         $self->signal_condition($user_message);
     };
-    
+
 }
 
 =head1 FORM METHODS
@@ -3099,7 +3099,7 @@ you want to make sure that a fresh or no form is used,
 remove it:
 
     $mech->clear_current_form;
-    
+
 The current form will be reset by WWW::Mechanize::Firefox
 on calls to C<< ->get() >> and C<< ->get_local() >>,
 and on calls to C<< ->submit() >> and C<< ->submit_with_fields >>.
@@ -3148,7 +3148,7 @@ This is equivalent to calling
 
 sub form_id {
     my ($self,$name,%options) = @_;
-    
+
     _default_limiter( single => \%options );
     $self->{current_form} = $self->by_id($name,
         user_info => "form with id '$name'",
@@ -3198,8 +3198,8 @@ sub form_with_fields {
         $options = shift @fields;
     };
     my @clauses  = map { $self->application->element_query([qw[input select textarea]], { 'name' => $_ })} @fields;
-    
-    
+
+
     my $q = "//form[" . join( " and ", @clauses)."]";
     #warn $q;
     _default_limiter( single => $options );
@@ -3213,7 +3213,7 @@ sub form_with_fields {
 
   my @forms = $mech->forms();
 
-When called in a list context, returns a list 
+When called in a list context, returns a list
 of the forms found in the last fetched page.
 In a scalar context, returns a reference to
 an array with those forms.
@@ -3349,14 +3349,14 @@ sub get_set_value {
     my $post  = delete $options{post} || $self->{post_value};
     my $name  = delete $options{ name };
     my @fields = $self->_field_by_name(
-                     name => $name, 
+                     name => $name,
                      user_info => "input with name '$name'",
                      %options );
     $pre = [$pre]
         if (! ref $pre);
     $post = [$post]
         if (! ref $post);
-        
+
     if ($fields[0]) {
         my $tag = $fields[0]->{tagName};
         if ($set_value) {
@@ -3403,7 +3403,7 @@ sub get_set_value {
 
 Given the name of a C<select> field, set its value to the value
 specified.  If the field is not C<< <select multiple> >> and the
-C<$value> is an array, only the B<first> value will be set. 
+C<$value> is an array, only the B<first> value will be set.
 Passing C<$value> as a hash with
 an C<n> key selects an item by number (e.g.
 C<< {n => 3} >> or C<< {n => [2,4]} >>).
@@ -3426,11 +3426,11 @@ sub select {
         name => $name,
         #%options,
     );
-    
+
     if (! $field) {
         return
     };
-    
+
     my @options = $self->xpath( './/option', node => $field);
     my @by_index;
     my @by_value;
@@ -3442,7 +3442,7 @@ sub select {
             $self->warn(qq{Unknown select value parameter "$_"})
               unless $_ eq 'n';
         }
-        
+
         $deselect = ref $value->{n};
         @by_index = ref $value->{n} ? @{ $value->{n} } : $value->{n};
     } elsif ('ARRAY' eq ref $value||'') {
@@ -3452,29 +3452,29 @@ sub select {
     } else {
         @by_value = $value;
     };
-    
+
     if ($deselect) {
         for my $o (@options) {
             $o->{selected} = 0;
         }
     };
-    
+
     if ($single) {
         # Only use the first element for single-element boxes
         $#by_index = 0+@by_index ? 0 : -1;
         $#by_value = 0+@by_value ? 0 : -1;
     };
-    
+
     # Select the items, either by index or by value
     for my $idx (@by_index) {
         $options[$idx-1]->{selected} = 1;
     };
-    
+
     for my $v (@by_value) {
         my $option = $self->xpath( sprintf( './/option[@value="%s"]', quote_xpath $v) , node => $field, single => 1 );
         $option->{selected} = 1;
     };
-    
+
     return @by_index + @by_value > 0;
 }
 
@@ -3488,7 +3488,7 @@ Passing in a false value as the third optional argument will cause the
 checkbox to be unticked.
 
 (Un)ticking the checkbox is done by sending a click event to it if needed.
-If C<$value> is C<undef>, the first checkbox matching C<$name> will 
+If C<$value> is C<undef>, the first checkbox matching C<$name> will
 be (un)ticked.
 
 If C<$name> is a reference to a hash, that hash will be used
@@ -3502,7 +3502,7 @@ sub tick {
         if (@_ < 4);
     my %options;
     my @boxes;
-    
+
     if (! defined $name) {
         croak("->tick called with undef name");
     } elsif (ref $name and blessed($name) and $name->can('__click')) {
@@ -3512,7 +3512,7 @@ sub tick {
     } else {
         $options{ name } = $name;
     };
-    
+
     if (exists $options{ name }) {
         my $attr = 'name';
         if ($name =~ s/^\^//) { # if it starts with ^, it's supposed to be a name
@@ -3524,7 +3524,7 @@ sub tick {
         };
         $name = quotemeta($name);
         $value = quotemeta($value) if $value;
-    
+
         _default_limiter( one => \%options );
         $options{ xpath } = [
                        defined $value
@@ -3535,13 +3535,13 @@ sub tick {
                               ? "Checkbox with name '$name' and value '$value'"
                               : "Checkbox with name '$name'";
     };
-    
+
     if ($options{ dom }) {
         @boxes = $options{ dom };
     } else {
         @boxes = $self->_option_query(%options);
     };
-    
+
     my $target = $boxes[0];
     my $is_set = $self->application->bool_ff_to_perl( $target->{checked} );
     if ($set xor $is_set) {
@@ -3557,7 +3557,7 @@ sub tick {
 
   $mech->untick('spam_confirm','yes',undef)
 
-Causes the checkbox to be unticked. Shorthand for 
+Causes the checkbox to be unticked. Shorthand for
 
   $mech->tick($name,$value,undef)
 
@@ -3643,7 +3643,7 @@ will be ignored.
 
 sub submit_form {
     my ($self,%options) = @_;
-    
+
     my $form = delete $options{ form };
     my $fields;
     if (! $form) {
@@ -3659,7 +3659,7 @@ sub submit_form {
             $form = $self->current_form;
         };
     };
-    
+
     if (! $form) {
         $self->signal_condition("No form found to submit.");
         return
@@ -3696,14 +3696,14 @@ sub do_set_fields {
     my ($self, %options) = @_;
     my $form = delete $options{ form };
     my $fields = delete $options{ fields };
-    
+
     while (my($n,$v) = each %$fields) {
         if (ref $v) {
             ($v,my $num) = @$v;
             warn "Index larger than 1 not supported, ignoring"
                 unless $num == 1;
         };
-        
+
         $self->get_set_value( node => $form, name => $n, value => $v, %options );
     }
 };
@@ -3739,12 +3739,12 @@ sub set_visible {
                                        . q{(@type!= "hidden" and }
                                        . q{ @type!= "button" and }
                                        . q{ @type!= "submit" and }
-                                       . q{ @type!= "image")]}, 
+                                       . q{ @type!= "image")]},
                                       @form
                                       );
 
     @visible_fields = grep { $self->is_visible( $_ ) } @visible_fields;
-    
+
     if (@values > @visible_fields) {
         $self->signal_condition( "Not enough fields on page" );
     } else {
@@ -3813,7 +3813,7 @@ sub is_visible {
         while (obj) {
             // No object
             if (!obj) return false;
-            
+
             try {
                 if( obj["parentNode"] ) 1;
             } catch (e) {
@@ -3833,7 +3833,7 @@ sub is_visible {
                 if (obj.style.display == 'none') return false;
                 if (obj.style.visibility == 'hidden') return false;
             };
-            
+
             if (window.getComputedStyle) {
                 var style = window.getComputedStyle(obj, null);
                 if (style.display == 'none') {
@@ -3898,7 +3898,7 @@ sub wait_until_invisible {
     };
     my $sleep = delete $options{ sleep } || 0.3;
     my $timeout = delete $options{ timeout } || 0;
-    
+
     _default_limiter( 'maybe', \%options );
 
 
@@ -3920,7 +3920,7 @@ sub wait_until_invisible {
            and (!$timeout_after or time < $timeout_after ));
     if ($node and time >= $timeout_after) {
         croak "Timeout of $timeout seconds reached while waiting for element to become invisible";
-    };    
+    };
 };
 
 # Internal method to run either an XPath, CSS or id query against the DOM
@@ -3981,12 +3981,12 @@ sub expand_frames {
     $spec ||= $self->{frames};
     my @spec = ref $spec ? @$spec : $spec;
     $document ||= $self->document;
-    
+
     if (! ref $spec and $spec !~ /\D/ and $spec == 1) {
         # All frames
         @spec = qw( frame iframe );
     };
-    
+
     # Optimize the default case of only names in @spec
     my @res;
     if (! grep {ref} @spec) {
@@ -3997,7 +3997,7 @@ sub expand_frames {
                         frames => 0, # otherwise we'll recurse :)
                     );
     } else {
-        @res = 
+        @res =
             map { #warn "Expanding $_";
                     ref $_
                   ? $_
@@ -4018,7 +4018,7 @@ sub expand_frames {
 
 Returns the given tab or the current page rendered as PNG image.
 
-All parameters are optional. 
+All parameters are optional.
 
 =over 4
 
@@ -4063,7 +4063,7 @@ sub content_as_png {
     $tab ||= $self->tab;
     $rect ||= {};
     $target_rect ||= {};
-    
+
     # Mostly taken from
     # http://wiki.github.com/bard/mozrepl/interactor-screenshot-server
     # Except for the addition of a target image size
@@ -4085,7 +4085,7 @@ sub content_as_png {
         var top = rect.top || 0;
         var width = rect.width || body.clientWidth;
         var height = rect.height || body.clientHeight;
-        
+
         if( isNaN( target_rect.scalex * target_rect.scaley ) || target_rect.scalex * target_rect.scaley == 0) {
             // No scale was given
             // Was a fixed target width / height given?
@@ -4106,7 +4106,7 @@ sub content_as_png {
         // Calculate the target width/height if missing:
         target_rect.height = target_rect.height || height * target_rect.scaley;
         target_rect.width  = target_rect.width  || width * target_rect.scalex;
-        
+
         canvas.width = target_rect.width;
         canvas.height = target_rect.height;
         var ctx = canvas.getContext('2d');
@@ -4160,12 +4160,12 @@ towards rendering HTML.
 
 sub element_coordinates {
     my ($self, $element) = @_;
-    
+
     # Mostly taken from
     # http://www.quirksmode.org/js/findpos.html
     my $findPos = $self->repl->declare(<<'JS');
     function (obj) {
-        var res = { 
+        var res = {
             left: 0,
             top: 0,
             width: obj.scrollWidth,
@@ -4353,7 +4353,7 @@ for information on how to override a lot of other prompts (like proxy etc.)
 
 =head1 REPOSITORY
 
-The public repository of this module is 
+The public repository of this module is
 L<http://github.com/Corion/www-mechanize-firefox>.
 
 =head1 SUPPORT
