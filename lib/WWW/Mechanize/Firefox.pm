@@ -839,16 +839,31 @@ This method accepts the same options as C<< ->get() >>.
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
 
+Options:
+
+=over 4
+
+=item *
+
+B<basedir> - a reference directory to use instead of C< dirname($0) >
+
+=back
+
 =cut
 
 sub get_local {
     my ($self, $htmlfile, %options) = @_;
     require Cwd;
     require File::Spec;
-    my $fn = File::Spec->rel2abs(
-                 File::Spec->catfile(dirname($0),$htmlfile),
+
+    my $fn = $htmlfile;
+    if( ! File::Spec->file_name_is_absolute( $fn )) {
+        $options{ basedir } ||= dirname($0);
+        $fn = File::Spec->rel2abs(
+                 File::Spec->catfile($options{basedir},$htmlfile),
                  Cwd::getcwd(),
-             );
+        );
+    };
     $fn =~ s!\\!/!g; # fakey "make file:// URL"
 
     $self->get("file://$fn", %options);
