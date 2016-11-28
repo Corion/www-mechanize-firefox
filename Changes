@@ -13,6 +13,10 @@ TO DO:
 
     . Fix cloning of values for ->eval_in_page was broken by FF 30+
       https://blog.mozilla.org/addons/2014/04/10/changes-to-unsafewindow-for-the-add-on-sdk/
+
+0.80 to be released
+    . Typo fixes in XPath expressions in the documentation (Jerrad Pierce)
+    + ->get_local now accepts a basedir option
       
 0.79 20160524
     ! Remove the 'pagehide' event from events that are considered
