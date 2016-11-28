@@ -2503,7 +2503,7 @@ sub follow_link {
 
 =head2 C<< $mech->xpath( $query, %options ) >>
 
-    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+    my $link = $mech->xpath('//a[@id="clickme"]', one => 1);
     # croaks if there is no link or more than one link found
 
     my @para = $mech->xpath('//p');
@@ -2679,7 +2679,7 @@ sub xpathResult     { $_[0]->{XpathResultTypes}{$_[1]}; }
 
 =head2 C<< $mech->xpathEx( $query, %options ) >>
 
-    my @links = $mech->xpathEx('//a[id="clickme"]');
+    my @links = $mech->xpathEx('//a[@id="clickme"]');
 
 Runs an XPath query in Firefox against a document. Returns a list
 of found elements. Each element in the result has the following properties:
