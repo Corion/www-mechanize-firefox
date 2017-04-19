@@ -4,6 +4,7 @@ use Test::More;
 use File::Basename;
 
 use Firefox::Application;
+use lib '.';
 
 use t::helper;
 if (my $err = t::helper::default_unavailable) {

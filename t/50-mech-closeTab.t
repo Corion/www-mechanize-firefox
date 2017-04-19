@@ -6,6 +6,7 @@ use File::Basename;
 use Firefox::Application;
 use WWW::Mechanize::Firefox;
 
+use lib '.';
 use t::helper;
 
 if (my $err = t::helper::default_unavailable) {

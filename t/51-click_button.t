@@ -5,7 +5,7 @@ use strict;
 use Test::More;
 
 use WWW::Mechanize::Firefox;
-use lib 'inc', '../inc';
+use lib './inc', '../inc', '.';
 use Test::HTTP::LocalServer;
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 

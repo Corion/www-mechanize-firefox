@@ -4,6 +4,7 @@ use Test::More;
 use WWW::Mechanize::Firefox;
 use Data::Dumper;
 
+use lib '.';
 use t::helper;
 
 if (my $err = t::helper::default_unavailable) {

@@ -2,7 +2,7 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
-use lib 'inc', '../inc';
+use lib './inc', '../inc', '.';
 use Test::HTTP::LocalServer;
 
 use t::helper;

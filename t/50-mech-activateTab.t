@@ -5,6 +5,7 @@ use File::Basename;
 
 use Firefox::Application;
 use WWW::Mechanize::Firefox;
+use lib '.';
 
 use t::helper;
 

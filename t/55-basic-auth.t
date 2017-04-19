@@ -2,7 +2,7 @@
 use strict;
 use FindBin;
 
-use lib 'inc';
+use lib './inc', '../inc';
 use IO::Catch;
 use vars qw( $_STDOUT_ $_STDERR_ );
 

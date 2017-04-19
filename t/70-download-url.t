@@ -4,7 +4,7 @@ use Time::HiRes;
 use Test::More;
 use File::Spec;
 use Shell::Command qw(rm_rf);
-use lib 'inc', '../inc';
+use lib './inc', '../inc', '.';
 use Test::HTTP::LocalServer;
 
 my $mech = eval {WWW::Mechanize::Firefox->new(

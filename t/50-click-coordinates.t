@@ -5,7 +5,7 @@ use strict;
 use Test::More;
 
 use WWW::Mechanize::Firefox;
-use lib 'inc', '../inc';
+use lib './inc', '../inc', '.';
 use Test::HTTP::LocalServer;
 
 plan skip_all => "ISMAP seems unsupported from Javascript. Need to investigate further.";

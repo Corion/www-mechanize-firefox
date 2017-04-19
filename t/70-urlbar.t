@@ -3,6 +3,7 @@ use WWW::Mechanize::Firefox;
 use Time::HiRes;
 use Test::More;
 
+use lib '.';
 use t::helper;
 
 if (my $err = t::helper::default_unavailable) {

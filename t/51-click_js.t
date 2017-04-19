@@ -4,7 +4,7 @@ use strict;
 use Test::More;
 
 use WWW::Mechanize::Firefox;
-use lib 'inc', '../inc';
+use lib './inc', '../inc', '.';
 
 my $mech = eval { WWW::Mechanize::Firefox->new( 
     autodie => 1,
