@@ -4,10 +4,12 @@
 ^.releaserc
 ^blib/
 ^MozRepl-RemoteObject-.*
+^WWW-Mechanize-Firefox-.*
 CVS/
 ^pm_to_blib
-.tar.gz$
-.old$
+\.tar.gz$
+\.tmp$
+\.old$
 ^Makefile$
 ^cvstest$
 ^blibdirs$
@@ -15,6 +17,6 @@ CVS/
 ^cover_db/
 ^db/
 ^firefox-versions/
-^ppd/
+^ppds/
 t/70-real-status-timeout.t
 ^MYMETA.*

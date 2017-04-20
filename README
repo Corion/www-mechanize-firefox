@@ -88,7 +88,7 @@ CONSTRUCTOR and CONFIGURATION
 
       The default set is
 
-        'DOMContentLoaded','load', 
+        'DOMContentLoaded','load',
         'pageshow',
         'pagehide',
         'error','abort','stop',
@@ -369,6 +369,10 @@ NAVIGATION METHODS
     This method is special to WWW::Mechanize::Firefox but could also exist
     in WWW::Mechanize through a plugin.
 
+    Options:
+
+      * basedir - a reference directory to use instead of  dirname($0) 
+
  $mech->post( $url, %options )
 
       $mech->post( 'http://example.com',
@@ -415,7 +419,6 @@ NAVIGATION METHODS
  $mech->delete_header( $name , $name2... )
 
         $mech->delete_header( 'User-Agent' );
-        
 
     Removes HTTP headers from the agent's list of special headers. Note
     that Firefox may still send a header with its default value.
@@ -762,7 +765,7 @@ EXTRACTION METHODS
 
  $mech->xpath( $query, %options )
 
-        my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+        my $link = $mech->xpath('//a[@id="clickme"]', one => 1);
         # croaks if there is no link or more than one link found
     
         my @para = $mech->xpath('//p');
@@ -840,7 +843,7 @@ EXTRACTION METHODS
 
  $mech->xpathEx( $query, %options )
 
-        my @links = $mech->xpathEx('//a[id="clickme"]');
+        my @links = $mech->xpathEx('//a[@id="clickme"]');
 
     Runs an XPath query in Firefox against a document. Returns a list of
     found elements. Each element in the result has the following
@@ -979,7 +982,6 @@ FORM METHODS
     is used, remove it:
 
         $mech->clear_current_form;
-        
 
     The current form will be reset by WWW::Mechanize::Firefox on calls to
     ->get() and ->get_local(), and on calls to ->submit() and

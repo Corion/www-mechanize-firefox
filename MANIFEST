@@ -169,10 +169,12 @@ t/rt65615.html
 t/rt65615.t
 t/rt78706.t
 t/rt84418.t
+t/sample.html
 t/select.html
 t/select.t
 t/sophos_co_jp_index.html
 xt/99-changes.t
+xt/99-compile.t
 xt/99-examples.t
 xt/99-manifest.t
 xt/99-pod.t

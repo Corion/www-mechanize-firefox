@@ -47,7 +47,7 @@ the criteria given in `tab` can be found.
 - `activate` - make the tab the active tab
 - `launch` - name of the program to launch if we can't connect to it on
 the first try.
-- `frames` - an array reference of ids of subframes to include when 
+- `frames` - an array reference of ids of subframes to include when
 searching for elements on a page.
 
     If you want to always search through all frames, just pass `1`. This
@@ -82,7 +82,7 @@ will tell it for what frames to wait.
 
     The default set is
 
-        'DOMContentLoaded','load', 
+        'DOMContentLoaded','load',
         'pageshow',
         'pagehide',
         'error','abort','stop',
@@ -164,11 +164,11 @@ as is saving the cookie jar.
 Enables or disables browser features for the current tab.
 The following options are recognized:
 
-- `plugins` 	 - Whether to allow plugin execution.
-- `javascript` 	 - Whether to allow Javascript execution.
+- `plugins`   - Whether to allow plugin execution.
+- `javascript`    - Whether to allow Javascript execution.
 - `metaredirects` - Attribute stating if refresh based redirects can be allowed.
-- `frames`, `subframes` 	 - Attribute stating if it should allow subframes (framesets/iframes) or not.
-- `images` 	 - Attribute stating whether or not images should be loaded.
+- `frames`, `subframes`      - Attribute stating if it should allow subframes (framesets/iframes) or not.
+- `images`    - Attribute stating whether or not images should be loaded.
 
 Options not listed remain unchanged.
 
@@ -207,7 +207,7 @@ Returns a pair of value and Javascript type.
 This allows access to variables and functions declared
 "globally" on the web page.
 
-The returned result needs to be treated with 
+The returned result needs to be treated with
 extreme care because
 it might lead to Javascript execution in the context of
 your application instead of the context of the webpage.
@@ -358,6 +358,10 @@ This method accepts the same options as `->get()`.
 This method is special to WWW::Mechanize::Firefox but could
 also exist in WWW::Mechanize through a plugin.
 
+Options:
+
+- **basedir** - a reference directory to use instead of ` dirname($0) `
+
 ## `$mech->post( $url, %options )`
 
     $mech->post( 'http://example.com',
@@ -403,7 +407,6 @@ for versions 17 to 24 of Firefox.
 ## `$mech->delete_header( $name , $name2... )`
 
     $mech->delete_header( 'User-Agent' );
-    
 
 Removes HTTP headers from the agent's list of special headers. Note
 that Firefox may still send a header with its default value.
@@ -581,7 +584,7 @@ If you need to set persist flags pass the unsigned long value in the
     $mech->get('http://zombisoft.com');
     $mech->save_content('Zombisoft','zombisoft-resource-files', "persist" => 512 | 2048);
 
-A list of flags and their values can be found at 
+A list of flags and their values can be found at
 [https://developer.mozilla.org/en-US/docs/XPCOM\_Interface\_Reference/nsIWebBrowserPersist](https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist).
 
 If you are interested in the intermediate download progress, create
@@ -759,7 +762,7 @@ things like `A` tags.
 
 ## `$mech->xpath( $query, %options )`
 
-    my $link = $mech->xpath('//a[id="clickme"]', one => 1);
+    my $link = $mech->xpath('//a[@id="clickme"]', one => 1);
     # croaks if there is no link or more than one link found
 
     my @para = $mech->xpath('//p');
@@ -827,7 +830,7 @@ In the long run, this should go into a general plugin for
 
 ## `$mech->xpathEx( $query, %options )`
 
-    my @links = $mech->xpathEx('//a[id="clickme"]');
+    my @links = $mech->xpathEx('//a[@id="clickme"]');
 
 Runs an XPath query in Firefox against a document. Returns a list
 of found elements. Each element in the result has the following properties:
@@ -913,7 +916,7 @@ the following keys are recognized:
 
 Returns a [HTTP::Response](https://metacpan.org/pod/HTTP::Response) object.
 
-As a deviation from the WWW::Mechanize API, you can also pass a 
+As a deviation from the WWW::Mechanize API, you can also pass a
 hash reference as the first parameter. In it, you can specify
 the parameters to search much like for the `find_link` calls.
 
@@ -958,7 +961,6 @@ you want to make sure that a fresh or no form is used,
 remove it:
 
     $mech->clear_current_form;
-    
 
 The current form will be reset by WWW::Mechanize::Firefox
 on calls to `->get()` and `->get_local()`,
@@ -1008,7 +1010,7 @@ See also ["$mech->submit\_form"](#mech-submit_form).
 
     my @forms = $mech->forms();
 
-When called in a list context, returns a list 
+When called in a list context, returns a list
 of the forms found in the last fetched page.
 In a scalar context, returns a reference to
 an array with those forms.
@@ -1079,7 +1081,7 @@ in addition to all keys that `$mech->xpath` supports.
 
 Given the name of a `select` field, set its value to the value
 specified.  If the field is not `<select multiple>` and the
-`$value` is an array, only the **first** value will be set. 
+`$value` is an array, only the **first** value will be set.
 Passing `$value` as a hash with
 an `n` key selects an item by number (e.g.
 `{n => 3}` or `{n => [2,4]}`).
@@ -1103,7 +1105,7 @@ Passing in a false value as the third optional argument will cause the
 checkbox to be unticked.
 
 (Un)ticking the checkbox is done by sending a click event to it if needed.
-If `$value` is `undef`, the first checkbox matching `$name` will 
+If `$value` is `undef`, the first checkbox matching `$name` will
 be (un)ticked.
 
 If `$name` is a reference to a hash, that hash will be used
@@ -1113,7 +1115,7 @@ as the options to `->find_link_dom` to find the element.
 
     $mech->untick('spam_confirm','yes',undef)
 
-Causes the checkbox to be unticked. Shorthand for 
+Causes the checkbox to be unticked. Shorthand for
 
     $mech->tick($name,$value,undef)
 
@@ -1276,7 +1278,7 @@ This is mostly an internal method.
 
 Returns the given tab or the current page rendered as PNG image.
 
-All parameters are optional. 
+All parameters are optional.
 
 - `$tab` defaults to the current tab.
 - If the coordinates are given, that rectangle will be cut out.
@@ -1417,7 +1419,7 @@ for information on how to override a lot of other prompts (like proxy etc.)
 
 # REPOSITORY
 
-The public repository of this module is 
+The public repository of this module is
 [http://github.com/Corion/www-mechanize-firefox](http://github.com/Corion/www-mechanize-firefox).
 
 # SUPPORT
