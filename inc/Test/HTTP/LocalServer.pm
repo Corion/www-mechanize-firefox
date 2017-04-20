@@ -1,6 +1,4 @@
 package Test::HTTP::LocalServer;
-
-# start a fake webserver, fork, and connect to ourselves
 use strict;
 # this has to happen here because LWP::Simple creates a $ua
 # on load so any time after this is too late.
@@ -18,7 +16,7 @@ use URI::URL qw();
 use Carp qw(carp croak);
 
 use vars qw($VERSION);
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 =head1 SYNOPSIS
 
@@ -102,13 +100,28 @@ sub spawn {
 
   my $server_file = File::Spec->catfile( $FindBin::Bin,File::Spec->updir,'inc','Test','HTTP','log-server' );
   my @opts;
-  push @opts, "-e" => qq{"} . delete($args{ eval }) . qq{"}
+  push @opts, "-e" => delete($args{ eval })
       if $args{ eval };
 
-  my $cmd= qq'$^X "$server_file" "$web_page" "$logfile" @opts|';
-  #warn "[$cmd]";
-  my $pid = open my $server, $cmd
-    or croak "Couldn't spawn local server $server_file : $!";
+  my @cmd=( "-|", $^X, $server_file, $web_page, $logfile, @opts );
+  if( $^O =~ /mswin/i ) {
+    # Windows Perl doesn't support pipe-open with list
+    shift @cmd; # remove pipe-open
+    @cmd= join " ", map {qq{"$_"}} @cmd;
+  };
+
+  my ($pid,$server);
+  if( @cmd > 1 ) {
+    # We can do a proper pipe-open
+    my $mode = shift @cmd;
+    $pid = open $server, $mode, @cmd
+      or croak "Couldn't spawn local server $server_file : $!";
+  } else {
+            # We can't do a proper pipe-open, so do the single-arg open
+            # in the hope that everything has been set up properly
+    $pid = open $server, "$cmd[0] |"
+      or croak "Couldn't spawn local server $server_file : $!";
+  };
   my $url = <$server>;
   chomp $url;
   die "Couldn't read back local server url"
@@ -167,7 +180,10 @@ cannot be retrieved then.
 =cut
 
 sub kill {
-  CORE::kill( 9 => $_[0]->{ _pid } );
+  CORE::kill( 'SIGKILL' => $_[0]->{ _pid } );
+  #print wait;
+  my $fh = delete $_[0]->{_fh};
+  close $fh;
   undef $_[0]->{_server_url};
   undef $_[0]->{_pid};
 };
