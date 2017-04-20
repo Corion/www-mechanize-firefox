@@ -69,6 +69,15 @@ SERVERLOOP: {
         if ($location =~ m!^/redirect/(.*)$!) {
             $res = HTTP::Response->new(302);
             $res->header('location', $d->url . $1);
+        } elsif ($location =~ m!^/local/(.*)$!) {
+            my $rbody= do { open my $fh, '<', $1; binmode $fh; local $/; <$fh> };
+            $res = HTTP::Response->new(200, "OK", [
+                  'Cache-Control' => 'no-cache',
+                  'Pragma' => 'no-cache',
+                  'Max-Age' => 0,
+                  'Connection' => 'close',
+                  'Content-Length' => length($rbody),
+            ], $rbody);
         } elsif ($location =~ m!^/error/notfound/(.*)$! or $location =~ m!^/favicon.ico!) {
             $res = HTTP::Response->new(404, "Not found", [Connection => 'close']);
         } elsif ($location =~ m!^/error/timeout/(\d+)$!) {

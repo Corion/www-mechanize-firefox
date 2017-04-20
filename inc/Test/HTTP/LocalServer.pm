@@ -14,6 +14,8 @@ use File::Spec;
 use File::Temp;
 use URI::URL qw();
 use Carp qw(carp croak);
+use Cwd;
+use File::Basename;
 
 use vars qw($VERSION);
 $VERSION = '0.57';
@@ -212,6 +214,33 @@ sub DESTROY {
   };
 };
 
+=head2 C<< $server->local >>
+
+  my $url = $server->local('foo.html');
+  # file:///.../foo.html
+
+Returns an URL for a local file which will be read and served
+by the webserver. The filename must
+be a relative filename relative to the location of the current
+program.
+
+=cut
+
+sub local {
+    my ($self, $htmlfile) = @_;
+    require Cwd;
+    require File::Spec;
+    my $fn= File::Spec->file_name_is_absolute( $htmlfile )
+          ? $htmlfile
+          : File::Spec->rel2abs(
+                 File::Spec->catfile(dirname($0),$htmlfile),
+                 Cwd::getcwd(),
+             );
+    $fn =~ s!\\!/!g; # fakey "make file:// URL"
+
+    $self->local_abs($fn)
+}
+
 =head1 URLs implemented by the server
 
 =head2 302 redirect C<< $server->redirect($target) >>
@@ -250,6 +279,7 @@ All other URLs will echo back the cookies and query parameters.
 
 use vars qw(%urls);
 %urls = (
+    'local_abs' => 'local/%s',
     'redirect' => 'redirect/%s',
     'error_notfound' => 'error/notfound/%s',
     'error_timeout' => 'error/timeout/%s',
