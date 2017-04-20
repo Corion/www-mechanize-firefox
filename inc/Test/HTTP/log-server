@@ -40,6 +40,8 @@ sub debug($) {
     if $ENV{TEST_HTTP_VERBOSE};
 };
 
+my $multi_param = $CGI::VERSION >= 4.21 ? 'multi_param' : 'param';
+
 SERVERLOOP: {
   my $quitserver;
   while (my $c = $d->accept) {
@@ -102,7 +104,7 @@ SERVERLOOP: {
             $botcheck_query = defined $q->param('botcheck_query') ? $q->param('botcheck_query') : "(empty)";
             $query2 = defined $q->param('query2') ? $q->param('query2') : "(empty)";
             $session = defined $q->param('session') ? $q->param('session') : 1;
-            %cat = map { $_ => 1 } (defined $q->param('cat') ? $q->param('cat') : qw( cat_foo cat_bar ));
+            %cat = map { $_ => 1 } (defined $q->$multi_param('cat') ? $q->$multi_param('cat') : qw( cat_foo cat_bar ));
             my @categories = map { $cat{$_} ? "checked" : "" } qw( cat_foo cat_bar cat_baz );
             my $headers = CGI::escapeHTML( $r->headers->as_string );
             
