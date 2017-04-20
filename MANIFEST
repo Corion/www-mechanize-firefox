@@ -169,6 +169,7 @@ t/rt65615.html
 t/rt65615.t
 t/rt78706.t
 t/rt84418.t
+t/rt88100-continuation.t
 t/sample.html
 t/select.html
 t/select.t
