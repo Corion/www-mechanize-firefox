@@ -28,8 +28,10 @@ sub check {
 
     if( $exit ) {
         diag $exit;
+        diag $stdout;
+        diag $stderr;
         fail($_);
-    } elsif( $stderr ne "$_ syntax OK") {
+    } elsif( $stderr !~ qr/^\Q$_\E syntax OK$/m) {
         diag $stderr;
         fail($_);
     } else {
