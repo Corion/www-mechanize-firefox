@@ -3,7 +3,7 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Test::More tests => 1;
   
-my $mech = eval { $mech = WWW::Mechanize::Firefox->new(
+my $mech = eval { WWW::Mechanize::Firefox->new(
       #tab => 'current',
 )};
 
