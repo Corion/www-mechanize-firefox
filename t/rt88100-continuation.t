@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use WWW::Mechanize::Firefox;
-use Test::More tests => 1;
+use Test::More;
   
-my $mech = eval { $mech = WWW::Mechanize::Firefox->new(
+my $mech = eval { WWW::Mechanize::Firefox->new(
       #tab => 'current',
 )};
 
