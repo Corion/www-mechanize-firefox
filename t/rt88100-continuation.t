@@ -3,9 +3,17 @@ use strict;
 use WWW::Mechanize::Firefox;
 use Test::More tests => 1;
   
-my $mech = WWW::Mechanize::Firefox->new(
+my $mech = eval { $mech = WWW::Mechanize::Firefox->new(
       #tab => 'current',
-);
+)};
+
+if (! $mech) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+    exit
+} else {
+    plan tests => 1;
+};
 
 $mech->get_local('sample.html');
 
