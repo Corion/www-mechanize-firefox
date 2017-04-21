@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/Corion/www-mechanize-firefox.svg?branch=master)](https://github.com/Corion/www-mechanize-firefox)
+
 # NAME
 
 WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
