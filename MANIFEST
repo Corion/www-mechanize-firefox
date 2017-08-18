@@ -17,9 +17,6 @@ examples/screenshot.pl
 examples/tail-console.pl
 examples/urlbar.pl
 inc/IO/Catch.pm
-inc/Test/HTTP/cookie-server
-inc/Test/HTTP/LocalServer.pm
-inc/Test/HTTP/log-server
 INSTALL
 lib/Firefox/Application.pm
 lib/Firefox/Application/API35.pm
