@@ -8,6 +8,9 @@ use feature 'signatures';
 
 use URI ();
 use Carp qw(carp croak);
+use IO::Socket::INET;
+
+use Future;
 
 our $VERSION = '1.00';
 
@@ -35,8 +38,8 @@ For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
 Creates a new instance and connects it to Firefox.
 
-Note that Firefox must have the C<mozrepl>
-extension installed and enabled.
+Note that Firefox must be version 57 or higher to support the
+Marionette protocol.
 
 The following options are recognized:
 
@@ -44,12 +47,8 @@ The following options are recognized:
 
 =item * 
 
-C<launch> - name of the program to launch if we can't connect to it on
+C<launch_exe> - name of the program to launch if we can't connect to it on
 the first try.
-
-=item * 
-
-C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
 
 =item *
 
@@ -95,6 +94,216 @@ sub DESTROY {
     };
 }
 
+sub build_command_line {
+    my( $class, $options )= @_;
+
+    # Firefox.exe on Windows
+    # firefox-bin on Linux (etc?)
+    my $default_exe = $^O =~ /mswin/i ? 'firefox'
+                                      : 'firefox-bin';
+
+    $options->{ launch_exe } ||= $ENV{FIREFOX_BIN} || $default_exe;
+    $options->{ launch_arg } ||= [];
+
+    # See also https://github.com/mozilla/geckodriver/issues/1058
+    unshift @{ $options{ launch_arg }, '-marionette';
+    $options->{port} ||= 2828
+        if ! exists $options->{port};
+    unshift @{ $options{ launch_arg }, '-marionette-port', $options->{port};
+        
+    # See also https://support.mozilla.org/questions/1092082
+    if ($options->{incognito}) {
+        push @{ $options->{ launch_arg }}, "-private";
+    };
+
+    if ($options->{data_directory}) {
+        croak "Data directory option is not yet supported";
+        push @{ $options->{ launch_arg }}, "--user-data-dir=$options->{ data_directory }";
+    };
+
+    if ($options->{profile}) {
+        croak "Profile directory option is not yet supported";
+        push @{ $options->{ launch_arg }}, "--profile-directory=$options->{ profile }";
+    };
+
+    #if( ! exists $options->{enable_first_run}) {
+    #    push @{ $options->{ launch_arg }}, "--no-first-run";
+    #};
+
+    push @{ $options->{ launch_arg }}, "-headless"
+        if $options->{ headless };
+
+    push @{ $options->{ launch_arg }}, "$options->{start_url}"
+        if exists $options->{start_url};
+
+    my $program = ($^O =~ /mswin/i and $options->{ launch_exe } =~ /\s/)
+                  ? qq("$options->{ launch_exe }")
+                  : $options->{ launch_exe };
+
+    my @cmd=( $program, @{ $options->{launch_arg}} );
+
+    @cmd
+};
+
+sub _find_free_port( $self, $start ) {
+    my $port = $start;
+    while (1) {
+        $port++, next unless IO::Socket::INET->new(
+            Listen    => 5,
+            Proto     => 'tcp',
+            Reuse     => 1,
+            LocalPort => $port
+        );
+        last;
+    }
+    $port;
+}
+
+sub _wait_for_socket_connection( $self, $host, $port, $timeout ) {
+    my $wait = time + ($timeout || 20);
+    while ( time < $wait ) {
+        my $t = time;
+        my $socket = IO::Socket::INET->new(
+            PeerHost => $host,
+            PeerPort => $port,
+            Proto    => 'tcp',
+        );
+        if( $socket ) {
+            close $socket;
+            sleep 1;
+            last;
+        };
+        sleep 1 if time - $t < 1;
+    }
+};
+
+sub spawn_child_win32( $self, @cmd ) {
+    system(1, @cmd)
+}
+
+sub spawn_child_posix( $self, @cmd ) {
+    require POSIX;
+    POSIX->import("setsid");
+
+    # daemonize
+    defined(my $pid = fork())   || die "can't fork: $!";
+    if( $pid ) {    # non-zero now means I am the parent
+        $self->log('debug', "Spawned child as $pid");
+        return $pid;
+    };
+    chdir("/")                  || die "can't chdir to /: $!";
+
+    # We are the child, close about everything, then exec
+    (setsid() != -1)            || die "Can't start a new session: $!";
+    open(STDERR, ">&STDOUT")    || die "can't dup stdout: $!";
+    open(STDIN,  "< /dev/null") || die "can't read /dev/null: $!";
+    open(STDOUT, "> /dev/null") || die "can't write to /dev/null: $!";
+    exec @cmd;
+}
+
+sub spawn_child( $self, $localhost, @cmd ) {
+    my ($pid);
+    if( $^O =~ /mswin/i ) {
+        $pid = $self->spawn_child_win32(@cmd)
+    } else {
+        $pid = $self->spawn_child_posix(@cmd)
+    };
+
+    # Just to give Firefox time to start up, make sure it accepts connections
+    $self->_wait_for_socket_connection( $localhost, $self->port, $self->startup_timeout || 20);
+    return $pid
+}
+
+sub new($class, %options) {
+
+    if (! exists $options{ autodie }) {
+        $options{ autodie } = 1
+    };
+
+    if( ! exists $options{ frames }) {
+        $options{ frames }= 1;
+    };
+
+    if( ! exists $options{ download_directory }) {
+        $options{ download_directory }= '';
+    };
+
+    $options{ js_events } ||= [];
+    if( ! exists $options{ transport }) {
+        $options{ transport } ||= $ENV{ WWW_MECHANIZE_FIREFOX_TRANSPORT };
+    };
+
+    my $self= bless \%options => $class;
+    my $host = $options{ host } || '127.0.0.1';
+    $self->{log} ||= $self->_build_log;
+
+    $options{start_url} = 'about:blank'
+        unless exists $options{start_url};
+
+    unless ( defined $options{ port } ) {
+        # Find free port
+        $options{ port } = $self->_find_free_port( 2828 );
+    }
+
+    unless ($options{pid} or $options{reuse}) {
+        my @cmd= $class->build_command_line( \%options );
+        $self->log('debug', "Spawning", \@cmd);
+        $self->{pid} = $self->spawn_child( $host, @cmd );
+        $self->{ kill_pid } = 1;
+
+        # Just to give Firefox time to start up, make sure it accepts connections
+        $self->_wait_for_socket_connection( $host, $self->{port}, $self->{startup_timeout} || 20);
+    }
+
+    if( $options{ tab } and $options{ tab } eq 'current' ) {
+        $options{ tab } = 0; # use tab at index 0
+    };
+
+    $options{ extra_headers } ||= {};
+
+    # Connect to it
+    $options{ driver } ||= Firefox::Marionette::Driver->new(
+        'port' => $options{ port },
+        host => $host,
+        auto_close => 0,
+        error_handler => sub {
+            #warn ref$_[0];
+            #warn "<<@CARP_NOT>>";
+            #warn ((caller($_))[0,1,2])
+            #    for 1..4;
+            local @CARP_NOT = (@CARP_NOT, ref $_[0],'Try::Tiny');
+            # Reraise the error
+            croak $_[1]
+        },
+        transport => $options{ transport },
+        log       => $options{ log },
+    );
+    # Synchronously connect here, just for easy API compatibility
+
+    my $err;
+    $self->driver->connect(
+        new_tab => !$options{ reuse },
+        tab     => $options{ tab },
+    )->catch( sub($_err) {
+        $err = $_err;
+        Future->done( $err );
+    })->get;
+
+    # if Firefox started, but so slow or unresponsive that we cannot connect
+    # to it, kill it manually to avoid waiting for it indefinitely
+    if ( $err ) {
+        if( $self->{ kill_pid } and my $pid = delete $self->{ pid }) {
+            local $SIG{CHLD} = 'IGNORE';
+            kill 'SIGKILL' => $pid;
+        };
+        die $err;
+    };
+    
+    # Query / setup FF capabilities
+
+    $self
+};
+
 =head2 C<< $ff->transport >>
 
 Gets the L<Firefox::Marionette::Transport> instance that is used.
@@ -115,80 +324,8 @@ Returns information about Firefox.
 =cut
 
 sub appinfo {
-    $_[0]->repl->appinfo
+    #$_[0]->repl->appinfo
 };
-
-=head2 C<< $ff->addons( %args ) >>
-
-  for my $addon ($ff->addons) {
-      print sprintf "Name: %s\n", $addon->{name};
-      print sprintf "Version: %s\n", $addon->{version};
-      print sprintf "GUID: %s\n", $addon->{id};
-  };
-
-Returns the list of installed addons as C<nsIUpdateItem>s (FF 3.5+)
-or C<Addon>s (FF4+).
-See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIUpdateItem>
-or L<https://developer.mozilla.org/en/Addons/Add-on_Manager/Addon>,
-depending on your Firefox version.
-
-=head2 C<< $ff->locales( %args ) >>
-
-  for my $locale ($ff->locales) {
-      print sprintf "Name: %s\n", $locale->{name};
-      print sprintf "Version: %s\n", $locale->{version};
-      print sprintf "GUID: %s\n", $locale->{id};
-  };
-
-Returns the list of installed locales as C<nsIUpdateItem>s.
-
-=head2 C<< $ff->themes( %args ) >>
-
-  for my $theme ($ff->themes) {
-      print sprintf "Name: %s\n", $theme->{name};
-      print sprintf "Version: %s\n", $theme->{version};
-      print sprintf "GUID: %s\n", $theme->{id};
-  };
-
-Returns the list of installed locales as C<nsIUpdateItem>s.
-
-=head2 C<< $ff->updateitems( %args ) >>
-
-  for my $item ($ff->updateitems) {
-      print sprintf "Name: %s\n", $item->{name};
-      print sprintf "Version: %s\n", $item->{version};
-      print sprintf "GUID: %s\n", $item->{id};
-  };
-
-Returns the list of updateable items. The type of item
-can be restricted by the C<type> option.
-
-=over 4
-
-=item * C<type> - type of items to fetch
-
-C<ANY> - fetch any item
-
-C<ADDON> - fetch add-ons
-
-C<LOCALE> - fetch locales
-
-C<THEME> - fetch themes
-
-=back
-
-=cut
-
-sub profileService {
-    my ($self) = @_;
-    
-    my $profileService = $self->repl->declare(<<'JS')->();
-        function () {
-            return Components.classes["@mozilla.org/toolkit/profile-service;1"]
-                   .createInstance(Components.interfaces.nsIToolkitProfileService);
-        }
-JS
-}
 
 =head2 C<< $ff->current_profile >>
 
@@ -201,8 +338,6 @@ See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIToolkitProfi
 =cut
 
 sub current_profile {
-    my ($self) = @_;
-    $self->profileService->{selectedProfile}
 }
 
 =head2 C<< $ff->find_profile( $name ) >>

@@ -10,7 +10,6 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64 'decode_base64';
 use WWW::Mechanize::Link;
 use Firefox::Application;
-use Firefox::Marionette::Transport;
 use HTTP::Cookies::MozRepl ();
 use HTTP::Request::Common ();
 use Scalar::Util qw'blessed weaken';
@@ -178,12 +177,13 @@ sub new {
     my ($class, %args) = @_;
 
     if (! ref $args{ app }) {
-        my @passthrough = qw(launch);
+        my @passthrough = qw(launch headless host port);
         my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () }
                       @passthrough;
         $args{ app } = Firefox::Application->new(
             %options
         );
+        $args{ app }->connect->get();
     };
 
     if (my $tabname = delete $args{ tab }) {
@@ -223,12 +223,12 @@ sub new {
     };
     if (! exists $args{ autodie }) { $args{ autodie } = 1 };
 
-    $args{ events } ||= [
-                      'DOMContentLoaded','load',
-                      'pageshow', # Navigation from cache will use "pageshow"
-                      #'pagehide',
-                      'error','abort','stop',
-    ];
+    #$args{ events } ||= [
+    #                  'DOMContentLoaded','load',
+    #                  'pageshow', # Navigation from cache will use "pageshow"
+    #                  #'pagehide',
+    #                  'error','abort','stop',
+    #];
     $args{ on_event } ||= undef;
     $args{ pre_value } ||= ['focus'];
     $args{ post_value } ||= ['change','blur'];
@@ -251,8 +251,6 @@ sub new {
     my $agent = delete $args{ agent };
 
     my $self= bless \%args, $class;
-
-    $self->_initXpathResultTypes;
 
     if( defined $agent ) {
         $self->agent( $agent );

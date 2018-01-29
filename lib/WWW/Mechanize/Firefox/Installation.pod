@@ -10,109 +10,14 @@ If you notice that tests get skipped and/or the module installs
 but "does not seem to work", there are some more steps required
 to configure Firefox:
 
-=over 4
-
-=item 1.
-
-Download mozrepl 1.1.2 available from
-
-L<https://addons.mozilla.org/en-US/firefox/addon/mozrepl/versions/?page=1#version-1.1.2>
-
-or a later version from
-
-L<https://github.com/bard/mozrepl/tags>
-
-
-=item 2.
-
-If you downloaded the version from C<mozilla.org>, skip to 5.
-
-If you downloaded a version from github, unpack the zip archive into a directory.
-The version distributed by C<mozilla.org> is ready for direct installation.
-
-The archive contains one subdirectory with a name 
-of the form C<bard-mozrepl-abcdefg>.
-
-=item 3.
-
-Create a new zip archive with the files in the subdirectory
-C<bard-mozrepl-abcdefg>. This new archive must have
-the files at the root entry, not in a subdirectory.
-
-The file layout should look like this:
-
-  chrome/
-  components/
-  defaults/
-  chrome.manifest
-  install.rdf
-  logo.png
-
-=item 4.
-
-Rename your new zip archive from C<.zip> to C<.xpi>.
-
-=item 5.
-
-Launch Firefox
-
-=item 6.
-
-Install the downloaded or freshly created C<.xpi> file into Firefox.
-For example you can drag and drop the file into Firefox.
-
-=item 7.
-
-Start C<mozrepl> in Firefox by going to the menu:
-
-   "Tools" -> "MozRepl" -> "Start"
-
-You may want to tick the "Activate on startup" item.
-
-Alternatively, launch the Firefox binary with the C<-mozrepl> command line
-switch:
-
-  firefox -repl
-
-=back
-
-If tests still fail, especially t/50-click.t and 51-mech-submit.t ,
-this might be because you use the NoScript Mozilla extension
-and have it blocking Javascript for file:// URLs. While this is good,
-the tests need Javascript enabled.
-
-=over 4
-
-=item 1.
-
-Open t/50-click.html in Firefox
-
-=item 2.
-
-Allow Javascript for all file:// URLs
-
-=item 3.
-
-Re-run tests
-
-    perl Makefile.PL
-    nmake test
-
-or if you are using Strawberry Perl or Citrus Perl
-
-    perl Makefile.PL
-    dmake test
-
-=item 4.
-
-No test should fail
-
-=back
-
 If tests fail with an error from Firefox that a file could not
 be found, check that the test suite and the Firefox process are
 run using the same user. Otherwise, the Firefox process might not
 have the permissions to access the files created by the test suite.
+
+=head1 SEE ALSO
+
+L<https://developer.mozilla.org/en-US/docs/Mozilla/QA/Marionette/Developer_setup>
 
 =head1 PPMs
 

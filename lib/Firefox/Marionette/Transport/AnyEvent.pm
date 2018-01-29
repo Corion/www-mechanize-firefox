@@ -48,6 +48,8 @@ sub connect( $self, %options ) {
     my $connection;
     weaken( my $weakself = $self );
     $connection = AnyEvent::Handle->new(
+        host => $options{ host },
+        port => $options{ port },
         on_connect => sub( $handle, $host, $port, $retry ) {
             undef $connection;
             $weakself->connection( $handle );
@@ -57,7 +59,7 @@ sub connect( $self, %options ) {
             $result->fail( $message, connect => $message )
         },
         on_read => sub( $handle ) {
-            $weakself->on_response( \$handle->{rbuf} );
+            $handler->on_data( \$handle->{rbuf} );
         },
     );
 }
