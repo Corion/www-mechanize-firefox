@@ -18,8 +18,8 @@ use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
 use Carp qw(carp croak );
 
-use vars qw'$VERSION %link_spec @CARP_NOT';
-$VERSION = '0.79';
+use vars qw'%link_spec @CARP_NOT';
+our $VERSION = '1.00';
 @CARP_NOT = ('MozRepl::RemoteObject',
              'MozRepl::AnyEvent',
              'MozRepl::RemoteObject::Instance'
