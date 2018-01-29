@@ -10,8 +10,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64 'decode_base64';
 use WWW::Mechanize::Link;
 use Firefox::Application;
-use MozRepl::RemoteObject ();
-use MozRepl::RemoteObject::Methods ();
+use Firefox::Marionette::Transport;
 use HTTP::Cookies::MozRepl ();
 use HTTP::Request::Common ();
 use Scalar::Util qw'blessed weaken';
@@ -20,10 +19,6 @@ use Carp qw(carp croak );
 
 use vars qw'%link_spec @CARP_NOT';
 our $VERSION = '1.00';
-@CARP_NOT = ('MozRepl::RemoteObject',
-             'MozRepl::AnyEvent',
-             'MozRepl::RemoteObject::Instance'
-             ); # we trust these blindly
 
 =head1 NAME
 
@@ -183,7 +178,7 @@ sub new {
     my ($class, %args) = @_;
 
     if (! ref $args{ app }) {
-        my @passthrough = qw(launch repl bufsize log use_queue js_JSON);
+        my @passthrough = qw(launch);
         my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () }
                       @passthrough;
         $args{ app } = Firefox::Application->new(

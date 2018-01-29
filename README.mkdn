@@ -1386,7 +1386,7 @@ they make little sense in the context of Firefox.
 
     I have no use for it
 
-- 
+-
 
 # TODO
 

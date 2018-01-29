@@ -1,7 +1,11 @@
 package Firefox::Application;
 use strict;
+use Moo 2;
 
-use MozRepl::RemoteObject ();
+use Filter::signatures;
+no warnings 'experimental::signatures';
+use feature 'signatures';
+
 use URI ();
 use Carp qw(carp croak);
 
@@ -49,19 +53,6 @@ C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObjec
 
 =item *
 
-C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
-
-=item * 
-
-C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
-suitable for initializing one.
-
-=item * 
-
-C<use_queue> - whether to enable L<MozRepl::RemoteObject> command queueing
-
-=item *
-
 C<api> - class for the API wrapper
 
 You almost never want to use this parameter, as Firefox::Application
@@ -71,65 +62,42 @@ asks Firefox about its version.
 
 =cut
 
-sub new {
-    my ($class, %args) = @_;
-    my $loglevel = delete $args{ log } || [qw[ error ]];
-    my $use_queue = exists $args{ use_queue } ? delete $args{ use_queue } : 1;
-    my $api = delete $args{ api };
-    if (! ref $args{ repl }) {
-        my @passthrough = qw(repl js_JSON launch);
-        my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () } 
-                      @passthrough;
-        $args{ repl } = MozRepl::RemoteObject->install_bridge(
-            log => $loglevel,
-            use_queue => $use_queue,
-            bufsize => delete $args{ bufsize },
-            %options,
-        );
-    };
-    
-    # Now install the proper API
-    if (! $api) {
-        my $info = $args{ repl }->appinfo;
-        my $v = $info->{version};
-        $v =~ s!^(\d+.\d+).*!$1!
-            or $v = '3.0'; # Wild guess
-         
-        if ($v >= 4) {
-            $api = 'Firefox::Application::API40';
-        } elsif ($v >= 3.6) {
-            $api = 'Firefox::Application::API36';
-        } else {
-            $api = 'Firefox::Application::API35';
-        };
-    };
-    MozRepl::RemoteObject::require_module( $api );
-    
-    bless \%args, $api;
-};
+has host => (
+    is => 'ro',
+    default => 'localhost',
+);
+
+has port => (
+    is => 'ro',
+    default => '2828',
+);
+
+has transport => (
+    is => 'lazy',
+    default => sub {
+        Firefox::Marionette::Transport->new();
+    },
+);
+
+sub connect( $self ) {
+    $self->transport->connect(
+        host => $self->host,
+        port => $self->port,
+    );
+}
 
 sub DESTROY {
     my ($self) = @_;
     local $@;
     #warn "App cleaning up";
-    if (my $repl = delete $self->{ repl }) {
-        %$self = (); # wipe out all references we keep
-        # but keep $repl alive until we can dispose of it
-        # as the last thing, now:
-        $repl = undef;
+    if (my $transport = delete $self->{transport} ) {
+        $transport->close
     };
-    #warn "App cleaned up";
 }
 
-=head2 C<< $ff->repl >>
+=head2 C<< $ff->transport >>
 
-  my ($value,$type) = $ff->repl->expr('2+2');
-
-Gets the L<MozRepl::RemoteObject> instance that is used.
-
-=cut
-
-sub repl { $_[0]->{repl} };
+Gets the L<Firefox::Marionette::Transport> instance that is used.
 
 =head1 APPLICATION INFORMATION
 
