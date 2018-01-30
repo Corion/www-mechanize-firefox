@@ -16,7 +16,7 @@ Net::Protocol::JSONWire - parse the JSON Wire / Mozilla Marionette protocol (v2 
 =head1 SYNOPSIS
 
   use Net::Protocol::JSONWire qw(decode_message encode_message);
-  
+
   my $buffer = '';
   NEED_MORE_INPUT:
       $buffer .= read_data_from( $fh );
@@ -41,6 +41,8 @@ payload.
 
 sub decode_message( $buffer_r ) {
     if( defined( my $msg = valid_input( $buffer_r ))) {
+        $$buffer_r =~ s!^[0-9]+:!!;
+        substr $$buffer_r, 0, length $msg, '';
 	    return decode_json( $msg )
 	} else {
 	    return undef
@@ -55,8 +57,8 @@ Returns a string that represents the encoded message.
 
 =cut
 
-sub encode_message( $type, $messageId, @data ) {
-    my $payload = encode_json( [$type, $messageId, @data]);
+sub encode_message( $data ) {
+    my $payload = encode_json( $data );
 	return sprintf "%d:%s", length $payload, $payload;
 }
 
@@ -65,7 +67,7 @@ sub encode_message( $type, $messageId, @data ) {
   my $buffer = '35:[0,"echo",{ value: "Hello World" }]';
   while( my $msg = valid_input( \$buffer )) {
       print "Found $msg\n";
-	  
+
 	  # Remove message from the start of the buffer
 	  substr $buffer, 0, length $msg+1+length(length($msg)), '';
   }
@@ -73,9 +75,14 @@ sub encode_message( $type, $messageId, @data ) {
 =cut
 
 sub valid_input( $buffer_r ) {
+    if(
         $$buffer_r =~ /^\s*([0-9]+)\s*:([\[\{\"0-9].*)/
 	and length $2 >= $1
-	and return substr $2, 0, $1
+	) {
+        return substr $2, 0, $1
+    } else {
+        return undef
+    }
 }
 
 1;
