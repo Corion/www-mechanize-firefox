@@ -10,17 +10,18 @@ use Firefox::Marionette::Driver;
 use Log::Log4perl ':easy';
 Log::Log4perl->easy_init($TRACE);
 
-plan tests => 1;
+plan tests => 3;
 
 my $dr = Firefox::Marionette::Driver->new(
 );
 
 $dr->connect()->get;
+ok 1, "We survive connecting";
 
-ok 1;
+$dr->transport->sleep(1)->get;
 
-use AnyEvent::Future;
-
-AnyEvent->condvar->recv;
+my $info = $dr->remote_info;
+ok $info, "We have an answer from the remote";
+is $info->{marionetteProtocol}, 3, "We have version 3 of the protocol";
 
 done_testing;
