@@ -18,14 +18,4 @@ sub firefox_instances {
     grep { ($_ ||'') =~ /$filter/ } @instances;
 };
 
-sub default_unavailable {
-    # Connect to default instance
-    my $ff = eval { Firefox::Application->new( 
-        autodie => 0,
-        #log => [qw[debug]]
-    )};
-
-    my $reason = defined $ff ? undef : $@;
-};
-
 1;

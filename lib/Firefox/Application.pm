@@ -9,10 +9,15 @@ use feature 'signatures';
 use URI ();
 use Carp qw(carp croak);
 use IO::Socket::INET;
+use Data::Dumper;
+use Scalar::Util 'weaken';
+
+use Firefox::Marionette::Driver;
 
 use Future;
 
 our $VERSION = '1.00';
+our @CARP_NOT;
 
 =head1 NAME
 
@@ -71,26 +76,40 @@ has port => (
     default => '2828',
 );
 
-has transport => (
+has driver => (
     is => 'lazy',
     default => sub {
-        Firefox::Marionette::Transport->new();
+        Firefox::Marionette::Driver->new();
     },
 );
 
-sub connect( $self ) {
-    $self->transport->connect(
-        host => $self->host,
-        port => $self->port,
-    );
+has '_log' => (
+    is => 'lazy',
+    default => \&_build_log,
+);
+
+sub _build_log( $self ) {
+    require Log::Log4perl;
+    Log::Log4perl->get_logger(__PACKAGE__);
+}
+
+sub log( $self, $level, $message, @args ) {
+    my $logger = $self->_log;
+    if( !@args ) {
+        $logger->$level( $message )
+    } else {
+        my $enabled = "is_$level";
+        $logger->$level( join " ", $message, Dumper @args )
+            if( $logger->$enabled );
+    };
 }
 
 sub DESTROY {
     my ($self) = @_;
     local $@;
     #warn "App cleaning up";
-    if (my $transport = delete $self->{transport} ) {
-        $transport->close
+    if (my $driver = delete $self->{driver} ) {
+        $driver->close
     };
 }
 
@@ -106,10 +125,10 @@ sub build_command_line {
     $options->{ launch_arg } ||= [];
 
     # See also https://github.com/mozilla/geckodriver/issues/1058
-    unshift @{ $options{ launch_arg }, '-marionette';
+    unshift @{ $options->{ launch_arg }}, '-marionette';
     $options->{port} ||= 2828
         if ! exists $options->{port};
-    unshift @{ $options{ launch_arg }, '-marionette-port', $options->{port};
+    unshift @{ $options->{ launch_arg }}, '-marionette-port', $options->{port};
 
     # See also https://support.mozilla.org/questions/1092082
     if ($options->{incognito}) {
@@ -201,20 +220,21 @@ sub spawn_child_posix( $self, @cmd ) {
     exec @cmd;
 }
 
-sub spawn_child( $self, $localhost, @cmd ) {
+sub spawn_child( $self, %options ) {
     my ($pid);
     if( $^O =~ /mswin/i ) {
-        $pid = $self->spawn_child_win32(@cmd)
+        $pid = $self->spawn_child_win32(@{ $options{ cmd }})
     } else {
-        $pid = $self->spawn_child_posix(@cmd)
+        $pid = $self->spawn_child_posix(@{ $options{ cmd }})
     };
-
+    
+    my $host = $options{ host };
     # Just to give Firefox time to start up, make sure it accepts connections
-    $self->_wait_for_socket_connection( $localhost, $self->port, $self->startup_timeout || 20);
+    $self->_wait_for_socket_connection( $host, $options{ port }, $options{ startup_timeout } || 20);
     return $pid
 }
 
-sub new($class, %options) {
+around BUILDARGS => sub ( $orig, $class, %options) {
 
     if (! exists $options{ autodie }) {
         $options{ autodie } = 1
@@ -233,34 +253,28 @@ sub new($class, %options) {
         $options{ transport } ||= $ENV{ WWW_MECHANIZE_FIREFOX_TRANSPORT };
     };
 
-    my $self= bless \%options => $class;
     my $host = $options{ host } || '127.0.0.1';
-    $self->{log} ||= $self->_build_log;
 
     $options{start_url} = 'about:blank'
         unless exists $options{start_url};
 
     unless ( defined $options{ port } ) {
         # Find free port
-        $options{ port } = $self->_find_free_port( 2828 );
+        $options{ port } = $class->_find_free_port( 2828 );
     }
-
-    unless ($options{pid} or $options{reuse}) {
-        my @cmd= $class->build_command_line( \%options );
-        $self->log('debug', "Spawning", \@cmd);
-        $self->{pid} = $self->spawn_child( $host, @cmd );
-        $self->{ kill_pid } = 1;
-
-        # Just to give Firefox time to start up, make sure it accepts connections
-        $self->_wait_for_socket_connection( $host, $self->{port}, $self->{startup_timeout} || 20);
-    }
-
-    if( $options{ tab } and $options{ tab } eq 'current' ) {
-        $options{ tab } = 0; # use tab at index 0
-    };
 
     $options{ extra_headers } ||= {};
+    
+    unless ($options{pid} or $options{reuse}) {
+        my @cmd= $class->build_command_line( \%options );
+        #$self->log('debug', "Spawning", \@cmd);
+        $options{pid} = $class->spawn_child( host => $host, port => $options{ port }, cmd => \@cmd );
+        $options{ kill_pid } = 1;
 
+        # Just to give Firefox time to start up, make sure it accepts connections
+        #$self->_wait_for_socket_connection( $host, $self->{port}, $self->{startup_timeout} || 20);
+    }
+    
     # Connect to it
     $options{ driver } ||= Firefox::Marionette::Driver->new(
         'port' => $options{ port },
@@ -278,42 +292,43 @@ sub new($class, %options) {
         transport => $options{ transport },
         log       => $options{ log },
     );
+    return \%options;
+};
+
+sub connect( $self ) {
     # Synchronously connect here, just for easy API compatibility
 
     my $err;
-    $self->driver->connect(
-        new_tab => !$options{ reuse },
-        tab     => $options{ tab },
+    weaken (my $weakself = $self);
+    my $connect = $self->driver->connect(
+        #new_tab => !$options{ reuse },
+        #tab     => $options{ tab },
     )->then(sub {
         # Launch a new session
-        $self->send_command( 'WebDriver:NewSession', {} )
+        $weakself->driver->send_command( 'WebDriver:NewSession', {} )
     })->then( sub ($info) {
-        $self->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
-        $self->{ info } = $info;
+        $weakself->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
+        $weakself->{ info } = $info;
 
         my $ff_pid = $info->{capabilities}->{"moz:processID"};
-        if( $self->{pid} and $ff_pid != $self->{pid}) {
-            $self->log("warn", "Firefox PID is not launched pid ($ff_pid != $self->{pid})");
+        if( $weakself->{pid} and $ff_pid != $weakself->{pid}) {
+            $weakself->log("warn", "Firefox PID is not launched pid ($ff_pid != $weakself->{pid})");
         };
+        
+        Future->done( $weakself )
 
     })->catch( sub($_err) {
-        $err = $_err;
-        Future->done( $err );
-    })->get;
-
-    # if Firefox started, but so slow or unresponsive that we cannot connect
-    # to it, kill it manually to avoid waiting for it indefinitely
-    if ( $err ) {
-        if( $self->{ kill_pid } and my $pid = delete $self->{ pid }) {
-            local $SIG{CHLD} = 'IGNORE';
-            kill 'SIGKILL' => $pid;
+        # if Firefox started, but so slow or unresponsive that we cannot connect
+        # to it, kill it manually to avoid waiting for it indefinitely
+        if ( $err ) {
+            if( $self->{ kill_pid } and my $pid = delete $self->{ pid }) {
+                local $SIG{CHLD} = 'IGNORE';
+                kill 'SIGKILL' => $pid;
+            };
+            die $err;
         };
-        die $err;
-    };
+    });
 
-    # Query / setup FF capabilities
-
-    $self
 };
 
 =head2 C<< $ff->transport >>
@@ -327,15 +342,17 @@ Gets the L<Firefox::Marionette::Transport> instance that is used.
 =head2 C<< $ff->appinfo >>
 
     my $info = $ff->appinfo;
-    print 'ID      : ', $info->{ID};
-    print 'name    : ', $info->{name};
-    print 'version : ', $info->{version};
+    print 'ID      : ', $info->{};
+    print 'name    : ', $info->{browserName};
+    print 'version : ', $info->{browserVersion};
 
 Returns information about Firefox.
 
 =cut
 
-sub appinfo {
+sub appinfo( $self ) {
+    #warn Dumper $self->{info}->{capabilities};
+    $self->{info}->{capabilities}
     #$_[0]->repl->appinfo
 };
 

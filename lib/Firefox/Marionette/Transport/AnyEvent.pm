@@ -70,7 +70,7 @@ sub socket_write( $self, $str ) {
 
 sub close( $self ) {
     my $c = delete $self->{connection};
-    $c->push_close
+    $c->push_shutdown
         if $c;
 }
 
