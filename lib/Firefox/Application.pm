@@ -45,7 +45,7 @@ The following options are recognized:
 
 =over 4
 
-=item * 
+=item *
 
 C<launch_exe> - name of the program to launch if we can't connect to it on
 the first try.
@@ -110,7 +110,7 @@ sub build_command_line {
     $options->{port} ||= 2828
         if ! exists $options->{port};
     unshift @{ $options{ launch_arg }, '-marionette-port', $options->{port};
-        
+
     # See also https://support.mozilla.org/questions/1092082
     if ($options->{incognito}) {
         push @{ $options->{ launch_arg }}, "-private";
@@ -284,7 +284,19 @@ sub new($class, %options) {
     $self->driver->connect(
         new_tab => !$options{ reuse },
         tab     => $options{ tab },
-    )->catch( sub($_err) {
+    )->then(sub {
+        # Launch a new session
+        $self->send_command( 'WebDriver:NewSession', {} )
+    })->then( sub ($info) {
+        $self->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
+        $self->{ info } = $info;
+
+        my $ff_pid = $info->{capabilities}->{"moz:processID"};
+        if( $self->{pid} and $ff_pid != $self->{pid}) {
+            $self->log("warn", "Firefox PID is not launched pid ($ff_pid != $self->{pid})");
+        };
+
+    })->catch( sub($_err) {
         $err = $_err;
         Future->done( $err );
     })->get;
@@ -298,7 +310,7 @@ sub new($class, %options) {
         };
         die $err;
     };
-    
+
     # Query / setup FF capabilities
 
     $self
@@ -368,7 +380,7 @@ See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIToolkitProfi
 
 sub profiles {
     my ($self) = @_;
-    
+
     my $getProfiles = $self->repl->declare(<<'JS', 'list');
         function () {
             var toolkitProfileService = Components.classes["@mozilla.org/toolkit/profile-service;1"]
@@ -444,7 +456,7 @@ Returns a list of information about the currently open tabs.
 =head2 C<< $ff->activateTab( [ $tab [, $repl ]] ) >>
 
     $ff->activateTab( $mytab ); # bring to foreground
-    
+
 Activates the tab passed in.
 
 =cut
@@ -523,10 +535,10 @@ sub set_tab_content {
     my $url = URI->new('data:');
     $url->media_type("text/html");
     $url->data($content);
-    
+
     $tab ||= $self->tab;
     $repl ||= $self->repl;
-    
+
     $tab->{linkedBrowser}->loadURI("".$url);
 };
 
@@ -546,7 +558,7 @@ sub quit {
               ? 0x13 # force-quit
               : 0x03 # force-quit + restart
               ;
-    
+
     my $get_startup = $repl->declare(<<'JS');
     function() {
         return Components.classes["@mozilla.org/toolkit/app-startup;1"]

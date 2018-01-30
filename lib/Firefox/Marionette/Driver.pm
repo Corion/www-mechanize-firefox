@@ -129,13 +129,7 @@ sub connect( $self, %args ) {
         log     => sub { $self->log( @_ ) },
         host    => $self->host,
         port    => $self->port,
-    )->then(sub {
-        # This should happen in Firefox::Application already
-        $self->send_command( 'WebDriver:NewSession', {} )
-    })->then( sub ($info) {
-        #$self->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
-        $self->{ info } = $info;
-    });
+    );
 
     if( $args{ new_tab }) {
         $connected = $connected->then( sub {
