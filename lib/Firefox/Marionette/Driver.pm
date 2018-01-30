@@ -10,6 +10,7 @@ use Carp qw(croak carp);
 use JSON;
 use Data::Dumper;
 use Firefox::Marionette::Transport;
+use Net::Protocol::JSONWire qw( decode_message encode_message );
 use Scalar::Util 'weaken', 'isweak';
 use Try::Tiny;
 
@@ -20,6 +21,11 @@ sub _build_log( $self ) {
     require Log::Log4perl;
     Log::Log4perl->get_logger(__PACKAGE__);
 }
+
+has '_log' => (
+    is => 'lazy',
+    default => \&_build_log,
+);
 
 has 'host' => (
     is => 'ro',
@@ -51,6 +57,10 @@ has 'listener' => (
 );
 
 has 'transport' => (
+    is => 'rw',
+);
+
+has 'remote_info' => (
     is => 'rw',
 );
 
@@ -86,7 +96,7 @@ sub remove_listener( $self, $listener ) {
 }
 
 sub log( $self, $level, $message, @args ) {
-    my $logger = $self->{log};
+    my $logger = $self->_log;
     if( !@args ) {
         $logger->$level( $message )
     } else {
@@ -110,17 +120,21 @@ sub connect( $self, %args ) {
         (my $transport_module = $transport) =~ s!::!/!g;
         $transport_module .= '.pm';
         require $transport_module;
-        $self->{transport} = $transport->new;
-        $transport = $self->{transport};
+        $transport = $transport->new;
     };
+    $self->transport( $transport );
 
     my $connected = $transport->connect(
         handler => $self,
         log     => sub { $self->log( @_ ) },
         host    => $self->host,
         port    => $self->port,
-    )->then(sub( $tr ) {
-        return Future->done( $tr )
+    )->then(sub {
+        # This should happen in Firefox::Application already
+        $self->send_command( 'WebDriver:NewSession', {} )
+    })->then( sub ($info) {
+        #$self->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
+        $self->{ info } = $info;
     });
 
     if( $args{ new_tab }) {
@@ -184,15 +198,15 @@ sub connect( $self, %args ) {
 
     } else {
         # Attach to the first available tab we find
-        $connected = $connected->then(sub {
+            
             #$self->list_tabs()
-            Future->done();
-        })->then(sub( @tabs ) {
-            (my $tab) = grep { $_->{webSocketDebuggerUrl} } @tabs;
-            $self->log('debug', "Attached to some tab", $tab );
-            $self->{tab} = $tab;
-            return Future->done( $self->{tab}->{webSocketDebuggerUrl} );
-        });
+            #Future->done();
+        #})->then(sub( @tabs ) {
+        #    (my $tab) = grep { $_->{webSocketDebuggerUrl} } @tabs;
+        #    $self->log('debug', "Attached to some tab", $tab );
+        #    $self->{tab} = $tab;
+        #    return Future->done( $self->{tab}->{webSocketDebuggerUrl} );
+        #});
     };
     
     $connected
@@ -223,9 +237,14 @@ sub one_shot( $self, @events ) {
     $result
 };
 
-sub on_response( $self, $connection, $response ) {
+sub on_response( $self, $response ) {
+    if( 'HASH' eq ref $response ) {
+        # Maybe that initial "hello" message from the server?
+        if( $response->{marionetteProtocol} ) {
+            $self->remote_info( $response );
+        };
+    } elsif( 'ARRAY' eq ref $response ) {
     my( $type, $id, $error, $result ) = @$response;
-
     if( ! $type ) {
         # Generic message, dispatch that:
         if( $error ) {
@@ -277,20 +296,21 @@ sub on_response( $self, $connection, $response ) {
             };
         };
     } else {
-
-        my $id = $response->{id};
+        # A response
+        my $id = $response->[1];
         my $receiver = delete $self->{receivers}->{ $id };
 
         if( ! $receiver) {
             $self->log( 'debug', "Ignored response to unknown receiver", $response )
 
-        } elsif( $response->{error} ) {
+        } elsif( my $error = $response->[2] ) { # error
             $self->log( 'debug', "Replying to error $response->{id}", $response );
-            $receiver->die( join "\n", $response->{error}->{message},$response->{error}->{data} // '',$response->{error}->{code} // '');
+            $receiver->die( "remote error", "error" => $error );
         } else {
-            $self->log( 'trace', "Replying to $response->{id}", $response );
-            $receiver->done( $response->{result} );
+            $self->log( 'trace', "Got reply to $id", $response->[3] );
+            $receiver->done( $response->[3] );
         };
+    };
     };
 }
 
@@ -313,10 +333,22 @@ sub on_data( $self, $buffer_r ) {
     }
 }
 
-sub _send_packet( $self, $type, $method, @args ) {
+sub send_command( $self, $method, @args ) {
     my $id = $self->next_sequence;
-    $self->transport->socket_write( encode_message( [ $type, $id, $method, @args ]));
-    Future->done($id)
+    
+    my $resp = $self->transport->future;
+    
+    $self->receivers->{ $id } = $resp;
+    my $msg = [ +0, 0+$id, $method, @args ];
+    $self->log('trace', "Send message", $msg );
+    
+    $self->transport->socket_write( encode_message( $msg ));
+    $resp
+}
+
+sub send_response( $self, @args ) {
+    my $id = $self->next_sequence;
+    $self->transport->socket_write( encode_message( [ +1, $id, @args ]));
 }
 
 =head2 C<< $chrome->send_packet >>
