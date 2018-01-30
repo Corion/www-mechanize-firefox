@@ -243,74 +243,76 @@ sub on_response( $self, $response ) {
         if( $response->{marionetteProtocol} ) {
             $self->remote_info( $response );
         };
+
     } elsif( 'ARRAY' eq ref $response ) {
-    my( $type, $id, $error, $result ) = @$response;
-    if( ! $type ) {
-        # Generic message, dispatch that:
-        if( $error ) {
-            $self->log('error', "Error response from Firefox", $error );
-            return;
-        };
-
-        (my $handler) = grep { exists $_->{events}->{ $response->{method} } and ${$_->{future}} } @{ $self->_one_shot};
-        my $handled;
-        if( $handler ) {
-            $self->log( 'trace', "Dispatching one-shot event", $response );
-            ${ $handler->{future} }->done( $response );
-
-            # Remove the handler we just invoked
-            @{ $self->_one_shot} = grep { $_ and ${$_->{future}} and $_ != $handler } @{ $self->_one_shot};
-
-            $handled++;
-        };
-
-        if( my $listeners = $self->listener->{ $response->{method} } ) {
-            if( $self->{log}->is_trace ) {
-                $self->log( 'trace', "Notifying listeners", $response );
-            } else {
-                $self->log( 'debug', sprintf "Notifying listeners for '%s'", $response->{method} );
-            };
-            for my $listener (@$listeners) {
-                $listener->notify( $response );
+        # A response to a command we sent
+        my( $type, $id, $error, $result ) = @$response;
+        if( ! $type ) {
+            # Generic message/command, dispatch that:
+            if( $error ) {
+                $self->log('error', "Error response from Firefox", $error );
+                return;
             };
 
-            $handled++;
-        };
+            (my $handler) = grep { exists $_->{events}->{ $response->{method} } and ${$_->{future}} } @{ $self->_one_shot};
+            my $handled;
+            if( $handler ) {
+                $self->log( 'trace', "Dispatching one-shot event", $response );
+                ${ $handler->{future} }->done( $response );
 
-        if( $self->on_message ) {
-            if( $self->{log}->is_trace ) {
-                $self->log( 'trace', "Dispatching message", $response );
-            } else {
-                $self->log( 'debug', sprintf "Dispatching message '%s'", $response->{method} );
+                # Remove the handler we just invoked
+                @{ $self->_one_shot} = grep { $_ and ${$_->{future}} and $_ != $handler } @{ $self->_one_shot};
+
+                $handled++;
             };
-            $self->on_message->( $response );
 
-            $handled++;
-        };
+            if( my $listeners = $self->listener->{ $response->{method} } ) {
+                if( $self->{log}->is_trace ) {
+                    $self->log( 'trace', "Notifying listeners", $response );
+                } else {
+                    $self->log( 'debug', sprintf "Notifying listeners for '%s'", $response->{method} );
+                };
+                for my $listener (@$listeners) {
+                    $listener->notify( $response );
+                };
 
-        if( ! $handled ) {
-            if( $self->{log}->is_trace ) {
-                $self->log( 'trace', "Ignored message", $response );
-            } else {
-                $self->log( 'debug', sprintf "Ignored message '%s'", $response->{method} );
+                $handled++;
             };
-        };
-    } else {
-        # A response
-        my $id = $response->[1];
-        my $receiver = delete $self->{receivers}->{ $id };
 
-        if( ! $receiver) {
-            $self->log( 'debug', "Ignored response to unknown receiver", $response )
+            if( $self->on_message ) {
+                if( $self->{log}->is_trace ) {
+                    $self->log( 'trace', "Dispatching message", $response );
+                } else {
+                    $self->log( 'debug', sprintf "Dispatching message '%s'", $response->{method} );
+                };
+                $self->on_message->( $response );
 
-        } elsif( my $error = $response->[2] ) { # error
-            $self->log( 'debug', "Replying to error $response->{id}", $response );
-            $receiver->die( "remote error", "error" => $error );
+                $handled++;
+            };
+
+            if( ! $handled ) {
+                if( $self->{log}->is_trace ) {
+                    $self->log( 'trace', "Ignored message", $response );
+                } else {
+                    $self->log( 'debug', sprintf "Ignored message '%s'", $response->{method} );
+                };
+            };
         } else {
-            $self->log( 'trace', "Got reply to $id", $response->[3] );
-            $receiver->done( $response->[3] );
+            # A response
+            my $id = $response->[1];
+            my $receiver = delete $self->{receivers}->{ $id };
+
+            if( ! $receiver) {
+                $self->log( 'debug', "Ignored response to unknown receiver", $response )
+
+            } elsif( my $error = $response->[2] ) { # error
+                $self->log( 'debug', "Replying to error $response->{id}", $response );
+                $receiver->die( "remote error", "error" => $error );
+            } else {
+                $self->log( 'trace', "Got reply to $id", $response->[3] );
+                $receiver->done( $response->[3] );
+            };
         };
-    };
     };
 }
 
