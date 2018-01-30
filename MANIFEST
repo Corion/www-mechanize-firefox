@@ -16,7 +16,6 @@ examples/scrape-ff.pl
 examples/screenshot.pl
 examples/tail-console.pl
 examples/urlbar.pl
-inc/IO/Catch.pm
 INSTALL
 lib/Firefox/Application.pm
 lib/Firefox/Application/API35.pm
