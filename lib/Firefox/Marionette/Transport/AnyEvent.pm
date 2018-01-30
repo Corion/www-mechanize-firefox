@@ -13,8 +13,6 @@ use AnyEvent;
 use AnyEvent::Future qw(as_future_cb);
 use AnyEvent::Handle;
 
-with 'Firefox::Marionette::Transport::Role';
-
 our $VERSION = '1.00';
 our @CARP_NOT = ();
 
@@ -48,8 +46,7 @@ sub connect( $self, %options ) {
     my $connection;
     weaken( my $weakself = $self );
     $connection = AnyEvent::Handle->new(
-        host => $options{ host },
-        port => $options{ port },
+        connect => [$options{ host }, $options{ port }],
         on_connect => sub( $handle, $host, $port, $retry ) {
             undef $connection;
             $weakself->connection( $handle );
@@ -62,6 +59,8 @@ sub connect( $self, %options ) {
             $handler->on_data( \$handle->{rbuf} );
         },
     );
+    
+    $result
 }
 
 sub socket_write( $self, $str ) {

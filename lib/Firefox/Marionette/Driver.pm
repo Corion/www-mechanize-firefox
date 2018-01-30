@@ -40,7 +40,7 @@ has '_on_message' => (
     is => 'rw',
 );
 
-has 'one_shot' => (
+has '_one_shot' => (
     is => 'lazy',
     default => sub { [] },
 );
@@ -104,7 +104,8 @@ sub connect( $self, %args ) {
     
     my $transport = delete $args{ transport }
                     || $self->transport
-                    || 'Firefox::Marionette::Transport';
+                    || 'Firefox::Marionette::Transport'
+                    ;
     if( ! ref $transport ) { # it's a classname
         (my $transport_module = $transport) =~ s!::!/!g;
         $transport_module .= '.pm';
@@ -113,7 +114,7 @@ sub connect( $self, %args ) {
         $transport = $self->{transport};
     };
 
-    $transport->connect(
+    my $connected = $transport->connect(
         handler => $self,
         log     => sub { $self->log( @_ ) },
         host    => $self->host,
@@ -145,7 +146,7 @@ sub connect( $self, %args ) {
 
         $connected = $connected->then(sub {
             $self->list_tabs()
-        }->then(sub( @tabs ) {
+        })->then(sub( @tabs ) {
             (my $tab) = grep { $_->{title} =~ /$args{ tab }/ } @tabs;
 
             if( ! $tab ) {
@@ -163,7 +164,7 @@ sub connect( $self, %args ) {
         # Let's assume that the tab is a tab object:
         $connected = $connected->then(sub {
             $self->list_tabs()
-        }->then(sub( @tabs ) {
+        })->then(sub( @tabs ) {
             (my $tab) = grep { $_->{id} eq $args{ tab }->{id}} @tabs;
             $self->{tab} = $tab;
             $self->log('debug', "Attached to tab $args{tab}", $tab );
@@ -174,7 +175,7 @@ sub connect( $self, %args ) {
         # Let's assume that the tab is the tab id:
         $connected = $connected->then(sub {
             $self->list_tabs()
-        }->then(sub( @tabs ) {
+        })->then(sub( @tabs ) {
             (my $tab) = grep { $_->{id} eq $args{ tab }} @tabs;
             $self->{tab} = $tab;
             $self->log('debug', "Attached to tab $args{tab}", $tab );
@@ -184,8 +185,9 @@ sub connect( $self, %args ) {
     } else {
         # Attach to the first available tab we find
         $connected = $connected->then(sub {
-            $self->list_tabs()
-        }->then(sub( @tabs ) {
+            #$self->list_tabs()
+            Future->done();
+        })->then(sub( @tabs ) {
             (my $tab) = grep { $_->{webSocketDebuggerUrl} } @tabs;
             $self->log('debug', "Attached to some tab", $tab );
             $self->{tab} = $tab;
@@ -217,7 +219,7 @@ sub one_shot( $self, @events ) {
     weaken $ref;
     my %events;
     undef @events{ @events };
-    push @{ $self->{one_shot} }, { events => \%events, future => \$ref };
+    push @{ $self->_one_shot }, { events => \%events, future => \$ref };
     $result
 };
 
@@ -231,14 +233,14 @@ sub on_response( $self, $connection, $response ) {
             return;
         };
 
-        (my $handler) = grep { exists $_->{events}->{ $response->{method} } and ${$_->{future}} } @{ $self->{one_shot}};
+        (my $handler) = grep { exists $_->{events}->{ $response->{method} } and ${$_->{future}} } @{ $self->_one_shot};
         my $handled;
         if( $handler ) {
             $self->log( 'trace', "Dispatching one-shot event", $response );
             ${ $handler->{future} }->done( $response );
 
             # Remove the handler we just invoked
-            @{ $self->{one_shot}} = grep { $_ and ${$_->{future}} and $_ != $handler } @{ $self->{one_shot}};
+            @{ $self->_one_shot} = grep { $_ and ${$_->{future}} and $_ != $handler } @{ $self->_one_shot};
 
             $handled++;
         };
