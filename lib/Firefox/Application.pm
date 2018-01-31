@@ -137,6 +137,9 @@ sub build_command_line {
     $options->{ launch_exe } ||= $ENV{FIREFOX_BIN} || $default_exe;
     $options->{ launch_arg } ||= [];
 
+    # We want a disconnected separate FF here
+    unshift @{ $options->{ launch_arg }}, '--no-remote','--new-instance';
+
     # See also https://github.com/mozilla/geckodriver/issues/1058
     unshift @{ $options->{ launch_arg }}, '-marionette';
     $options->{port} ||= 2828
@@ -264,7 +267,7 @@ around BUILDARGS => sub ( $orig, $class, %options) {
         $options{ download_directory }= '';
     };
 
-    $options{ js_events } ||= [];
+    #$options{ js_events } ||= [];
     if( ! exists $options{ transport }) {
         $options{ transport } ||= $ENV{ WWW_MECHANIZE_FIREFOX_TRANSPORT };
     };
