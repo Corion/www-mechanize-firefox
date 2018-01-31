@@ -83,6 +83,14 @@ has driver => (
     },
 );
 
+has pid => (
+    is => 'ro',
+);
+
+has kill_pid => (
+    is => 'rw',
+);
+
 has '_log' => (
     is => 'lazy',
     default => \&_build_log,
@@ -232,7 +240,7 @@ sub spawn_child( $self, %options ) {
     } else {
         $pid = $self->spawn_child_posix(@{ $options{ cmd }})
     };
-    
+
     my $host = $options{ host };
     # Just to give Firefox time to start up, make sure it accepts connections
     $self->_wait_for_socket_connection( $host, $options{ port }, $options{ startup_timeout } || 20);
@@ -279,7 +287,7 @@ around BUILDARGS => sub ( $orig, $class, %options) {
         # Just to give Firefox time to start up, make sure it accepts connections
         #$self->_wait_for_socket_connection( $host, $self->{port}, $self->{startup_timeout} || 20);
     }
-    
+
     # Connect to it
     $options{ driver } ||= Firefox::Marionette::Driver->new(
         'port' => $options{ port },
@@ -319,7 +327,7 @@ sub connect( $self ) {
         if( $weakself->{pid} and $ff_pid != $weakself->{pid}) {
             $weakself->log("warn", "Firefox PID is not launched pid ($ff_pid != $weakself->{pid})");
         };
-        
+
         Future->done( $weakself )
 
     })->catch( sub($_err) {
@@ -333,9 +341,32 @@ sub connect( $self ) {
             die $err;
         };
     });
-    
+
     $connect
 };
+
+=head2 C<< $ff->quit >>
+
+  $ff->quit->get;
+
+Quits Firefox
+
+=cut
+
+sub quit( $self ) {
+    my $res = $self->driver->send_command('Marionette:Quit');
+    if( $self->{kill_pid}) {
+        $res = $res->on_done(sub {
+            waitpid $self->pid, 0;
+            my $ff_pid = $self->appinfo->get->{'moz:processID'};
+
+            if( $ff_pid != $self->pid ) {
+                waitpid $ff_pid, 0;
+            };
+        });
+    };
+    $res
+}
 
 =head1 APPLICATION INFORMATION
 
@@ -558,33 +589,6 @@ sub set_tab_content {
     $repl ||= $self->repl;
 
     $tab->{linkedBrowser}->loadURI("".$url);
-};
-
-=head2 C<< $ff->quit( %options ) >>
-
-  $ff->quit( restart => 1 ); # restart
-  $ff->quit(); # quit
-
-Quits or restarts the application
-
-=cut
-
-sub quit {
-    my ($self, %options) = @_;
-    my $repl = $options{ repl } || $self->repl;
-    my $flags = $options{ restart }
-              ? 0x13 # force-quit
-              : 0x03 # force-quit + restart
-              ;
-
-    my $get_startup = $repl->declare(<<'JS');
-    function() {
-        return Components.classes["@mozilla.org/toolkit/app-startup;1"]
-                     .getService(Components.interfaces.nsIAppStartup);
-    }
-JS
-    my $s = $get_startup->();
-    $s->quit($flags);
 };
 
 =head2 C<< $ff->bool_ff_to_perl $val >>

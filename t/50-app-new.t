@@ -14,7 +14,7 @@ if (! t::helper::firefox_instances) {
     plan skip_all => "Couldn't find Firefox instances to run tests with";
     exit
 } else {
-    plan tests => 8;
+    plan tests => 3;
 };
 
 my $exe = 'firefox-versions\\58.0.1\\firefoxPortable.exe';
@@ -33,12 +33,21 @@ diag sprintf "Connected to %s version %s",
     $info->{browserName},
     $info->{browserVersion};
 
+my $pid = $info->{'moz:processID'};
+
 # This test is broken as we don't pass the expected version around anymore...
 if (($exe) =~ /\b(\d+(\.\d+)+)\b/) {
     my $expected_version = $1;
     is $info->{browserVersion}, $expected_version, "We connect to an instance with version $expected_version";
+
+    ok kill(0, $pid), "PID $pid is alive";
+
+    $ff->quit->get;
+
+    ok !kill(0, $pid), "PID $pid is gone";
+
 } else {
     SKIP: {
-        skip "Don't know what version to expect", 1;
+        skip "Don't know what version to expect", 3;
     };
 };
