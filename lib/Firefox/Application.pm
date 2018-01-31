@@ -354,8 +354,8 @@ Returns information about Firefox as a Future.
 
 sub appinfo( $self ) {
     my $res = Future->new();
-    $self->_have_info->on_ready(sub( $info ) {
-        $res->done( Future->unwrap( $info ));
+    $self->_have_info->on_done(sub( $info ) {
+        $res->done( $info->get );
     });
     return $res
 };
@@ -369,7 +369,7 @@ Returns the directory of the currently selected profile.
 =cut
 
 sub current_profile( $self ) {
-    $self->appinfo->{"moz:profile"}
+    $self->appinfo->get->{"moz:profile"}
 }
 
 =head2 C<< $ff->find_profile( $name ) >>
