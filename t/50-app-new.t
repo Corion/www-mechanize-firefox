@@ -3,6 +3,7 @@ use strict;
 use Test::More;
 use File::Basename;
 
+use File::Temp 'tempdir';
 use Firefox::Application;
 use lib '.';
 
@@ -23,6 +24,7 @@ my $ff = Firefox::Application->new(
     autodie => 0,
     launch_exe => $exe,
     headless => 1,
+    private => 1,
     #log => [qw[debug]],
 )->connect->get;
 

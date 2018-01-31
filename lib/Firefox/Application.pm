@@ -165,6 +165,9 @@ sub build_command_line {
     push @{ $options->{ launch_arg }}, "-headless"
         if $options->{ headless };
 
+    push @{ $options->{ launch_arg }}, "-private"
+        if $options->{ private };
+
     push @{ $options->{ launch_arg }}, "$options->{start_url}"
         if exists $options->{start_url};
 
