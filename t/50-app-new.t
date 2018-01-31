@@ -22,6 +22,7 @@ my $exe = 'firefox-versions\\58.0.1\\firefoxPortable.exe';
 my $ff = Firefox::Application->new(
     autodie => 0,
     launch_exe => $exe,
+    headless => 1,
     #log => [qw[debug]],
 )->connect->get;
 
