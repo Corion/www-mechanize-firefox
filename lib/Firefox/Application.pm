@@ -154,8 +154,8 @@ sub build_command_line {
     };
 
     if ($options->{profile}) {
-        croak "Profile directory option is not yet supported";
-        push @{ $options->{ launch_arg }}, "--profile-directory=$options->{ profile }";
+        # Let's assume a profile directory, not a Firefox::Marionette::Profile
+        push @{ $options->{ launch_arg }}, "-profile", $options->{profile};
     };
 
     #if( ! exists $options->{enable_first_run}) {

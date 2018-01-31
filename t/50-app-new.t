@@ -18,11 +18,13 @@ if (! t::helper::firefox_instances) {
     plan tests => 3;
 };
 
-my $exe = 'firefox-versions\\58.0.1\\firefoxPortable.exe';
+#my $exe = 'firefox-versions\\58.0.1\\firefoxPortable.exe';
+my $exe = 'firefox-versions\\58.0.1\\App\\Firefox64\\firefox.exe';
 
 my $ff = Firefox::Application->new(
     autodie => 0,
     launch_exe => $exe,
+    launch_arg => ['-profile', tempdir(), '--no-remote','--new-instance'],
     headless => 1,
     private => 1,
     #log => [qw[debug]],
