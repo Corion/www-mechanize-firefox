@@ -572,9 +572,9 @@ JS
     return $get->()
 };
 
-=head2 C<< $ff->set_tab_content( $tab, $html [,$repl] ) >>
+=head2 C<< $ff->set_tab_content( $tab, $html, %options ) >>
 
-    $ff->set_tab_content('<html><h1>Hello</h1></html>');
+    $ff->set_tab_content('<html><h1>Hello</h1></html>')->get;
 
 This is a more general method that allows you to replace
 the HTML of an arbitrary tab, and not only the tab that
@@ -585,50 +585,18 @@ loaded.
 
 =cut
 
-sub set_tab_content {
-    my ($self, $tab, $content, $repl) = @_;
+sub set_tab_content( $self, $content, %options) {
     my $url = URI->new('data:');
     $url->media_type("text/html");
     $url->data($content);
 
-    $tab ||= $self->tab;
-    $repl ||= $self->repl;
+    $self->driver->send_command('WebDriver:Navigate', { url => "".$url,  });
 
-    $tab->{linkedBrowser}->loadURI("".$url);
+    #$tab ||= $self->tab;
+    #$repl ||= $self->repl;
+    #
+    #$tab->{linkedBrowser}->loadURI("".$url);
 };
-
-=head2 C<< $ff->bool_ff_to_perl $val >>
-
-Normalizes the (checkbox) truth value C<$val> to 1 or 0.
-
-Different Firefox versions return C<true> or C<false>
-as the checkbox values. This function converts
-a Firefox checkbox value to 1 or 0.
-
-=cut
-
-# FF 31 has 1,0
-sub bool_ff_to_perl {
-    my( $self, $value )= @_;
-    $value
-}
-
-=head2 C<< $ff->bool_perl_to_ff $val >>
-
-Normalizes the truth value C<$val> to 1 or 0.
-
-Different Firefox versions want C<true> or C<false>
-as the checkbox values. This function converts
-a Perl truth value to 1 or 0 respectively C<true> or C<false>,
-depending on what Firefox wants.
-
-=cut
-
-# FF 31 has 1,0
-sub bool_perl_to_ff {
-    my( $self, $value )= @_;
-    $value ? 1 : 0
-}
 
 =head1 TODO
 
@@ -647,7 +615,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2009-2013 by Max Maischein C<corion@cpan.org>.
+Copyright 2009-2018 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
