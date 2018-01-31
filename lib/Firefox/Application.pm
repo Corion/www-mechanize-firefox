@@ -353,11 +353,9 @@ Returns information about Firefox as a Future.
 =cut
 
 sub appinfo( $self ) {
-    my $res = Future->new();
-    $self->_have_info->on_done(sub( $info ) {
-        $res->done( $info->get );
+    $self->_have_info->transform(done => sub( $info ) {
+        $info
     });
-    return $res
 };
 
 =head2 C<< $ff->current_profile >>
