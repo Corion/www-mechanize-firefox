@@ -29,8 +29,6 @@ my $lives;
 my @addons;
 
 my $info = $ff->appinfo->get;
-use Data::Dumper;
-warn Dumper $info;
 diag sprintf "Connected to %s version %s",
     $info->{browserName},
     $info->{browserVersion};
