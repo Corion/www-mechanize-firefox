@@ -88,6 +88,11 @@ has '_log' => (
     default => \&_build_log,
 );
 
+has '_have_info' => (
+    is => 'lazy',
+    default => sub { Future->new() },
+);
+
 sub _build_log( $self ) {
     require Log::Log4perl;
     Log::Log4perl->get_logger(__PACKAGE__);
@@ -264,7 +269,7 @@ around BUILDARGS => sub ( $orig, $class, %options) {
     }
 
     $options{ extra_headers } ||= {};
-    
+
     unless ($options{pid} or $options{reuse}) {
         my @cmd= $class->build_command_line( \%options );
         #$self->log('debug', "Spawning", \@cmd);
@@ -308,7 +313,7 @@ sub connect( $self ) {
         $weakself->driver->send_command( 'WebDriver:NewSession', {} )
     })->then( sub ($info) {
         $weakself->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
-        $weakself->{ info } = $info;
+        $weakself->_have_info->done( $info->{capabilities} );
 
         my $ff_pid = $info->{capabilities}->{"moz:processID"};
         if( $weakself->{pid} and $ff_pid != $weakself->{pid}) {
@@ -328,12 +333,9 @@ sub connect( $self ) {
             die $err;
         };
     });
-
+    
+    $connect
 };
-
-=head2 C<< $ff->transport >>
-
-Gets the L<Firefox::Marionette::Transport> instance that is used.
 
 =head1 APPLICATION INFORMATION
 
@@ -341,32 +343,33 @@ Gets the L<Firefox::Marionette::Transport> instance that is used.
 
 =head2 C<< $ff->appinfo >>
 
-    my $info = $ff->appinfo;
+    my $info = $ff->appinfo->get;
     print 'ID      : ', $info->{};
     print 'name    : ', $info->{browserName};
     print 'version : ', $info->{browserVersion};
 
-Returns information about Firefox.
+Returns information about Firefox as a Future.
 
 =cut
 
 sub appinfo( $self ) {
-    #warn Dumper $self->{info}->{capabilities};
-    $self->{info}->{capabilities}
-    #$_[0]->repl->appinfo
+    my $res = Future->new();
+    $self->_have_info->on_ready(sub( $info ) {
+        $res->done( Future->unwrap( $info ));
+    });
+    return $res
 };
 
 =head2 C<< $ff->current_profile >>
 
-    print $ff->current_profile->{name}, "\n";
+    print $ff->current_profile, "\n";
 
-Returns currently selected profile as C<nsIToolkitProfile>.
-
-See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIToolkitProfile>.
+Returns the directory of the currently selected profile.
 
 =cut
 
-sub current_profile {
+sub current_profile( $self ) {
+    $self->appinfo->{"moz:profile"}
 }
 
 =head2 C<< $ff->find_profile( $name ) >>

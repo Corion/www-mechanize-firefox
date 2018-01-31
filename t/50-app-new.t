@@ -28,14 +28,17 @@ my $ff = Firefox::Application->new(
 my $lives;
 my @addons;
 
+my $info = $ff->appinfo->get;
+use Data::Dumper;
+warn Dumper $info;
 diag sprintf "Connected to %s version %s",
-    $ff->appinfo->{browserName},
-    $ff->appinfo->{browserVersion};
+    $info->{browserName},
+    $info->{browserVersion};
 
 # This test is broken as we don't pass the expected version around anymore...
 if (($exe) =~ /\b(\d+(\.\d+)+)\b/) {
     my $expected_version = $1;
-    is $ff->appinfo->{browserVersion}, $expected_version, "We connect to an instance with version $expected_version";
+    is $info->{browserVersion}, $expected_version, "We connect to an instance with version $expected_version";
 } else {
     SKIP: {
         skip "Don't know what version to expect", 1;
