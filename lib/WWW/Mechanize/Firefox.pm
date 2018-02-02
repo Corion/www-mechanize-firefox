@@ -1592,13 +1592,15 @@ Returns the current document URI.
 
 =cut
 
+sub uri_async( $self ) {
+    $self->driver->send_command('WebDriver:GetCurrentURL')->then(sub( $loc ) {
+        URI->new( $loc );
+    })
+}
+
 sub uri {
     my ($self) = @_;
-    my $loc = $self->tab->MozRepl::RemoteObject::Methods::dive(qw[
-        linkedBrowser
-        currentURI
-        asciiSpec ]);
-    return URI->new( $loc );
+    return $self->uri_async->get
 };
 
 =head1 CONTENT METHODS
