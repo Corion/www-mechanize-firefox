@@ -311,17 +311,21 @@ around BUILDARGS => sub ( $orig, $class, %options) {
     return \%options;
 };
 
-sub connect( $self ) {
-    # Synchronously connect here, just for easy API compatibility
+=head2 C<< $app->connect >>
 
-    my $err;
+  $app->connect->get()
+
+=cut
+
+sub connect( $self, $driver=$self->driver ) {
     weaken (my $weakself = $self);
-    my $connect = $self->driver->connect(
+    # Set up a timeout here
+    my $connect = $driver->connect(
         #new_tab => !$options{ reuse },
         #tab     => $options{ tab },
     )->then(sub {
         # Launch a new session
-        $weakself->driver->send_command( 'WebDriver:NewSession', {} )
+        $driver->send_command( 'WebDriver:NewSession', {} )
     })->then( sub ($info) {
         $weakself->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
         $weakself->_have_info->done( $info->{capabilities} );
