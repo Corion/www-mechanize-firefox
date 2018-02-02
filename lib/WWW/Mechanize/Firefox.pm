@@ -84,7 +84,7 @@ C<activate> - make the tab the active tab
 
 =item *
 
-C<launch> - name of the program to launch if we can't connect to it on
+C<launch_exe> - name of the program to launch if we can't connect to it on
 the first try.
 
 =item *
@@ -122,75 +122,42 @@ how Firefox identifies itself.
 
 =item *
 
-C<log> - array reference to log levels, passed through to L<MozRepl::RemoteObject>
-
-=item *
-
-C<bufsize> - L<Net::Telnet> buffer size, if the default of 1MB is not enough
-
-=item *
-
-C<events> - the set of default Javascript events to listen for while
-waiting for a reply. In fact, WWW::Mechanize::Firefox will almost always
-wait until a 'DOMContentLoaded' or 'load' event. 'pagehide' events
-will tell it for what frames to wait.
-
-The default set is
-
-  'DOMContentLoaded','load',
-  'pageshow',
-  'pagehide',
-  'error','abort','stop',
-
-=item *
-
 C<app> - a premade L<Firefox::Application>
-
-=item *
-
-C<repl> - a premade L<MozRepl::RemoteObject> instance or a connection string
-suitable for initializing one
-
-=item *
-
-C<use_queue> - whether to use the command queueing of L<MozRepl::RemoteObject>.
-Default is 1.
-
-=item *
-
-C<js_JSON> - whether to use native JSON encoder of Firefox
-
-    js_JSON => 'native', # force using the native JSON encoder
-
-The default is to autodetect whether a native JSON encoder is available and
-whether the transport is UTF-8 safe.
-
-=item *
-
-C<pre_events> - the events that are sent to an input field before its
-value is changed. By default this is C<[focus]>.
-
-=item *
-
-C<post_events> - the events that are sent to an input field after its
-value is changed. By default this is C<[blur, change]>.
 
 =back
 
 =cut
 
-sub new {
-    my ($class, %args) = @_;
+has 'app' => (
+    is => 'ro',
+);
 
+has 'autodie' => (
+    is => 'rw',
+    default => 1,
+);
+
+has 'current_form' => (
+    is => 'rw',
+    default => undef,
+);
+
+has 'response' => (
+    is => 'rw',
+    default => undef,
+);
+
+sub BUILDARGS( $class, %args ) {
+    my $connected;
     if (! ref $args{ app }) {
-        my @passthrough = qw(launch headless host port);
+        my @passthrough = qw(launch_exe launch_arg headless private profile host port);
         my %options = map { exists $args{ $_ } ? ($_ => delete $args{ $_ }) : () }
                       @passthrough;
         $args{ app } = Firefox::Application->new(
             %options
         );
-        $args{ app }->connect->get();
     };
+    $connected = $args{ app }->connect;
 
     if (my $tabname = delete $args{ tab }) {
         if (! ref $tabname) {
