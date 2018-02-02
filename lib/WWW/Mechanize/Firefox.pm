@@ -207,20 +207,11 @@ sub BUILDARGS( $class, %args ) {
         $args{ app }->activateTab( $args{ tab });
     };
 
-    $args{ response } ||= undef;
-    $args{ current_form } ||= undef;
-
     $args{ event_log } ||= [];
 
     my $agent = delete $args{ agent };
 
-    my $self= bless \%args, $class;
-
-    if( defined $agent ) {
-        $self->agent( $agent );
-    };
-
-    $self
+    \%args
 };
 
 sub DESTROY {
