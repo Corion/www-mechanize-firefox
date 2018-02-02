@@ -18,7 +18,6 @@ if (! t::helper::firefox_instances) {
     plan tests => 2;
 };
 
-#my $exe = 'firefox-versions\\58.0.1\\firefoxPortable.exe';
 my $exe = 'firefox-versions\\58.0.1\\App\\Firefox64\\firefox.exe';
 
 my $ff = Firefox::Application->new(
@@ -46,10 +45,8 @@ if (($exe) =~ /\b(\d+(\.\d+)+)\b/) {
     is $info->{browserVersion}, $expected_version, "We connect to an instance with version $expected_version";
 
     ok kill(0, $pid), "PID $pid is alive";
-    warn kill(0, $pid);
 
     $ff->set_tab_content("<html>Hello World</html>")->get;
-    sleep 10;
 
     $ff->quit->get;
 

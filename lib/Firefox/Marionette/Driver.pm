@@ -10,7 +10,7 @@ use Carp qw(croak carp);
 use JSON;
 use Data::Dumper;
 use Firefox::Marionette::Transport;
-use Net::Protocol::JSONWire qw( decode_message encode_message );
+use Net::Protocol::Marionette qw( decode_message encode_message );
 use Scalar::Util 'weaken', 'isweak';
 use Try::Tiny;
 
@@ -64,6 +64,10 @@ has 'remote_info' => (
     is => 'rw',
 );
 
+has 'connected' => (
+    is => 'rw',
+);
+
 sub tab( $self ) { $self->{tab} }
 sub future( $self ) { $self->transport->future }
 
@@ -110,6 +114,7 @@ sub connect( $self, %args ) {
     # If we are still connected to a different tab, disconnect from it
     if( $self->transport and ref $self->transport ) {
         $self->transport->close();
+        $self->connected(undef);
     };
     
     my $transport = delete $args{ transport }
@@ -129,8 +134,11 @@ sub connect( $self, %args ) {
         log     => sub { $self->log( @_ ) },
         host    => $self->host,
         port    => $self->port,
-    );
+    )->on_done(sub {
+        $self->connected(1);
+    });
 
+    # XXX this tab setup belongs to WWW::Mechanize::Firefox, not to the driver
     if( $args{ new_tab }) {
         $connected = $connected->then( sub {
             $self->new_tab()
@@ -209,6 +217,7 @@ sub connect( $self, %args ) {
 sub close( $self ) {
     if( my $t = $self->transport) {
         $t->close() if ref $t;
+        $self->connected(undef);
     };
 };
 
@@ -217,8 +226,7 @@ sub sleep( $self, $seconds ) {
 };
 
 sub DESTROY( $self ) {
-    delete $self->{ua};
-    $self->close;
+    $self->close if $self->connected();
 }
 
 sub one_shot( $self, @events ) {
@@ -300,7 +308,7 @@ sub on_response( $self, $response ) {
                 $self->log( 'debug', "Ignored response to unknown receiver", $response )
 
             } elsif( my $error = $response->[2] ) { # error
-                $self->log( 'debug', "Replying to error $response->{id}", $response );
+                $self->log( 'debug', "Replying to error $id", $response );
                 $receiver->die( "remote error", "error" => $error );
             } else {
                 $self->log( 'trace', "Got reply to $id", $response->[3] );
@@ -345,44 +353,6 @@ sub send_command( $self, $method, @args ) {
 sub send_response( $self, @args ) {
     my $id = $self->next_sequence;
     $self->transport->socket_write( encode_message( [ +1, $id, @args ]));
-}
-
-=head2 C<< $chrome->send_packet >>
-
-  $chrome->send_packet('????',
-      accept => JSON::true,
-  );
-
-Sends a JSON packet to the remote end
-
-=cut
-
-sub send_packet( $self, $topic, %params ) {
-    $self->_send_packet( $topic, %params )
-}
-
-=head2 C<< $chrome->send_message >>
-
-  my $future = $chrome->send_message('DOM.querySelectorAll',
-      selector => 'p',
-      nodeId => $node,
-  );
-  my $nodes = $future->get;
-
-This function expects a response. The future will not be resolved until Chrome
-has sent a response to this query.
-
-=cut
-
-sub send_message( $self, $method, %params ) {
-    my $response = $self->future;
-    # We add our response listener before we've even sent our request to
-    # Chrome. This ensures that no amount of buffering etc. will make us
-    # miss a reply from Chrome to a request
-    my $f;
-    $f = $self->_send_packet( $response, $method, %params );
-    $f->on_ready( sub { undef $f });
-    $response
 }
 
 =head2 C<< $chrome->evaluate >>

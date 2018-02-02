@@ -2,6 +2,8 @@ package Firefox::Application;
 use strict;
 use Moo 2;
 
+use File::Temp 'tempdir';
+
 use Filter::signatures;
 no warnings 'experimental::signatures';
 use feature 'signatures';
@@ -118,12 +120,11 @@ sub log( $self, $level, $message, @args ) {
 }
 
 sub DESTROY {
-    my ($self) = @_;
-    local $@;
-    #warn "App cleaning up";
-    if (my $driver = delete $self->{driver} ) {
-        $driver->close
-    };
+    if( my $driver = $_[0]->{driver}) {
+        if( $driver->connected ) {
+            $_[0]->quit->get
+        }
+    }
 }
 
 sub build_command_line {
@@ -314,17 +315,21 @@ around BUILDARGS => sub ( $orig, $class, %options) {
     return \%options;
 };
 
-sub connect( $self ) {
-    # Synchronously connect here, just for easy API compatibility
+=head2 C<< $app->connect >>
 
-    my $err;
+  $app->connect->get()
+
+=cut
+
+sub connect( $self, $driver=$self->driver ) {
     weaken (my $weakself = $self);
-    my $connect = $self->driver->connect(
+    # Set up a timeout here
+    my $connect = $driver->connect(
         #new_tab => !$options{ reuse },
         #tab     => $options{ tab },
     )->then(sub {
         # Launch a new session
-        $weakself->driver->send_command( 'WebDriver:NewSession', {} )
+        $driver->send_command( 'WebDriver:NewSession', {} )
     })->then( sub ($info) {
         $weakself->log( "debug", "Connected to Firefox " . $info->{capabilities}->{browserVersion} );
         $weakself->_have_info->done( $info->{capabilities} );
@@ -339,40 +344,17 @@ sub connect( $self ) {
     })->catch( sub($_err) {
         # if Firefox started, but so slow or unresponsive that we cannot connect
         # to it, kill it manually to avoid waiting for it indefinitely
-        if ( $err ) {
+        if ( $_err ) {
             if( $self->{ kill_pid } and my $pid = delete $self->{ pid }) {
                 local $SIG{CHLD} = 'IGNORE';
                 kill 'SIGKILL' => $pid;
             };
-            die $err;
+            die $_err;
         };
     });
 
     $connect
 };
-
-=head2 C<< $ff->quit >>
-
-  $ff->quit->get;
-
-Quits Firefox
-
-=cut
-
-sub quit( $self ) {
-    my $res = $self->driver->send_command('Marionette:Quit');
-    if( $self->{kill_pid}) {
-        $res = $res->on_done(sub {
-            waitpid $self->pid, 0;
-            my $ff_pid = $self->appinfo->get->{'moz:processID'};
-
-            if( $ff_pid != $self->pid ) {
-                waitpid $ff_pid, 0;
-            };
-        });
-    };
-    $res
-}
 
 =head1 APPLICATION INFORMATION
 
@@ -436,19 +418,7 @@ See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIToolkitProfi
 sub profiles {
     my ($self) = @_;
 
-    my $getProfiles = $self->repl->declare(<<'JS', 'list');
-        function () {
-            var toolkitProfileService = Components.classes["@mozilla.org/toolkit/profile-service;1"]
-                            .createInstance(Components.interfaces.nsIToolkitProfileService);
-            var res = new Array;
-            var i = toolkitProfileService.profiles;
-            while( i.hasMoreElements() ) {
-                res.push( i.getNext() );
-            };
-            return res
-        }
-JS
-    $getProfiles->()
+    croak "->profiles() is not implemented";
 }
 
 =head1 UI METHODS
@@ -466,10 +436,6 @@ option.
 The recognized options are:
 
 =over 4
-
-=item *
-
-C<repl> - the repl to use. By default it will use C<< $ff->repl >>.
 
 =item *
 
@@ -597,6 +563,28 @@ sub set_tab_content( $self, $content, %options) {
     #
     #$tab->{linkedBrowser}->loadURI("".$url);
 };
+
+=head2 C<< $ff->quit( %options ) >>
+
+  $ff->quit()->get; # quit
+
+Quits the application
+
+=cut
+
+sub quit( $self, %options ) {
+    my $driver = $self->driver;
+    if( $driver->connected ) {
+        $driver->send_command('Marionette:Quit')->then(sub {;
+            $driver->close;
+            Future->done
+        });
+    };
+};
+
+=head1 SEE ALSO
+
+L<Firefox::Marionette> - another module for automating Firefox
 
 =head1 TODO
 
