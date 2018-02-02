@@ -583,6 +583,22 @@ sub set_tab_content( $self, $content, %options) {
     #$tab->{linkedBrowser}->loadURI("".$url);
 };
 
+=head2 C<< $ff->quit( %options ) >>
+
+  $ff->quit()->get; # quit
+
+Quits the application
+
+=cut
+
+sub quit( $self, %options ) {
+    $self->driver->send_command('WebDriver:quit');
+};
+
+=head1 SEE ALSO
+
+L<Firefox::Marionette> - another module for automating Firefox
+
 =head1 TODO
 
 =over 4
