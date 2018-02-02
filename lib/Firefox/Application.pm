@@ -354,29 +354,6 @@ sub connect( $self, $driver=$self->driver ) {
     $connect
 };
 
-=head2 C<< $ff->quit >>
-
-  $ff->quit->get;
-
-Quits Firefox
-
-=cut
-
-sub quit( $self ) {
-    my $res = $self->driver->send_command('Marionette:Quit');
-    if( $self->{kill_pid}) {
-        $res = $res->on_done(sub {
-            waitpid $self->pid, 0;
-            my $ff_pid = $self->appinfo->get->{'moz:processID'};
-
-            if( $ff_pid != $self->pid ) {
-                waitpid $ff_pid, 0;
-            };
-        });
-    };
-    $res
-}
-
 =head1 APPLICATION INFORMATION
 
 =cut
