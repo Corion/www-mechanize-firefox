@@ -433,19 +433,7 @@ See L<https://developer.mozilla.org/en/XPCOM_Interface_Reference/nsIToolkitProfi
 sub profiles {
     my ($self) = @_;
 
-    my $getProfiles = $self->repl->declare(<<'JS', 'list');
-        function () {
-            var toolkitProfileService = Components.classes["@mozilla.org/toolkit/profile-service;1"]
-                            .createInstance(Components.interfaces.nsIToolkitProfileService);
-            var res = new Array;
-            var i = toolkitProfileService.profiles;
-            while( i.hasMoreElements() ) {
-                res.push( i.getNext() );
-            };
-            return res
-        }
-JS
-    $getProfiles->()
+    croak "->profiles() is not implemented";
 }
 
 =head1 UI METHODS
