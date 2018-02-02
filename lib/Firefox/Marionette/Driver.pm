@@ -300,7 +300,7 @@ sub on_response( $self, $response ) {
                 $self->log( 'debug', "Ignored response to unknown receiver", $response )
 
             } elsif( my $error = $response->[2] ) { # error
-                $self->log( 'debug', "Replying to error $response->{id}", $response );
+                $self->log( 'debug', "Replying to error $id", $response );
                 $receiver->die( "remote error", "error" => $error );
             } else {
                 $self->log( 'trace', "Got reply to $id", $response->[3] );
