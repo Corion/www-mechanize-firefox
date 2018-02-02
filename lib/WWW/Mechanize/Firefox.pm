@@ -16,7 +16,7 @@ use HTML::Selector::XPath 'selector_to_xpath';
 use MIME::Base64 'decode_base64';
 use WWW::Mechanize::Link;
 use Firefox::Application;
-use HTTP::Cookies::MozRepl ();
+#use HTTP::Cookies::MozRepl ();
 use HTTP::Request::Common ();
 use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
