@@ -1,6 +1,12 @@
 package WWW::Mechanize::Firefox;
 use 5.006; #weaken
 use strict;
+use Moo 2;
+
+use Filter::signatures;
+no warnings 'experimental::signatures';
+use feature 'signatures';
+
 use Time::HiRes qw(sleep); # hires sleep()
 
 use URI ();
