@@ -2056,9 +2056,12 @@ Returns the current document title.
 
 =cut
 
-sub title {
-    my ($self) = @_;
-    return $self->document->{title};
+sub title_async( $self ) {
+    $self->driver->send_command('WebDriver:GetTitle')
+}
+
+sub title($self) {
+    $self->title_async->get
 };
 
 =head1 EXTRACTION METHODS
