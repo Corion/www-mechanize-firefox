@@ -22,7 +22,8 @@ use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
 use Carp qw(carp croak );
 
-use vars qw'%link_spec @CARP_NOT';
+our %link_spec;
+our @CARP_NOT;
 our $VERSION = '1.00';
 
 =head1 NAME
