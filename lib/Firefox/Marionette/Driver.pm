@@ -131,6 +131,7 @@ sub connect( $self, %args ) {
         port    => $self->port,
     );
 
+    # XXX this tab setup belongs to WWW::Mechanize::Firefox, not to the driver
     if( $args{ new_tab }) {
         $connected = $connected->then( sub {
             $self->new_tab()
