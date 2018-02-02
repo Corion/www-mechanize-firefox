@@ -118,12 +118,9 @@ sub log( $self, $level, $message, @args ) {
 }
 
 sub DESTROY {
-    my ($self) = @_;
-    local $@;
-    #warn "App cleaning up";
-    if (my $driver = delete $self->{driver} ) {
-        $driver->close
-    };
+    if( $_[0]->{driver}) {
+        $_[0]->quit->get
+    }
 }
 
 sub build_command_line {
