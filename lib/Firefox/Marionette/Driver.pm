@@ -347,44 +347,6 @@ sub send_response( $self, @args ) {
     $self->transport->socket_write( encode_message( [ +1, $id, @args ]));
 }
 
-=head2 C<< $chrome->send_packet >>
-
-  $chrome->send_packet('????',
-      accept => JSON::true,
-  );
-
-Sends a JSON packet to the remote end
-
-=cut
-
-sub send_packet( $self, $topic, %params ) {
-    $self->_send_packet( $topic, %params )
-}
-
-=head2 C<< $chrome->send_message >>
-
-  my $future = $chrome->send_message('DOM.querySelectorAll',
-      selector => 'p',
-      nodeId => $node,
-  );
-  my $nodes = $future->get;
-
-This function expects a response. The future will not be resolved until Chrome
-has sent a response to this query.
-
-=cut
-
-sub send_message( $self, $method, %params ) {
-    my $response = $self->future;
-    # We add our response listener before we've even sent our request to
-    # Chrome. This ensures that no amount of buffering etc. will make us
-    # miss a reply from Chrome to a request
-    my $f;
-    $f = $self->_send_packet( $response, $method, %params );
-    $f->on_ready( sub { undef $f });
-    $response
-}
-
 =head2 C<< $chrome->evaluate >>
 
 =cut
