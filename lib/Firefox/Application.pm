@@ -460,10 +460,6 @@ The recognized options are:
 
 =item *
 
-C<repl> - the repl to use. By default it will use C<< $ff->repl >>.
-
-=item *
-
 C<autoclose> - whether to automatically close the tab at program exit. Default is
 to close the tab.
 
