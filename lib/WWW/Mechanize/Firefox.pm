@@ -1664,8 +1664,7 @@ The allowed values are C<html> and C<text>. The default is C<html>.
 
 =cut
 
-sub content {
-    my ($self, %options) = @_;
+sub content_async( $self, %options ) {
     $options{ format } ||= 'html';
 
     my $d = delete $options{ document } || $self->document; # keep a reference to it!
@@ -1673,31 +1672,23 @@ sub content {
     my $content;
 
     if( $format eq 'html' ) {
-        my $html = $self->repl->declare(<<'JS', 'list');
-            function(d){
-                var e = d.createElement("div");
-                e.appendChild(d.documentElement.cloneNode(true));
-                return [e.innerHTML,d.inputEncoding];
-            }
-JS
-        # We return the raw bytes here.
-        ($content,my $encoding) = $html->($d);
-        if (! utf8::is_utf8($content)) {
-            #warn "Switching on UTF-8 (from $encoding)";
-            # Switch on UTF-8 flag
-            # This should never happen, as JSON::XS (and JSON) should always
-            # already return proper UTF-8
-            # But it does happen.
-            $content = Encode::decode($encoding, $content);
-        };
+        $content = $self->driver->send_command('WebDriver:GetPageSource',
+            { sessionId => $self->sessionId }
+        );
+
     } elsif ( $format eq 'text' ) {
         $content = $self->text;
     }
     else {
-        $self->die( qq{Unknown "format" parameter "$format"} );
+        die qq{Unknown "format" parameter "$format"};
     }
 
     return $content
+}
+
+sub content {
+    my ($self, %options) = @_;
+    $self->content_async(%options)->get
 };
 
 =head2 C<< $mech->text() >>
