@@ -194,17 +194,7 @@ sub BUILDARGS( $class, %args ) {
     if (delete $args{ autoclose }) {
         $args{ app }->autoclose_tab($args{ tab });
     };
-    if (! exists $args{ autodie }) { $args{ autodie } = 1 };
 
-    #$args{ events } ||= [
-    #                  'DOMContentLoaded','load',
-    #                  'pageshow', # Navigation from cache will use "pageshow"
-    #                  #'pagehide',
-    #                  'error','abort','stop',
-    #];
-    $args{ on_event } ||= undef;
-    $args{ pre_value } ||= ['focus'];
-    $args{ post_value } ||= ['change','blur'];
     if( ! exists $args{ frames }) {
         $args{ frames } ||= 1; # we default to searching frames
     };
