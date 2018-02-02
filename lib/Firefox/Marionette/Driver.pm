@@ -64,6 +64,10 @@ has 'remote_info' => (
     is => 'rw',
 );
 
+has 'connected' => (
+    is => 'rw',
+);
+
 sub tab( $self ) { $self->{tab} }
 sub future( $self ) { $self->transport->future }
 
@@ -110,6 +114,7 @@ sub connect( $self, %args ) {
     # If we are still connected to a different tab, disconnect from it
     if( $self->transport and ref $self->transport ) {
         $self->transport->close();
+        $self->connected(undef);
     };
     
     my $transport = delete $args{ transport }
@@ -129,7 +134,9 @@ sub connect( $self, %args ) {
         log     => sub { $self->log( @_ ) },
         host    => $self->host,
         port    => $self->port,
-    );
+    )->on_done(sub {
+        $self->connected(1);
+    });
 
     # XXX this tab setup belongs to WWW::Mechanize::Firefox, not to the driver
     if( $args{ new_tab }) {
@@ -210,6 +217,7 @@ sub connect( $self, %args ) {
 sub close( $self ) {
     if( my $t = $self->transport) {
         $t->close() if ref $t;
+        $self->connected(undef);
     };
 };
 
@@ -218,8 +226,7 @@ sub sleep( $self, $seconds ) {
 };
 
 sub DESTROY( $self ) {
-    delete $self->{ua};
-    $self->close;
+    $self->close if $self->connected();
 }
 
 sub one_shot( $self, @events ) {

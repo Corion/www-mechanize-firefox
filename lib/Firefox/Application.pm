@@ -120,8 +120,10 @@ sub log( $self, $level, $message, @args ) {
 }
 
 sub DESTROY {
-    if( $_[0]->{driver}) {
-        $_[0]->quit->get
+    if( my $driver = $_[0]->{driver}) {
+        if( $driver->connected ) {
+            $_[0]->quit->get
+        }
     }
 }
 
@@ -571,7 +573,13 @@ Quits the application
 =cut
 
 sub quit( $self, %options ) {
-    $self->driver->send_command('WebDriver:quit');
+    my $driver = $self->driver;
+    if( $driver->connected ) {
+        $driver->send_command('Marionette:Quit')->then(sub {;
+            $driver->close;
+            Future->done
+        });
+    };
 };
 
 =head1 SEE ALSO

@@ -45,10 +45,8 @@ if (($exe) =~ /\b(\d+(\.\d+)+)\b/) {
     is $info->{browserVersion}, $expected_version, "We connect to an instance with version $expected_version";
 
     ok kill(0, $pid), "PID $pid is alive";
-    warn kill(0, $pid);
 
     $ff->set_tab_content("<html>Hello World</html>")->get;
-    sleep 10;
 
     $ff->quit->get;
 
