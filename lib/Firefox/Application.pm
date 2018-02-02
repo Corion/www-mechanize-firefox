@@ -336,12 +336,12 @@ sub connect( $self ) {
     })->catch( sub($_err) {
         # if Firefox started, but so slow or unresponsive that we cannot connect
         # to it, kill it manually to avoid waiting for it indefinitely
-        if ( $err ) {
+        if ( $_err ) {
             if( $self->{ kill_pid } and my $pid = delete $self->{ pid }) {
                 local $SIG{CHLD} = 'IGNORE';
                 kill 'SIGKILL' => $pid;
             };
-            die $err;
+            die $_err;
         };
     });
 
