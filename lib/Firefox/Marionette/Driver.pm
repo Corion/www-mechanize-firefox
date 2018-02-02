@@ -10,7 +10,7 @@ use Carp qw(croak carp);
 use JSON;
 use Data::Dumper;
 use Firefox::Marionette::Transport;
-use Net::Protocol::JSONWire qw( decode_message encode_message );
+use Net::Protocol::Marionette qw( decode_message encode_message );
 use Scalar::Util 'weaken', 'isweak';
 use Try::Tiny;
 

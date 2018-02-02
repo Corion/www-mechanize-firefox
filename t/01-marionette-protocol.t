@@ -5,7 +5,7 @@ use Cwd;
 use URI::file;
 use File::Basename;
 use File::Spec;
-use Net::Protocol::JSONWire qw(decode_message encode_message);
+use Net::Protocol::Marionette qw(decode_message encode_message);
 
 my @cases_ok = (
     { name      => 'leading zeroes',

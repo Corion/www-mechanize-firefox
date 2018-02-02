@@ -1,4 +1,4 @@
-package Net::Protocol::JSONWire;
+package Net::Protocol::Marionette;
 use strict;
 use Filter::signatures;
 no warnings 'experimental::signatures';
@@ -11,11 +11,11 @@ our @EXPORT_OK = qw(decode_message encode_message valid_input);
 
 =head1 NAME
 
-Net::Protocol::JSONWire - parse the JSON Wire / Mozilla Marionette protocol (v2 and v3)
+Net::Protocol::Marionette - parse the JSON Wire / Mozilla Marionette protocol (v2 and v3)
 
 =head1 SYNOPSIS
 
-  use Net::Protocol::JSONWire qw(decode_message encode_message);
+  use Net::Protocol::Marionette qw(decode_message encode_message);
 
   my $buffer = '';
   NEED_MORE_INPUT:
@@ -89,7 +89,7 @@ sub valid_input( $buffer_r ) {
 
 =head1 SEE ALSO
 
-L<Firefox::Marionette> - drive Firefox using the JSONWire/Marionette
+L<Firefox::Marionette> - drive Firefox using the Marionette
 protocol directly
 
 
