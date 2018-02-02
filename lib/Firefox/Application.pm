@@ -2,6 +2,8 @@ package Firefox::Application;
 use strict;
 use Moo 2;
 
+use File::Temp 'tempdir';
+
 use Filter::signatures;
 no warnings 'experimental::signatures';
 use feature 'signatures';
@@ -132,7 +134,7 @@ sub build_command_line {
                                       : 'firefox-bin';
 
     $options->{ launch_exe } ||= $ENV{FIREFOX_BIN} || $default_exe;
-    $options->{ launch_arg } ||= [];
+    $options->{ launch_arg } ||= ['--no-remote','-profile', tempdir(CLEANUP => 1)];
 
     # We want a disconnected separate FF here
     unshift @{ $options->{ launch_arg }}, '--no-remote','--new-instance';
