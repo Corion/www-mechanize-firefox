@@ -44,6 +44,15 @@ that plugin in your Firefox.
 
 For more examples see L<WWW::Mechanize::Firefox::Examples>.
 
+=head1 IMPORTANT NOTICE
+
+The Mozrepl plugin that this module uses no longer works due to key technologies
+it depends on being retired from the Mozilla platform in November 2017.
+
+According the github repo L<https://github.com/bard/mozrepl>, the last known compatible version is Firefox 54.
+
+Therefore this module cannot be used on Firefox versions greather than 54.
+
 =head1 CONSTRUCTOR and CONFIGURATION
 
 =head2 C<< $mech->new( %args ) >>
