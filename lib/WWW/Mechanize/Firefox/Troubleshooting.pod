@@ -13,6 +13,9 @@ It is distributed under the name Waterfox at:
 
 L<https://www.waterfoxproject.org/en-US/waterfox/desktop/>
 
+Currently it does not seem to be compatible with the mozrepl plugin, so
+WWW::Mechanize::Firefox will not work with Waterfox.
+
 =head2 Tests
 
 If you notice that tests get skipped and/or the module installs
