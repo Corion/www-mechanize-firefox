@@ -48,7 +48,7 @@ found, the constructor dies.
 - `create` - will create a new tab if no existing tab matching
 the criteria given in `tab` can be found.
 - `activate` - make the tab the active tab
-- `launch` - name of the program to launch if we can't connect to it on
+- `launch_exe` - name of the program to launch if we can't connect to it on
 the first try.
 - `frames` - an array reference of ids of subframes to include when
 searching for elements on a page.
@@ -76,36 +76,7 @@ the `autodie` accessor. True by default to make error checking easier.
 
 - `agent` - the name of the User Agent to use. This overrides
 how Firefox identifies itself.
-- `log` - array reference to log levels, passed through to [MozRepl::RemoteObject](https://metacpan.org/pod/MozRepl::RemoteObject)
-- `bufsize` - [Net::Telnet](https://metacpan.org/pod/Net::Telnet) buffer size, if the default of 1MB is not enough
-- `events` - the set of default Javascript events to listen for while
-waiting for a reply. In fact, WWW::Mechanize::Firefox will almost always
-wait until a 'DOMContentLoaded' or 'load' event. 'pagehide' events
-will tell it for what frames to wait.
-
-    The default set is
-
-        'DOMContentLoaded','load',
-        'pageshow',
-        'pagehide',
-        'error','abort','stop',
-
 - `app` - a premade [Firefox::Application](https://metacpan.org/pod/Firefox::Application)
-- `repl` - a premade [MozRepl::RemoteObject](https://metacpan.org/pod/MozRepl::RemoteObject) instance or a connection string
-suitable for initializing one
-- `use_queue` - whether to use the command queueing of [MozRepl::RemoteObject](https://metacpan.org/pod/MozRepl::RemoteObject).
-Default is 1.
-- `js_JSON` - whether to use native JSON encoder of Firefox
-
-        js_JSON => 'native', # force using the native JSON encoder
-
-    The default is to autodetect whether a native JSON encoder is available and
-    whether the transport is UTF-8 safe.
-
-- `pre_events` - the events that are sent to an input field before its
-value is changed. By default this is `[focus]`.
-- `post_events` - the events that are sent to an input field after its
-value is changed. By default this is `[blur, change]`.
 
 ## `$mech->agent( $product_id );`
 

@@ -6,6 +6,15 @@ WWW::Mechanize::Firefox::Troubleshooting - Things to watch out for
 
 =head1 Installation
 
+=head2 Firefox vs. Waterfox
+
+There is a version of the browser codebase that is supposedly still maintained.
+It is distributed under the name Waterfox at:
+
+L<https://www.waterfoxproject.org/en-US/waterfox/desktop/>
+
+=head2 Tests
+
 If you notice that tests get skipped and/or the module installs
 but "does not seem to work", there are some more steps required
 to configure Firefox. Please see L<WWW::Mechanize::Firefox::Installation>
@@ -204,7 +213,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2010-2014 by Max Maischein C<corion@cpan.org>.
+Copyright 2010-2018 by Max Maischein C<corion@cpan.org>.
 
 All Rights Reserved. This module is free software. It may be used,
 redistributed and/or modified under the same terms as Perl itself.
