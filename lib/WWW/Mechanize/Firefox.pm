@@ -143,11 +143,6 @@ has 'current_form' => (
     default => undef,
 );
 
-has 'response' => (
-    is => 'rw',
-    default => undef,
-);
-
 sub BUILDARGS( $class, %args ) {
     my $connected;
     if (! ref $args{ app }) {
@@ -253,10 +248,6 @@ sub agent {
   $mech->autodie(0);
 
 Accessor to get/set whether warnings become fatal.
-
-=cut
-
-sub autodie { $_[0]->{autodie} = $_[1] if @_ == 2; $_[0]->{autodie} }
 
 =head2 C<< $mech->events() >>
 
@@ -3065,9 +3056,6 @@ and on calls to C<< ->submit() >> and C<< ->submit_with_fields >>.
 
 =cut
 
-sub current_form {
-    $_[0]->{current_form}
-};
 sub clear_current_form {
     undef $_[0]->{current_form};
 };
