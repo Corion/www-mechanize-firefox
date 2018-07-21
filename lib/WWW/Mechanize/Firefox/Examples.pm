@@ -15,7 +15,6 @@ package WWW::Mechanize::Firefox::Examples;
 #
 
 use strict;
-use vars qw($VERSION);
 our $VERSION = '1.00';
 
 1;
