@@ -20,6 +20,15 @@ that plugin in your Firefox.
 
 For more examples see [WWW::Mechanize::Firefox::Examples](https://metacpan.org/pod/WWW::Mechanize::Firefox::Examples).
 
+# IMPORTANT NOTICE
+
+The Mozrepl plugin that this module uses no longer works due to key technologies
+it depends on being retired from the Mozilla platform in November 2017.
+
+According the github repo [https://github.com/bard/mozrepl](https://github.com/bard/mozrepl), the last known compatible version is Firefox 54.
+
+Therefore this module cannot be used on Firefox versions greather than 54.
+
 # CONSTRUCTOR and CONFIGURATION
 
 ## `$mech->new( %args )`
