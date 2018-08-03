@@ -30,6 +30,7 @@ lib/WWW/Mechanize/Firefox/Examples.pm
 lib/WWW/Mechanize/Firefox/FAQ.pod
 lib/WWW/Mechanize/Firefox/Installation.pod
 lib/WWW/Mechanize/Firefox/Troubleshooting.pod
+LICENSE
 Makefile.PL
 makeppd.pl
 MANIFEST			This list of files

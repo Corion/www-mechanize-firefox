@@ -20,3 +20,5 @@ CVS/
 ^ppds/
 t/70-real-status-timeout.t
 ^MYMETA.*
+^clicktest.pl
+^new-tab.pl
