@@ -1,9 +1,8 @@
 package Firefox::Application::API40;
 use strict;
 use parent 'Firefox::Application';
-use vars qw($VERSION %addon_types);
 use MozRepl::RemoteObject qw(as_list);
-$VERSION = '0.80';
+our $VERSION = '0.80';
 
 =head1 NAME
 
@@ -50,7 +49,7 @@ Currently, no special support for AnyEvent is implemented.
 
 =cut
 
-%addon_types = (
+our %addon_types = (
     ADDON => 'extension',
     THEME => 'theme',
 );

@@ -3,8 +3,7 @@ use strict;
 use Carp qw(carp);
 use WWW::Mechanize::Firefox;
 use parent 'HTML::Display::Common';
-use vars qw($VERSION);
-$VERSION = '0.80';
+our $VERSION = '0.80';
 
 =head1 NAME
 

@@ -1,8 +1,7 @@
 package Firefox::Application::API35;
 use strict;
 use parent 'Firefox::Application';
-use vars qw($VERSION);
-$VERSION = '0.80';
+our $VERSION = '0.80';
 
 =head1 NAME
 

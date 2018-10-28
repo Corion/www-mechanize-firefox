@@ -18,9 +18,8 @@ use Scalar::Util qw'blessed weaken';
 use Encode qw(encode decode);
 use Carp qw(carp croak );
 
-use vars qw'$VERSION %link_spec @CARP_NOT';
-$VERSION = '0.80';
-@CARP_NOT = ('MozRepl::RemoteObject',
+our $VERSION = '0.80';
+our @CARP_NOT = ('MozRepl::RemoteObject',
              'MozRepl::AnyEvent',
              'MozRepl::RemoteObject::Instance'
              ); # we trust these blindly
@@ -2134,7 +2133,7 @@ or C<< ->selector >> when you want more control.
 
 =cut
 
-%link_spec = (
+our %link_spec = (
     a      => { url => 'href', },
     area   => { url => 'href', },
     frame  => { url => 'src', },

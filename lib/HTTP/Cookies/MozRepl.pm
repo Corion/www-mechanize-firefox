@@ -5,8 +5,7 @@ use MozRepl::RemoteObject 'as_list';
 use parent 'HTTP::Cookies';
 use Carp qw[croak];
 
-use vars qw[$VERSION];
-$VERSION = '0.80';
+our $VERSION = '0.80';
 
 =head1 NAME
 
