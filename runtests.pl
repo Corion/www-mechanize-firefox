@@ -1,5 +1,7 @@
-#!perl -w
+#!perl
 use strict;
+use warnings;
+use lib '.';
 use t::helper;
 use WWW::Mechanize::Firefox;
 use File::Glob qw( bsd_glob );
