@@ -20,7 +20,7 @@ if (! $mech) {
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 my $response;
 my $result = eval {
-    $response = $mech->get('http://cmcc.deviantart.com/', no_cache => 1); # a large website
+    $response = $mech->get('https://cmcc.deviantart.com/', no_cache => 1); # a large website
     1
 };
 ok $result, "We lived through the call";

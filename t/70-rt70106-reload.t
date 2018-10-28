@@ -21,10 +21,10 @@ if (! $mech) {
 
 isa_ok $mech, 'WWW::Mechanize::Firefox';
 
-my $next = 'http://www.google.com/services/';
+my $next = 'https://www.google.com/services/';
 my $res = eval { 
     for (1..25) {
-    printf "getting '$next'\n",
+    print "getting '$next'\n",
         $mech->get($next, synchronize => 0);
         my $png = $mech->content_as_png();
     };
