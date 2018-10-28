@@ -12,7 +12,7 @@ $eumm_version =~ s/_//;
 
 my $module = 'WWW::Mechanize::Firefox';
 (my $main_file = "lib/$module.pm" ) =~ s!::!/!g;
-(my $distbase = $module) =~ s!::!-!g;
+(my $distbase = lc $module) =~ s!::!-!g;
 
 my @tests = map { glob $_ } 't/*.t', 't/*/*.t';
 

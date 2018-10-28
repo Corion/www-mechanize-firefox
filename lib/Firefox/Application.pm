@@ -6,7 +6,7 @@ use URI ();
 use Carp qw(carp croak);
 
 use vars qw'$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 =head1 NAME
 

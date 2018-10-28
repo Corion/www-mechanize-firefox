@@ -1,5 +1,3 @@
-NAME
-
 WWW::Mechanize::Firefox - use Firefox as if it were WWW::Mechanize
 
 
@@ -21,9 +19,6 @@ Should you wish to install this module manually, the procedure is
   make test
   make install
 
-See lib/WWW/Mechanize/Firefox/Installation.pod for further hints on
-the Firefox Add-on that needs to be installed.
-  
 
 REPOSITORY
 
@@ -35,11 +30,23 @@ SUPPORT
 The public support forum of this module is
 L<http://perlmonks.org/>.
 
+TALKS
+
+I've given two talks about this module at Perl conferences:
+
+L<German Perl Workshop, German|http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.html>
+
+L<YAPC::Europe 2010, English|http://corion.net/talks/WWW-Mechanize-FireFox/www-mechanize-firefox.en.html>
+
+
 BUG TRACKER
 
 Please report bugs in this module via the RT CPAN bug queue at
 L<https://rt.cpan.org/Public/Dist/Display.html?Name=WWW-Mechanize-Firefox>
 or via mail to L<www-mechanize-firefox-Bugs@rt.cpan.org>.
+
+
+SEE ALSO
 
 AUTHOR
 

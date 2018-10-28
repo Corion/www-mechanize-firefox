@@ -14,39 +14,45 @@ TO DO:
     . Fix cloning of values for ->eval_in_page was broken by FF 30+
       https://blog.mozilla.org/addons/2014/04/10/changes-to-unsafewindow-for-the-add-on-sdk/
 
-0.80 to be released
-    . Typo fixes in XPath expressions in the documentation (Jerrad Pierce)
-    + ->get_local now accepts a basedir option
+0.80 2018-10-28
+    * Typo fixes in XPath expressions in the documentation (Jerrad Pierce)
+    * ->get_local now accepts a basedir option
+    * Tightened (test) prerequisites
+    * Removed Test::HTTP::LocalServer from inc/
+    * Note that this module needs Firefox 54 or earlier
+    * Waterfox doesn't currently work, patches welcome!
+    * Fixed RT88100
+    * Various test stability fixes
       
-0.79 20160524
-    ! Remove the 'pagehide' event from events that are considered
+0.79 2016-05-24
+    * Remove the 'pagehide' event from events that are considered
       completion events for a loaded page
       
       This should improve the stability of the test suite and other
       programs. If you find that some programs don't work anymore,
       you will need to add 'pagehide' to the 'events' array.
-    . Fix spurious debug output (contributed by ???)
-    . Fix ->save_url for Firefox 36+ (Thanks to Olivier Trichet)
+    * Fix spurious debug output (contributed by ???)
+    * Fix ->save_url for Firefox 36+ (Thanks to Olivier Trichet)
       Firefox isn't as tied to backwards compatibility as Perl is:
        https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIWebBrowserPersist#saveURI()
-    . Fix infinite loop while waiting (Thanks to Alexander)
+    * Fix infinite loop while waiting (Thanks to Alexander)
     
     * Note that Firefox 40+ doesn't nicely support getting at Javascript
       variables within a page anymore.
 
-0.78 20141026
+0.78 2014-10-26
     . Pull in fixed prerequisite MozRepl::RemoteObject v0.39
     . Test fixes
 
-0.77 20141020
+0.77 2014-10-20
     + Actually support coordinates for ->click({...}, $x, $y )
     . Test fixes
 
-0.76 20140810
+0.76 2014-08-10
     . Fix a POD error, causing a POD self-test to fail
     . No need to upgrade from 0.75
 
-0.75 20140727
+0.75 2014-07-27
     + Be even more paranoid about environment variables in Test::HTTP::LocalServer
       (change gleaned from WWW::Mechanize , as contributed by Karen Etheridge)
     + Allow the 'node' parameter to ->get_set_value() to fire the appropriate
@@ -72,7 +78,7 @@ TO DO:
         - 31.0.0
       
 
-0.74 20130507
+0.74 2013-05-07
     + ->xpath() now returns the best result depending on the query.
       This result type depends on the Firefox XPath implementation.
         //p will return a list of nodes
@@ -110,10 +116,10 @@ TO DO:
       version has problems with GPU acceleration. Debugging the exact conditions
       is propably not worth it.
 
-0.73 20130429
+0.73 2013-04-29
     . Added ->post, code and test contributed by dfaure
 
-0.72 20130412
+0.72 2013-04-12
     + Fix RT #84418
       This should make closing the Mechanize tab upon program exit more
       stable, especially when multiple Firefox windows are involved.
@@ -135,7 +141,7 @@ TO DO:
         - 19.0
         - 20.0.1
 
-0.71 20130209
+0.71 2013-02-09
     + Added 'persist' option to the ->save_content() method to allow user to
       set different PERSIST flags. Flag information -
       https://developer.mozilla.org/en-US/docs/XPCOM_Interface_Reference/nsIWebBrowserPersist
@@ -156,7 +162,7 @@ TO DO:
         - 18.0.2
         - 19.0
 
-0.70 20130123
+0.70 2013-01-23
     ! Fix crash when using ->*_visible and Firefox navigates away from
       the watched page. This resulted in
         TypeError: can't access dead object
@@ -184,7 +190,7 @@ TO DO:
         - 18.0
         - 19.0 beta
 
-0.69 20130118
+0.69 2013-01-18
     ! Redid the "page completed" logic because Firefox 18 fires
       events in an order that breaks WWW::Mechanize::Firefox.
       Please test this module version before upgrading!
@@ -217,13 +223,13 @@ TO DO:
     . Added HTML content encoding comments to shut up Firefox while testing
     . Slight diving optimizations in ->document()
 
-0.68 20120924
+0.68 2012-09-24
     . Add a test checking for iframe load events
     . Ephemeral documentation reorganized
     . Separate Installation document
     . No need to upgrade
 
-0.67 20120831
+0.67 2012-08-31
     . Only fetch slim version of ->response if asked for
       ->status or ->is_success
     . Fix RT #78706, where $mech->autoclose_tab() was broken
@@ -240,7 +246,7 @@ TO DO:
         - 13.0
         - 15.0
 
-0.66 20120607
+0.66 2012-06-07
     . Add example plus test on how to request arbitrary hostnames
       via the Host: header from an IP.
     ! ->set_visible() ignores inputs with type="image" now (RT #70730)
@@ -258,14 +264,14 @@ TO DO:
         - 10.0.5 (ESR)
         - 13.0
 
-0.65 20120409
+0.65 2012-04-09
     + Add ->add_header() and ->delete_header
       Adapted from code from http://d.hatena.ne.jp/oppara/20090410/p1
     + Also allow changing the User-Agent header now via ->agent()
     ! Bump prerequisite for MozRepl::RemoteObject to 0.31, which has
       moved __dive to MozRepl::RemoteObject::Methods
 
-0.64 20120329
+0.64 2012-03-29
     ! Bump prerequisite for MozRepl::RemoteObject to 0.30, which contains
       a bugfix for clobbered $@
     . Add test for clicking a button by value
@@ -279,10 +285,10 @@ TO DO:
     + Report more Firefox / Javascript errors from within the perspective of the caller
       instead of reporting lines within Firefox.pm
 
-0.63 20120316
+0.63 2012-03-16
     ! Fix bad test from v0.62, no other code changes
 
-0.62 20120316
+0.62 2012-03-16
     ! Fix bug in ->form_number that made it always fail when there
       was more than a single form on a page. Reported by Blake Willmarth.
     ! Explicitly import sleep() from Time::HiRes
@@ -293,16 +299,16 @@ TO DO:
       with PAR or App::fatpacker. You may need to review your list of
       automatically included modules.
 
-0.61 20120312
+0.61 2012-03-12
     . Fix code errors in WWW::Mechanize::Firefox::Cookbook
     . Allow to create a WWW::Mechanize::Firefox object if you already have
       an existing Firefox tab object.
 
-0.60 20120302
+0.60 2012-03-02
     . Fix test failing when Image::Info was unavailable
     ! Fix scaling bug in ->element_as_png()
 
-0.59 20120211
+0.59 2012-02-11
     + Report Javascript errors from the perspective of the caller
       instead of a location in WWW::Mechanize::Firefox
     ! ->wait_until_invisible() requeries selectors now instead
@@ -319,23 +325,23 @@ TO DO:
         - 9.0
         - 10.0
 
-0.58 20111128
+0.58 2011-11-28
     ! Fix cookie handling which was weirdly broken yet the tests passed.
       Session cookies now get returned
       Thanks to blakew for pointing that out
 
-0.57 20111102
+0.57 2011-11-02
     . Make relative queries work for ->selector()
       with "node => $foo"
       Reported by Rolf Langsdorf
 
-0.56 20111031
+0.56 2011-10-31
     . Make "frames => 0" work in constructor (+test)
 
-0.55 20110728
+0.55 2011-07-28
     . Re-release of 0.54, this time including t/helper.pm for the tests
 
-0.54 20110726
+0.54 2011-07-26
     + Bugfix: Tabs on FF4+ now only get closed once, preventing FF lockups
     + Bugfix: ->set_visible now also finds input fields without "type" attribute
     . ->set_visible() now also has tests
@@ -353,12 +359,12 @@ TO DO:
       be set via $ENV{TEST_WWW_MECHANIZE_FIREFOX_VERSIONS}
       The default is firefox-versions/*/FirefoxPortable*
 
-0.53 20110701
+0.53 2011-07-01
     ! Renamed ff-scrape.pl to scrape-ff.pl
     . scrape-ff.pl now supports attribute selection with CSS selectors
     + Bugfix: ->form_with_fields() ignored textarea and select fields
 
-0.52 20110509
+0.52 2011-05-09
     . Remove traces of Firefox 4 being unsupported
     . Added license to API35.pm and API40.pm
     . Upgrade local test server to more current incarnation
@@ -366,7 +372,7 @@ TO DO:
     . Document Firefox 4 bug
       L<https://bugzilla.mozilla.org/show_bug.cgi?id=649924>
 
-0.51 20110502
+0.51 2011-05-02
     . Add pageshow event to the default set of monitored events.
       Pageshow fires when a page is loaded from the cache.
     + Firefox 4 is now supported in addition to Firefox 3.5+
@@ -374,17 +380,17 @@ TO DO:
     + ->get() can now optionally not synchronize, like ->click(), suggested
       and coded by Dave Hansen
 
-0.50 20110411
+0.50 2011-04-11
     . implement ->text() and ->content( format => 'text' )
     + autodie is now on by default
     . The screenshot example can now also use the current tab
 
-0.49 20110403
+0.49 2011-04-03
     . Fix for RT #67195
       ->find_link_dom( text => 'foo' ) was (much) slower than it needed to be
       Fix and report by Dave Hansen
 
-0.48 20110317
+0.48 2011-03-17
     . Implemented ->click_button() function plus tests
       Tests courtesy of WWW::Mechanize 1.66
     . Allow "OR" for node type via using local-name(.) (the element name)
@@ -395,21 +401,21 @@ TO DO:
       support only, this can be reverted to
         local-name(.)
 
-0.47 20110311
+0.47 2011-03-11
     . Use URI::data instead of hand-rolling URI construction
     . Add missing prerequisites from LWP split-up
     + HTTP::Cookies::MozRepl can now ->set_cookie to create a cookie in Firefox
     * Bugfix: ->save_url() did not send cookies, reported and diagnosed by tcordes
     . Add test for ->save_url() and ->get() to check that they send cookies
 
-0.46 20110222
+0.46 2011-02-22
     . Add another, more local test for large pages
     . Add hint about bufsize to Troubleshooting.pod
     . Add test that bufsize actually takes effect
     ! Somewhat experimental squashing of multiple Xpath queries into one
       query - if this breaks your code, please supply test cases!
 
-0.45 20110208
+0.45 2011-02-08
     . eval_in_page raises errors from perspective of the caller
       instead of raising errors in Firefox.pm
     . Added ->by_id() method and { id => $id } option for
@@ -418,19 +424,19 @@ TO DO:
     . Improved tests checking fields with fancy:names
       or fancy:ids
 
-0.44 20100130
+0.44 2010-01-30
     . Allow ->click() on <input type="image"> inputs
       (provided by ysth, thanks)
     . Bump MozRepl::RemoteObject to 0.21 for better cleanup logic
 
-0.43 20110109
+0.43 2011-01-09
     ! Fix MozRepl::RemoteObject prerequisite version number
     ! Change event filtering logic for load progress listener to
       just pre-filter, and keep the main logic in Perl. This
       should fix intermittent crashes.
     . Add 'no_cache' option to ->get()
 
-0.42 20110106
+0.42 2011-01-06
     . Improved subroutine coverage to 95% on WWW::Mechanize::Firefox
     . Add test for ->forms in scalar context
     . Add test for ->forms in list context
@@ -443,7 +449,7 @@ TO DO:
     . Move page load progress listener into JS to reduce latency
     . Added ->on_event() accessor for convenient JS page load event debugging
 
-0.41 20101211
+0.41 2010-12-11
     . Remove failing test that didn't respect localized theme names
     . Fix (i)frame tests that didn't produce results due to embedding sites 
       that didn't load.
@@ -457,14 +463,14 @@ TO DO:
     . Reinstate `use_queue` that was broken in 0.39
     . ->synchronize() now captures events from the tab and the browser
 
-0.40 20101122
+0.40 2010-11-22
     + HTTP::Cookies::MozRepl now fetches cookies more quickly
     + Other functions also use bulk fetching for quicker
       information retrieval
     . The tests are now more resilient for proxies that return other
       "no DNS" errors than 500.
 
-0.39 20101120
+0.39 2010-11-20
     . Add Firefox::Application to contain UI manipulation things.
       The ->{repl} element is now not a hash element of WWW::Mechanize::Firefox
       anymore, but you shouldn't access the guts of an object anyway.
@@ -486,7 +492,7 @@ TO DO:
           use_queue => 0
       whether the difference actually stems from the queuing behaviour.
 
-0.38 20101119
+0.38 2010-11-19
     . Fix test for checking whether JS is enabled and whether it can be
       disabled to also work when the NoScript add-on is not installed.
     ! Fix test and code for ->response (and ->get()) when a HTTP proxy
@@ -500,7 +506,7 @@ TO DO:
     . The examples now have a common hashbang line
     . The examples don't use a private library directory anymore
 
-0.37 20101115
+0.37 2010-11-15
     . Switch out the code in WWW::Mechanize::Firefox::DSL
       in favour of Object::Import, which is the same codebase
       but intended for a wider audience than just W:M:F.
@@ -508,7 +514,7 @@ TO DO:
     . The C<any> option to ->xpath() (and ->selector, ->is_visible,...)
       allows to search for multiple nodes that may or may not exist
 
-0.36 20101017
+0.36 2010-10-17
     . Fix the mro.pm 5.10+ prerequisite by using the additional prerequisite
       MRO::Compat, which provides a transparent switch between mro.pm and its 
       own implementation for versions <5.9.x.
@@ -516,11 +522,11 @@ TO DO:
     . JS Errors when using ::DSL now get raised in the user code and not
       in ::Firefox or ::DSL
 
-0.35 20101014
+0.35 2010-10-14
     . Improve the error message of ->value() when no element is found
     . Implement ->tick() and ->untick()
 
-0.34 20101013
+0.34 2010-10-13
     . Make ->follow_link() also respect C<synchronize> by making ->follow_link()
       mostly synonymous with ->click()
     . Document the C<dom> option to ->click() (noted by M. Schwern)
@@ -530,7 +536,7 @@ TO DO:
     . Added section in Troubleshooting.pod on what C<synchronize> can be
       used for.
 
-0.33 20100819
+0.33 2010-08-19
     . Add ->activateTab() for setting the currently displayed tab
     . Now needs MozRepl::RemoteObject 0.13 as a prerequisite
     . Add activate => 1 option to constructor
@@ -541,7 +547,7 @@ TO DO:
       to 'name' and '^name'.
     + ->value() now also returns the values for select+option elements
 
-0.32 20100810
+0.32 2010-08-10
     . Add WWW::Mechanize::Firefox::FAQ as a list of frequently asked
       questions. As people now actually ask questions, this file
       has a reason to exist.
@@ -558,12 +564,12 @@ TO DO:
       encoding-sensitive code, so please send me test cases where it breaks
       for you.
 
-0.31 20100713
+0.31 2010-07-13
     . ->get now supports the :local_file shortcut for local saving
     . WWW::Mechanize::Firefox::Cookbook contains snippets
     . Documentation is more unified, short examples of function usage
 
-0.30 20100711
+0.30 2010-07-11
     . Add ->is_visible method to check for node visibility
     . Add ->wait_until_invisible method to wait until a node disappears
     . Add tests for the above
@@ -571,18 +577,18 @@ TO DO:
     . Added example program to send messages from the console to the Javascript
       console (intended to delineate the start/stop of test runs)
 
-0.29 20100704
+0.29 2010-07-04
     . Really fix bcat.pl and failing tests
     . Use Firefox XPath library for ->find_link( text_contains => ... )
     . Can't use Firefox XPath library for ->find_link( text_regex => ... )
       as Firefox does not seem to define fn:matches()
     . ->find_link() now really searches only the current frame, as Mechanize does
 
-0.28 20100702
+0.28 2010-07-02
     . Fix bcat.pl and failing tests
     . Add examples on how to access (and follow) the Error Console
 
-0.27 20100701
+0.27 2010-07-01
     . Add the examples to WWW::Mechanize::Firefox::Examples
     . Add test for (dis)allowing META redirects
     . Add author test to ensure Changes well-formedness
@@ -590,13 +596,13 @@ TO DO:
     . Fix behaviour of ->click() to correctly fail if no element is found
       when given as a name
 
-0.26 20100630
+0.26 2010-06-30
     . Add bcat.pl example to display text from the console in the browser
     . Make input fields work across frames
     . Add test for fields across frames
     . Make ->field() and ->value() respect the current form if any
 
-0.25 20100629
+0.25 2010-06-29
     . ->submit_form now can submit the current form without any fields
       specified. This was a fatal error before.
     . The Javascript code for closing a tab is now much shorter and likely
@@ -607,20 +613,20 @@ TO DO:
     . C<repl> constructor now also accepts host:port
     . Add `bcat.pl` example script to cat HTML to the browser.
 
-0.24 20100624
+0.24 2010-06-24
     ! ->find_link_dom now uses ->xpath and searches through frames
     ! Actually conform to WWW::Mechanize API by requiring a hashref
       in ->submit_form( with_fields => {} ). This might break your
       code, but it's a small change and makes the code fit the documentation.
 
-0.23 20100624
+0.23 2010-06-24
     . Add "maybe" option to ->xpath (and ->selector)
     . Add "all" option to ->xpath (and ->selector)
     . Add a sanity check that prevents calling ->xpath in scalar
       context if no item-count option is specified.
     . Unified code paths for frame expansion and document query
 
-0.22 20100623
+0.22 2010-06-23
     . Performance optimization:
       ->click() does not need a response
     . ->click() now uses ->xpath() to find elements
@@ -630,7 +636,7 @@ TO DO:
     . ->selector also takes an arrayref of queries
     . Added INSTALL file
 
-0.21 20100618
+0.21 2010-06-18
     ! value() method now returns the field value
     ! Frames are now searched by default for matching elements
       Use
@@ -639,50 +645,50 @@ TO DO:
           frames => ['content_frame']
       to whitelist frames to be searched
 
-0.20 20100610
+0.20 2010-06-10
     . Fix links in example documentation
     . Add tests for weirdo names containing square brackets
     . Fix finding fields that have square brackets in their attributes
 
-0.19 20100603
+0.19 2010-06-03
     . Added example programs
     . Generate example documentation by script from John McNamara
 
-0.18 20100518
+0.18 2010-05-18
     . ->submit() returns a true value now
     . added another test
     . Add test and fix bug in ->form_with_fields, which never worked properly
     . Add test and fix bug in ->form_name, which never worked at all
 
-0.17 20100426
+0.17 2010-04-26
     . Don't only request nsiHttpChannel, also use it instead of $request
     . Fix warnings in test suite
     . Add ->eval() as synonym for ->eval_in_page()
     . Fix distribution MANIFEST
 
-0.16 20100425
+0.16 2010-04-25
     . Added ->submit
     . Added ->submit_form with_fields => [...]
     . Bugfix: Explicitly ask for the nsiHTTPChannel when trying to
       create a response
 
-0.15 20091216
+0.15 2009-12-16
     . Better Makefile.PL and Prereq patch by Alexandr Ciornii (chorny)
     . Removed some dead code
     . Fixed some incompatible Javascript
 
-0.14 20091215
+0.14 2009-12-15
     . Added documentation about bufsize parameter
     . Option to recursively search frames
 
-0.13 20091213
+0.13 2009-12-13
     . Added way to use the "current" tab instead of a new/known tab
     . Fixed a bug regarding reusing tabs
     . Added eg/ directory with examples
     . Added way to specify maximum buffer size at startup
       in response to http://perlmonks.org/?node_id=811436
 
-0.12 20091130
+0.12 2009-11-30
     ! Renamed to ::Firefox
       This affects all your scripts, unfortunately.
     . Added ->save_url for downloading content to disk
@@ -691,35 +697,35 @@ TO DO:
     . Guard against empty/undefined schemes when constructing the JS response
     . Add and document a method to launch Firefox if it's not already running.
 
-0.11 20091126
+0.11 2009-11-26
     . Implement real HTTP response codes instead of the faked
       response codes.
     * Fix a memory leak/cycle that prevented tabs from closing
     . Now needs MozRepl::RemoteObject 0.10 for the API to deregister
       callbacks.
 
-0.10 20091121
+0.10 2009-11-21
     . implemented ->form_name, ->form_id, ->form_number
     . unified API between ->find_link, ->selector, ->xpath
     . Needs MozRepl::RemoteObject 0.09 to ensure that
       multiple $mech instances work
     
-0.09 20091111
+0.09 2009-11-11
     . Allow ->eval_in_page() to specify an overriding
       environment, for example to override alert()
 
-0.08 20091109
+0.08 2009-11-09
     . Make tests warn if I suspect that Javascript is
       blocked by Noscript. This makes some tests fail.
     . Require latest MozRepl::RemoteObject for sane encoding handling.
 
-0.07 20091106
+0.07 2009-11-06
     . added ->eval_in_page() to evaluate Javascript in
       the context of the page
     . added better frame / iframe handling.
     o Frame/iframes don't play well with data: URLs.
 
-0.06 20091102
+0.06 2009-11-02
     . added 'autoclose' parameter to specify whether the
       tab that mechanize creates gets automatically closed upon
       object release
@@ -731,24 +737,24 @@ TO DO:
     . added ->find_link tests from WWW::Mechanize
     . added sending of focus/change/blur events and API
 
-0.05 20091030
+0.05 2009-10-30
     . Added HTTP::Cookies::MozRepl to allow for live cookie querying
     . Added ->cookies method for cookie access
 
-0.04 20091029
+0.04 2009-10-29
     . Added ->set_visible
     . Added ->value (partly buggy with respect to event triggering)
     . added log passthrough parameter
 
-0.03 20091028
+0.03 2009-10-28
     . Added missing MIME::Base64 prerequisite
     . Now has WWW::Mechanize as a prerequisite
     . Also requires MozRepl::RemoteObject 0.2 due to the changed call
       interface and introduction of ->declare for caching.
 
-0.02 20091027
+0.02 2009-10-27
     . rearranged documentation
     . made tests skip if we can't connect to MozRepl
 
-0.01 20091026
+0.01 2009-10-26
     . Released unto a propably suspecting audience

@@ -3,11 +3,18 @@ abstract: 'use Firefox as if it were WWW::Mechanize'
 author:
   - 'Max Maischein <corion@cpan.org>'
 build_requires:
-  Task::Weaken: '0'
+  Data::Dumper: '0'
+  ExtUtils::MakeMaker: '0'
+  Image::Info: '0'
+  Test::Deep: '0'
+  Test::HTTP::LocalServer: '0.61'
+  Test::More: '0'
+  URI: '0'
+  URI::file: '0'
 configure_requires:
   ExtUtils::MakeMaker: '0'
-dynamic_config: 1
-generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.142060'
+dynamic_config: 0
+generated_by: 'ExtUtils::MakeMaker version 7.34, CPAN::Meta::Converter version 2.150010'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -22,11 +29,9 @@ requires:
   File::Basename: '0'
   HTML::Selector::XPath: '0'
   HTTP::Cookies: '0'
-  HTTP::Daemon: '0'
   HTTP::Date: '0'
   HTTP::Request::Common: '0'
   HTTP::Response: '0'
-  LWP::Simple: '0'
   MIME::Base64: '0'
   MozRepl::RemoteObject: '0.39'
   Object::Import: '0'
@@ -39,5 +44,7 @@ requires:
   parent: '0'
   perl: '5.006'
 resources:
-  repository: http://github.com/Corion/www-mechanize-firefox
-version: '0.79'
+  repository: git://github.com/Corion/www-mechanize-firefox.git
+version: '0.80'
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
+x_static_install: 1
