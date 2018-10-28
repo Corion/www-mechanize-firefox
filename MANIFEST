@@ -179,3 +179,4 @@ xt/99-pod.t
 xt/99-todo.t
 xt/99-unix-text.t
 xt/99-versions.t
+xt/meta-lint.t
