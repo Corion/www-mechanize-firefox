@@ -39,7 +39,7 @@ system($make, 'ppd', "BINARY_LOCATION=$name-PPM.tar.gz");
 system("tar cvf $name-PPM.tar blib");
 system("gzip --best $name-PPM.tar");
 
-Delete qw(blib pod2html-dircache pod2html-itemcache pm_to_blib pod2htmd.x~~ pod2htmi.x~~);
+#Delete qw(blib pod2html-dircache pod2html-itemcache pm_to_blib pod2htmd.x~~ pod2htmi.x~~);
 
 if (! $has_xs) {
         open $PPD, "<$ppd" or die "Can't open the $ppd file: $!\n";
