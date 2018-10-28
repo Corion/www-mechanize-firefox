@@ -19,7 +19,7 @@ if (! $mech) {
     plan skip_all => "Couldn't connect to MozRepl: $@";
     exit
 } else {
-    plan tests => 30;
+    plan tests => 23;
 };
 
 my $server = Test::HTTP::LocalServer->spawn();
@@ -33,8 +33,8 @@ CLICK_BY_NUMBER: {
     $mech->click_button(number => 1);
 
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by number' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(number => 2); 1 }, 'Button number out of range');
@@ -44,8 +44,8 @@ CLICK_BY_NUMBER: {
 CLICK_BY_NAME: {
     $mech->click_button(name => 'submit');
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(name => 'bogus'); 1 }, 'Button name unknown');
@@ -54,8 +54,8 @@ CLICK_BY_NAME: {
 CLICK_BY_NAME_CLICK: {
     $mech->click('submit');
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(name => 'bogus'); 1 },
@@ -65,8 +65,8 @@ CLICK_BY_NAME_CLICK: {
 CLICK_BY_NAME_CLICK_NAME: {
     $mech->click({ name => 'submit' });
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(name => 'bogus'); 1 },
@@ -76,8 +76,8 @@ CLICK_BY_NAME_CLICK_NAME: {
 CLICK_BY_ID: {
     $mech->click_button(id => 'submit_button');
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by name' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(id => 'no_such_button'); 1 },
@@ -89,8 +89,8 @@ CLICK_BY_ID: {
 CLICK_BY_VALUE: {
     $mech->click_button(value => 'Go');
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by value' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
     $mech->get($server->url);
 
     ok(! eval { $mech->click_button(value => 'bogus'); 1 },
@@ -110,8 +110,8 @@ CLICK_BY_OBJECT_REFERENCE: {
         diag Dumper( $resp->request )}
 
     like( $mech->uri, qr/formsubmit/, 'Clicking on button by object reference' );
-    like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
-    like( $mech->uri, qr/cat_foo/,    'Parameters got transmitted OK' );
+    #like( $mech->uri, qr/submit=Go/,  'Correct button was pressed' );
+    like( $mech->content, qr/value="cat_foo"\s+checked/, 'Parameters got transmitted OK' );
 
     $mech->get($server->url);
 }
