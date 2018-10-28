@@ -151,13 +151,6 @@ t/70-urlbar-2.html
 t/70-urlbar.html
 t/70-urlbar.t
 t/75-save_url-cookies.t
-t/99-changes.t
-t/99-examples.t
-t/99-manifest.t
-t/99-pod.t
-t/99-todo.t
-t/99-unix-text.t
-t/99-versions.t
 t/helper.pm
 t/mechanize/autocheck.t
 t/mechanize/content.t
